@@ -1,0 +1,30 @@
+{
+    "name": "Jira Progress Tracker",
+
+    "version": "1",
+
+    "manifest_version": 2,
+
+    "options_page": "src/index.html#options",
+    "background": {
+        "page": "src/background.html"
+    },
+
+    "content_security_policy": "script-src 'self' https://apis.google.com/; object-src 'self'",
+
+    /*    "web_accessible_resources": [
+        "js/double-rainbow.js"
+      ],
+*/
+    "app": {
+        "launch": {
+            "local_path": "src/index.html"
+        }
+    },
+
+    "icons": {
+        "128": "src/images/logo/128.png"
+    },
+
+    "permissions": ["tabs", "*://*/*"]
+}
