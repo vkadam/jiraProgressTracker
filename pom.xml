@@ -30,6 +30,10 @@
 						<include>**/lib/*.js</include>
 					  	<include>**/*.js</include>
 					</sourceIncludes>
+					<sourceExcludes>
+						<include>**/gsloader/jasmine/**/*.js</include>
+						<include>**/gsloader/src/js/lib/jquery-*.js</include>
+					</sourceExcludes>
 				</configuration>
 			</plugin>
 		</plugins>
