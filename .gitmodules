@@ -1,3 +1,0 @@
-[submodule "src/js/lib/gsloader"]
-	path = src/js/lib/gsloader
-	url = https://github.com/vkadam/gsloader.git
