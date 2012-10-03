@@ -41,10 +41,16 @@ function jiraClient() {
             console.log(jqXHR.responseText);
         });
     })*/
+    
+    var spreadsheets = ["0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", 
+        "0AquDXlXxVjqPdElEQ3RSTzZ5SG4zVUN5UWQzYnZQbnc"];
+    $.each(spreadsheets, function(key, value) {
+        GSLoader.loadSpreadsheet(value)
+        .done(function(spreadsheet){
+            console.log(this.title, this);
+        });
+    })
 
-    GSLoader.loadSpreadsheet("0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c").done(function(spreadsheet){
-        console.log(spreadsheet);
-    });
 }
 
 $(function() {
