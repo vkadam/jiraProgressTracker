@@ -1,10 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-    <body>
-        <div class="jiraResponse"></div>
-    </body>
-    <script type="text/javascript" src="js/lib/jquery-1.8.2.min.js"></script>
-    <script type="text/javascript" src="js/lib/gsloader/src/js/gsloader.js"></script>
-    <script type="text/javascript" src="js/base64.js"></script>
-    <script type="text/javascript" src="js/jiraTracker.js"></script>
+<head>
+	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+	<div class="navbar">
+		<div class="navbar-inner">
+		</div>
+	</div>
+	<div class="container">
+		<form class="form-horizontal jira-tracker">
+			<div class="control-group">
+				<label class="control-label" for="inputEmail">Email</label>
+				<div class="controls">
+					<input type="text" id="inputEmail" placeholder="Email">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputPassword">Password</label>
+				<div class="controls">
+					<input type="password" id="inputPassword" placeholder="Password">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="spreadSheetId">Spreadsheet Id</label>
+				<div class="controls">
+					<input type="text" id="spreadSheetId" placeholder="Spreadsheet id">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="worksheetName">Worksheet Name</label>
+				<div class="controls">
+					<input type="text" id="worksheetName" placeholder="Worksheet Name" />
+					<button type="button" class="btn create-sheet">Create Sheet</button>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="jiraJQL">Jira JQL</label>
+				<div class="controls">
+					<textarea class="span8" id="jiraJQL" placeholder="Jira JQL" rows="4"></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn btn-primary">Populate Data</button>
+				</div>
+			</div>
+		</form>
+		<div class="jiraResponse"></div>
+	</div>
+</body>
+<script type="text/javascript" src="js/lib/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/lib/gsloader/src/js/gsloader.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
+<script type="text/javascript" src="js/jiraTracker.js"></script>
+<script type="text/javascript" src="js/googleDriveApi.js"></script>
+<script type="text/javascript" src="https://apis.google.com/js/client.js?onload=googleDrieClientLoaded"></script>
 </html>
