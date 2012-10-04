@@ -41,7 +41,7 @@ googleClientApi.drive = {
         googleClientApi.checkAuth();
     },
 
-    createSpreadSheet: function(fileTitle) {
+    createSpreadSheet: function(fileTitle, callback) {
         var request = gapi.client.request({
             'path': '/drive/v2/files',
             'method': 'POST',
@@ -52,7 +52,7 @@ googleClientApi.drive = {
         });
 
         request.execute(function(resp) {
-            console.log(resp);
+            callback.apply(callback, arguments);
         });
     },
 

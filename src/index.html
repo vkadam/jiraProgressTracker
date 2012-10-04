@@ -13,26 +13,26 @@
 			<div class="control-group">
 				<label class="control-label" for="inputEmail">Email</label>
 				<div class="controls">
-					<input type="text" id="inputEmail" placeholder="Email">
+					<input type="text" id="inputEmail" placeholder="Email" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="inputPassword">Password</label>
 				<div class="controls">
-					<input type="password" id="inputPassword" placeholder="Password">
+					<input type="password" id="inputPassword" placeholder="Password" />
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="spreadSheetId">Spreadsheet Id</label>
+				<label class="control-label" for="spreadSheetTitle">Spreadsheet Title</label>
 				<div class="controls">
-					<input type="text" id="spreadSheetId" placeholder="Spreadsheet id">
+					<input type="text" id="spreadSheetTitle" placeholder="Spreadsheet Title" />
+					<input class="span6" type="text" id="spreadSheetId" placeholder="Spreadsheet Id" />
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="worksheetName">Worksheet Name</label>
+				<label class="control-label" for="snapshotTitle">Snapshot Title</label>
 				<div class="controls">
-					<input type="text" id="worksheetName" placeholder="Worksheet Name" />
-					<button type="button" class="btn create-sheet">Create Sheet</button>
+					<input type="text" id="snapshotTitle" placeholder="Snapshot Title" />
 				</div>
 			</div>
 			<div class="control-group">
@@ -43,7 +43,8 @@
 			</div>
 			<div class="control-group">
 				<div class="controls">
-					<button type="submit" class="btn btn-primary">Populate Data</button>
+					<button type="button" class="btn create-baseline btn-primary">Create Baseline</button>
+					<button type="button" class="btn create-snapshot">Create Snapshot</button>
 				</div>
 			</div>
 		</form>

@@ -13,7 +13,7 @@
 $(function() {});
 
 function jiraClient() {
-/*$.ajax({
+/* $.ajax({
         url : 'http://jira.cengage.com/rest/api/2/search?jql=assignee="vishal.kadam"',
         headers : { "Authorization": "Basic " + Base64.encode('vishal.kadam:cengagejira')}
       })
@@ -44,7 +44,7 @@ function jiraClient() {
     })
 
     var spreadsheets = [
-    // "0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", 
+     // "0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", 
     // "0AquDXlXxVjqPdElEQ3RSTzZ5SG4zVUN5UWQzYnZQbnc"
     ];
     $.each(spreadsheets, function(key, value) {
@@ -52,57 +52,33 @@ function jiraClient() {
             console.log(this.title, this);
         });
     });
-
-
-    var url = "https://docs.google.com/feeds/default/private/full"
-
-/*var postdata = '<?xml version="1.0" encoding="UTF-8"?>
-        <entry xmlns="http://www.w3.org/2005/Atom" xmlns:docs="http://schemas.google.com/docs/2007"> +
-          <!-- Replace the following line appropriately to create another type of resource. -->
-          <category scheme="http://schemas.google.com/g/2005#kind"
-              term="http://schemas.google.com/docs/2007#spreadsheet"/>
-          <title>Spreadsheet By Document List Api</title>
-        </entry>'*/
-
-}
-
-function OnLoadCallback() {
-    gapi.client.load('drive', 'v2', function() {
-
-        var request = gapi.client.request({
-            'path': '/drive/v2/files',
-            'method': 'POST',
-            'body': {
-                "title": "cat.jpg",
-                "mimeType": "image/jpeg",
-                "description": "Some"
-            }
-        });
-        request.execute(function(resp) {
-            console.log(resp);
-        });
-    });
 }
 
 $(function() {
     jiraClient();
 
-    $(".create-sheet").click(function() {
+    var PRIVATE_SHEET_URL = "https://spreadsheets.google.com/feeds/worksheets/{0}/private/full";
+    var WORKSHEET_CREATE_REQ = '<entry xmlns="http://www.w3.org/2005/Atom" '+
+                    'xmlns:gs="http://schemas.google.com/spreadsheets/2006">'+
+                    '<title>{0}</title>'+
+                    '<gs:rowCount>50</gs:rowCount>'+
+                    '<gs:colCount>10</gs:colCount>'+
+                '</entry>'
+    $(".create-baseline").click(function() {
+        googleClientApi.drive.createSpreadSheet($("#spreadSheetTitle").val(), function(spreadsheetObj){
+            $("#spreadSheetId").val(spreadsheetObj.id);
+        });
+    })
+    $(".create-snapshot").click(function() {
         $.ajax({
-            url: "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdGh3bzViTEFmbVVQYTI5VkdLYW8zWVE/private/full",
+            url: PRIVATE_SHEET_URL.format($("#spreadSheetId").val()),
             type: "POST",
             contentType: "application/atom+xml",
             headers: {
                 "GData-Version": "3.0"
             },
-            data:'<entry xmlns="http://www.w3.org/2005/Atom" '+
-                    'xmlns:gs="http://schemas.google.com/spreadsheets/2006">'+
-                    '<title>Expenses</title>'+
-                    '<gs:rowCount>50</gs:rowCount>'+
-                    '<gs:colCount>10</gs:colCount>'+
-                '</entry>'
+            data: WORKSHEET_CREATE_REQ.format($("#snapshotTitle").val())
         }).done(function(data, textStatus, jqXHR) {
-            //console.log(key, value, data);
             console.log(jqXHR.responseText);
         });
     })
