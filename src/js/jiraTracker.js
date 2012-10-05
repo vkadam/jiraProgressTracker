@@ -65,7 +65,7 @@ $(function() {
                     '<gs:colCount>10</gs:colCount>'+
                 '</entry>'
     $(".create-baseline").click(function() {
-        googleClientApi.drive.createSpreadSheet($("#spreadSheetTitle").val(), function(spreadsheetObj){
+        GSLoader.drive.createSpreadSheet($("#spreadSheetTitle").val(), function(spreadsheetObj){
             $("#spreadSheetId").val(spreadsheetObj.id);
         });
     })
@@ -89,5 +89,7 @@ $(function() {
  */
 
 window.googleDrieClientLoaded = function() {
-    googleClientApi.onLoad();
+    GSLoader.enableLog()
+    .auth.setClientId("1074663392007.apps.googleusercontent.com")
+    .onLoad(GSLoader.drive.load, GSLoader.drive);
 }

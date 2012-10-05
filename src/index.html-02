@@ -1,0 +1,10 @@
+<html>
+<head>
+  <script type="text/javascript" src="js/googleDrive.js"></script>
+  <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+</head>
+<body>
+  <!--Add a file picker for the user to start the upload process -->
+  <input type="file" id="filePicker" style="visibility: hidden" />
+</body>
+</html>
