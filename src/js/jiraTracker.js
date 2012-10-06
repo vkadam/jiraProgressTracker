@@ -1,16 +1,40 @@
-(function($) {
-    var jiraTracker = function() {}
+(function(attachTo, $) {
+    var JiraTrackerClass = function() {
+            this.activeRelease = null;
+        }
 
-    jiraTracker.prototype.loadSpreadsheet = function() {
-        console.log('inside load spreadsheet');
+    var JiraTracker = new JiraTrackerClass();
+
+    JiraTrackerClass.prototype.loadRelease = function(releaseId) {
+        if (typeof(releaseId) !== "string") {
+            releaseId = $("#releaseId").val();
+        }
+        this.activeRelease = GSLoader.loadSpreadsheet(releaseId);
     };
 
-    $.extend({
-        jiraTracker: new jiraTracker()
-    })
-})(jQuery);
+    JiraTrackerClass.prototype.createBaseline = function(baselineTitle) {
+        if (typeof(baselineTitle) !== "string") {
+            baselineTitle = $("#releaseTitle").val();
+        }
+        GSLoader.createSpreadsheet(baselineTitle, this.onReleaseChange, this);
+    };
 
-$(function() {});
+    JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
+        this.activeRelease = releaseSheet;
+    };
+
+    JiraTrackerClass.prototype.createSnapshot = function() {
+        if (!this.activeRelease) {
+            throw "Release is not loaded";
+        }
+        this.activeRelease.createWorksheet($("#snapshotTitle").val());
+    };
+
+    $.extend(attachTo, {
+        JiraTracker: JiraTracker
+    });
+
+})(window, jQuery);
 
 function jiraClient() {
 /* $.ajax({
@@ -44,7 +68,7 @@ function jiraClient() {
     })
 
     var spreadsheets = [
-     // "0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", 
+    // "0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", 
     // "0AquDXlXxVjqPdElEQ3RSTzZ5SG4zVUN5UWQzYnZQbnc"
     ];
     $.each(spreadsheets, function(key, value) {
@@ -57,15 +81,8 @@ function jiraClient() {
 var currentSpreadsheet;
 $(function() {
     jiraClient();
-    var PRIVATE_SHEET_URL = "https://spreadsheets.google.com/feeds/worksheets/{0}/private/full";
-    var WORKSHEET_CREATE_REQ = '<entry xmlns="http://www.w3.org/2005/Atom" '+
-                    'xmlns:gs="http://schemas.google.com/spreadsheets/2006">'+
-                    '<title>{0}</title>'+
-                    '<gs:rowCount>50</gs:rowCount>'+
-                    '<gs:colCount>10</gs:colCount>'+
-                '</entry>'
     $(".create-baseline").click(function() {
-        GSLoader.createSpreadsheet($("#spreadSheetTitle").val(), function(spreadSheet){
+        GSLoader.createSpreadsheet($("#spreadSheetTitle").val(), function(spreadSheet) {
             $("#spreadSheetId").val(spreadSheet.key);
             currentSpreadsheet = spreadSheet;
         });
@@ -80,7 +97,5 @@ $(function() {
  */
 
 window.googleDrieClientLoaded = function() {
-    GSLoader.enableLog()
-    .auth.setClientId("1074663392007.apps.googleusercontent.com")
-    .onLoad(GSLoader.drive.load, GSLoader.drive);
+    GSLoader.enableLog().auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
 }
