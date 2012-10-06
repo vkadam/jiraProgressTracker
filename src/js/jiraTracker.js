@@ -54,9 +54,9 @@ function jiraClient() {
     });
 }
 
+var currentSpreadsheet;
 $(function() {
     jiraClient();
-
     var PRIVATE_SHEET_URL = "https://spreadsheets.google.com/feeds/worksheets/{0}/private/full";
     var WORKSHEET_CREATE_REQ = '<entry xmlns="http://www.w3.org/2005/Atom" '+
                     'xmlns:gs="http://schemas.google.com/spreadsheets/2006">'+
@@ -65,22 +65,13 @@ $(function() {
                     '<gs:colCount>10</gs:colCount>'+
                 '</entry>'
     $(".create-baseline").click(function() {
-        GSLoader.drive.createSpreadSheet($("#spreadSheetTitle").val(), function(spreadsheetObj){
-            $("#spreadSheetId").val(spreadsheetObj.id);
+        GSLoader.createSpreadsheet($("#spreadSheetTitle").val(), function(spreadSheet){
+            $("#spreadSheetId").val(spreadSheet.key);
+            currentSpreadsheet = spreadSheet;
         });
     })
     $(".create-snapshot").click(function() {
-        $.ajax({
-            url: PRIVATE_SHEET_URL.format($("#spreadSheetId").val()),
-            type: "POST",
-            contentType: "application/atom+xml",
-            headers: {
-                "GData-Version": "3.0"
-            },
-            data: WORKSHEET_CREATE_REQ.format($("#snapshotTitle").val())
-        }).done(function(data, textStatus, jqXHR) {
-            console.log(jqXHR.responseText);
-        });
+        currentSpreadsheet.createWorksheet($("#snapshotTitle").val());
     })
 });
 

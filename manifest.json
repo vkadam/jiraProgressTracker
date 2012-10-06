@@ -23,6 +23,8 @@
     },
 
     "icons": {
+        "16": "src/images/logo/128.png",
+        "48": "src/images/logo/128.png",
         "128": "src/images/logo/128.png"
     },
 
