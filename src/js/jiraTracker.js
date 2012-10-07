@@ -10,6 +10,7 @@
             releaseId = $("#releaseId").val();
         }
         this.activeRelease = GSLoader.loadSpreadsheet(releaseId);
+        this.onReleaseChange.apply(this, [this.activeRelease]);
     };
 
     JiraTrackerClass.prototype.createBaseline = function(baselineTitle) {
@@ -21,6 +22,8 @@
 
     JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
         this.activeRelease = releaseSheet;
+        $("#releaseId").val(this.activeRelease.id);
+        $("#releaseTitle").val(this.activeRelease.title);
     };
 
     JiraTrackerClass.prototype.createSnapshot = function() {
@@ -47,15 +50,14 @@ function jiraClient() {
       .fail(function(jqXHR, textStatus, errorThrown) {
     });*/
 
-
-    //GSLoader.loadSheet({key : "0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", debug: true})
     var urls = {
         // "Spreadsheets" : "https://spreadsheets.google.com/feeds/spreadsheets/private/full",
         // "list_basic" : "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/od6/private/basic",
         // "Private_Basic" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/basic",
         // "Private_Full" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/full",
-        // "list_full": "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/od6/private/full"
+        "list_full": "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full"
         // "document_list_api": "https://docs.google.com/feeds/default/private/full"
+        // "cell_feed": "https://spreadsheets.google.com/feeds/cells/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full/"
     }
 
     $.each(urls, function(key, value) {
@@ -67,29 +69,15 @@ function jiraClient() {
         });
     })
 
-    var spreadsheets = [
-    // "0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c", 
-    // "0AquDXlXxVjqPdElEQ3RSTzZ5SG4zVUN5UWQzYnZQbnc"
-    ];
-    $.each(spreadsheets, function(key, value) {
-        GSLoader.loadSpreadsheet(value).done(function(spreadsheet) {
-            console.log(this.title, this);
-        });
-    });
+
 }
 
 var currentSpreadsheet;
 $(function() {
     jiraClient();
-    $(".create-baseline").click(function() {
-        GSLoader.createSpreadsheet($("#spreadSheetTitle").val(), function(spreadSheet) {
-            $("#spreadSheetId").val(spreadSheet.key);
-            currentSpreadsheet = spreadSheet;
-        });
-    })
-    $(".create-snapshot").click(function() {
-        currentSpreadsheet.createWorksheet($("#snapshotTitle").val());
-    })
+    $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
+    $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
+    $(".create-snapshot").click($.proxy(JiraTracker.createSnapshot, JiraTracker));
 });
 
 /**

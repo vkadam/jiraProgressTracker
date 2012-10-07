@@ -39,18 +39,21 @@ describe("JiraTracker", function() {
 	            	callBack.apply(context, [newSpreadsheet]);
             	}
             });
+            affix("input#releaseTitle[value="+spreadsheetTitle+"] input#releaseId");
         });
 
         it("Create baseline by spreadsheet title parameter and make it active", function() {
             JiraTracker.createBaseline(spreadsheetTitle);
             expect(JiraTracker.activeRelease).toBe(newSpreadsheet);
+            expect($("#releaseId")).toHaveValue("mySpreadSheetId");
+            expect($("#releaseTitle")).toHaveValue(spreadsheetTitle);
         });
 
         it("Create baseline by spreadsheet title field and make it active", function() {
-            affix("input#releaseTitle[value="+spreadsheetTitle+"]");
             JiraTracker.createBaseline();
             expect(JiraTracker.activeRelease).toBe(newSpreadsheet);
         });
+
     });
     
     describe("Create snapshot", function() {
