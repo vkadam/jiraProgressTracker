@@ -1,21 +1,18 @@
 {
     "name": "Jira Progress Tracker",
 
-    "version": "1",
+    "version": "1.0",
 
     "manifest_version": 2,
 
     "options_page": "src/index.html#options",
+
     "background": {
         "page": "src/background.html"
     },
 
     "content_security_policy": "script-src 'self' https://apis.google.com/; object-src 'self'",
 
-    /*    "web_accessible_resources": [
-        "js/double-rainbow.js"
-      ],
-*/
     "app": {
         "launch": {
             "local_path": "src/index.html"
@@ -23,8 +20,8 @@
     },
 
     "icons": {
-        "16": "src/images/logo/128.png",
-        "48": "src/images/logo/128.png",
+        "16": "src/images/logo/16.png",
+        "48": "src/images/logo/48.png",
         "128": "src/images/logo/128.png"
     },
 

@@ -25,7 +25,7 @@
 			<div class="control-group">
 				<label class="control-label" for="releaseTitle">Release Title</label>
 				<div class="controls">
-					<input class="span6" type="text" id="releaseId" placeholder="Release Spreadsheet Id" value="0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c"/>
+					<input class="span6" type="text" id="releaseId" placeholder="Release Spreadsheet Id" />
 					<input type="text" id="releaseTitle" placeholder="Release Spreadsheet Title" />
 				</div>
 			</div>
@@ -38,8 +38,8 @@
 			<div class="control-group">
 				<label class="control-label" for="jiraJQL">Jira JQL</label>
 				<div class="controls">
-					<textarea class="span8" id="jiraJQL" placeholder="Jira JQL" rows="4">project=NG and fixVersion="2.4" order by issuekey</textarea>
-					<input type="text" id="jiraMaxResults" placeholder="Max Results" value="10"/>
+					<textarea class="span8" id="jiraJQL" placeholder="Jira JQL" rows="4"></textarea>
+					<input type="hidden" id="jiraMaxResults" placeholder="Max Results" value="999"/>
 				</div>
 			</div>
 			<div class="control-group">

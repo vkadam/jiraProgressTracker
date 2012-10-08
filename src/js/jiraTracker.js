@@ -19,7 +19,7 @@
         }
         GSLoader.createSpreadsheet(baselineTitle, function(spreadsheet) {
             this.onReleaseChange(spreadsheet);
-            this, createSnapshot(evt, "Baseline");
+            this.createSnapshot(evt, "Baseline");
         }, this);
     };
 
