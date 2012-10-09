@@ -1,4 +1,77 @@
 (function(attachTo, $) {
+
+    var JiraIssue = function(jsonObj) {
+            this.parse(jsonObj);
+        }
+
+    JiraIssue.getValue = function(issue, p) {
+        var obj = issue;
+        for (var i = 0, len = p.length; i < len - 1; i++) {
+            obj = obj[p[i]];
+        }
+        return obj ? obj[p[len - 1]] : null;
+    };
+
+    JiraIssue.fields = {
+        "Project": ["fields", "project", "key"],
+        "Key": ["key"],
+        "Issue Type": ["fields", "issuetype", "name"],
+        "Summary": ["fields", "summary"],
+        "Status": ["fields", "status", "name"],
+        "Assignee": ["fields", "assignee", "displayName"],
+        "Reporter": ["fields", "reporter", "displayName"],
+        "Priority": ["fields", "priority", "name"],
+        "Resolution": ["fields", "resolution"],
+        "Created Date": ["fields", "created"],
+        "Due Date": ["fields", "duedate"],
+        "Fix Version": ["fields", "fixVersions"],
+        "Resolution Date": ["fields", "resolutiondate"],
+        "Component/s": ["fields", "components"],
+        "Labels": ["fields", "labels"],
+        "Points": ["fields", "customfield_10792"],
+        "Team": ["fields", "customfield_11261", "value"],
+        "Work Stream": ["fields", "customfield_12544", "value"],
+        "Epic/Theme": ["fields", "customfield_10850"],
+        "Feature": ["fields", "customfield_12545"]
+    };
+
+    //var JiraIssue = new JiraIssue();
+
+    JiraIssue.prototype.parse = function(issueData) {
+        var _this = this;
+        if (issueData) {
+            $.each(JiraIssue.fields, function(key, value) {
+                _this[key] = JiraIssue.getValue(issueData, value);
+            });
+        }
+        return this;
+    }
+
+    JiraIssue.prototype.toArray = function(issueData) {
+        var _this = this;
+        var values = [];
+        var attrValue;
+        $.each(JiraIssue.fields, function(key, value) {
+            attrValue = _this[key];
+            if (("Fix Version" === key || "Component/s" === key) && null !== attrValue) {
+                attrValue = [];
+                $.each(_this[key], function(idx, val) {
+                    attrValue.push(val.name);
+                });
+                attrValue = attrValue.join("\n")
+            } else if (("Labels" === key || "Epic/Theme" === key || "Feature" === key) && null !== attrValue) {
+                attrValue = [];
+                $.each(_this[key], function(idx, val) {
+                    attrValue.push(val);
+                });
+                attrValue = attrValue.join("\n")
+            }
+            values.push(attrValue);
+        });
+
+        return values;
+    }
+
     var JiraTrackerClass = function() {
             this.activeRelease = null;
         }
@@ -29,37 +102,6 @@
         $("#releaseTitle").val(this.activeRelease.title);
     };
 
-    JiraTrackerClass.dataMapping = {
-        "Project": ["fields", "project", "key"],
-        "Key": ["key"],
-        "Issue Type": ["fields","issuetype","name"],
-        "Summary": ["fields", "summary"],
-        "Points": ["fields", "customfield_10792"],
-        "Status": ["fields", "status", "name"],
-        "Assignee": ["fields", "assignee", "displayName"],
-        "Reporter": ["fields", "reporter", "displayName"],
-        "Priority": ["fields", "priority", "name"],
-        "Team": ["fields", "customfield_11261", "value"],
-        "Resolution": ["fields", "resolution"],
-        "Created Date": ["fields", "created"],
-        "Due Date": ["fields", "duedate"],
-        "Fix Version": ["fields", "fixVersions", "0", "name"],
-        "Resolution Date": ["fields", "resolutiondate"],
-        "Component/s": ["fields", "components", "0", "name"],
-        "Work Stream": ["fields", "customfield_12544", "value"],
-        "Epic/Theme": ["fields", "customfield_10850", "value"],
-        "Feature": ["fields", "customfield_12545", "value"],
-        "Labels": ["fields", "labels", "0"]
-    };
-
-    JiraTrackerClass.get = function(issue, p) {
-        var obj = issue;
-        for (var i = 0, len = p.length; i < len - 1; i++){
-            obj = obj[p[i]];
-        }
-        return obj ? obj[p[len - 1]] : null;
-    };
-
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
         var _this = this;
         if (!this.activeRelease) {
@@ -77,23 +119,20 @@
                 "Authorization": "Basic " + base64Encode
             }
         }).done(function(data, textStatus, jqXHR) {
-            if (typeof(data) === "string"){
+            if (typeof(data) === "string") {
                 data = JSON.parse(data);
             }
             var headersTitles = [];
-            $.each(JiraTrackerClass.dataMapping, function(key, value){
+            $.each(JiraIssue.fields, function(key, value) {
                 headersTitles.push(key);
             });
 
             var jiraIssues = [];
+            var jiraIssue;
             $.each(data.issues, function(idx, issue) {
-                var row = [];
-                $.each(JiraTrackerClass.dataMapping, function(key, value){
-                    row.push(JiraTrackerClass.get(issue, value));
-                });
-                jiraIssues.push(row);
+                jiraIssue = new JiraIssue(issue);
+                jiraIssues.push(jiraIssue.toArray());
             });
-
             _this.activeRelease.createWorksheet({
                 title: worksheetTitle || $("#snapshotTitle").val(),
                 headers: headersTitles,
