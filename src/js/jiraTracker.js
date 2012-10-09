@@ -19,7 +19,7 @@
         }
         GSLoader.createSpreadsheet(baselineTitle, function(spreadsheet) {
             this.onReleaseChange(spreadsheet);
-            this.createSnapshot(evt, "Baseline");
+            //this.createSnapshot(evt, "Baseline");
         }, this);
     };
 
@@ -27,6 +27,37 @@
         this.activeRelease = releaseSheet;
         $("#releaseId").val(this.activeRelease.id);
         $("#releaseTitle").val(this.activeRelease.title);
+    };
+
+    JiraTrackerClass.dataMapping = {
+        "Project": ["fields", "project", "key"],
+        "Key": ["key"],
+        "Issue Type": ["fields","issuetype","name"],
+        "Summary": ["fields", "summary"],
+        "Points": ["fields", "customfield_10792"],
+        "Status": ["fields", "status", "name"],
+        "Assignee": ["fields", "assignee", "displayName"],
+        "Reporter": ["fields", "reporter", "displayName"],
+        "Priority": ["fields", "priority", "name"],
+        "Team": ["fields", "customfield_11261", "value"],
+        "Resolution": ["fields", "resolution"],
+        "Created Date": ["fields", "created"],
+        "Due Date": ["fields", "duedate"],
+        "Fix Version": ["fields", "fixVersions", "0", "name"],
+        "Resolution Date": ["fields", "resolutiondate"],
+        "Component/s": ["fields", "components", "0", "name"],
+        "Work Stream": ["fields", "customfield_12544", "value"],
+        "Epic/Theme": ["fields", "customfield_10850", "value"],
+        "Feature": ["fields", "customfield_12545", "value"],
+        "Labels": ["fields", "labels", "0"]
+    };
+
+    JiraTrackerClass.get = function(issue, p) {
+        var obj = issue;
+        for (var i = 0, len = p.length; i < len - 1; i++){
+            obj = obj[p[i]];
+        }
+        return obj ? obj[p[len - 1]] : null;
     };
 
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
@@ -37,32 +68,38 @@
         var base64Encode = Base64.encode($("#jiraUseId").val() + ":" + $("#jiraPassword").val());
 
         $.ajax({
-            url: 'http://jira.cengage.com/rest/api/2/search?maxResults=' + $("#jiraMaxResults").val() + '&jql=' + $("#jiraJQL").val(),
+            url: "http://jira.cengage.com/rest/api/2/search",
+            data: {
+                maxResults: $("#jiraMaxResults").val(),
+                jql: $("#jiraJQL").val()
+            },
             headers: {
                 "Authorization": "Basic " + base64Encode
             }
         }).done(function(data, textStatus, jqXHR) {
-            //$('.jiraResponse').html(JSON.stringify(data));
+            if (typeof(data) === "string"){
+                data = JSON.parse(data);
+            }
+            var headersTitles = [];
+            $.each(JiraTrackerClass.dataMapping, function(key, value){
+                headersTitles.push(key);
+            });
+
             var jiraIssues = [];
-/*    Original    Escaped
-            '   &apos;
-            "   &quot;
-            &   &amp;
-            <   &lt;
-            >   &gt; */
             $.each(data.issues, function(idx, issue) {
-                var summary = issue.fields.summary.encodeXML();
-                var points = issue.fields.customfield_10792 ? issue.fields.customfield_10792 : "";
-                var team = issue.fields.customfield_11261 ? issue.fields.customfield_11261.value : "";
-                jiraIssues.push([issue.key, summary, points, issue.fields.issuetype.name, issue.fields.status.name, team])
+                var row = [];
+                $.each(JiraTrackerClass.dataMapping, function(key, value){
+                    row.push(JiraTrackerClass.get(issue, value));
+                });
+                jiraIssues.push(row);
             });
 
             _this.activeRelease.createWorksheet({
                 title: worksheetTitle || $("#snapshotTitle").val(),
-                headers: ["Key", "Summary", "Points", "Issue Type", "Status", "Team"],
+                headers: headersTitles,
                 rowData: jiraIssues,
                 rows: jiraIssues.length + 1,
-                cols: 6
+                cols: headersTitles.length
             });
         })
 
@@ -119,16 +156,6 @@ $(function() {
  * Called when the client library is loaded.
  */
 
-window.googleDrieClientLoaded = function() {
+window.googleDriveClientLoaded = function() {
     GSLoader.enableLog().auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
-}
-
-if (!String.prototype.encodeXML) {
-  String.prototype.encodeXML = function () {
-    return this.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&apos;');
-  };
 }

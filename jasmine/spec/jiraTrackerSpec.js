@@ -1,5 +1,14 @@
 describe("JiraTracker", function() {
 
+    var spyOnAjax;
+    beforeEach(function() {
+        $.ajaxSetup({
+            async: false
+        });
+        spyOnAjax = spyOn($, "ajax");
+    });
+
+
     describe("Load release", function() {
         var actualRelease = {
             id: "mySpreadSheetId"
@@ -35,9 +44,9 @@ describe("JiraTracker", function() {
         beforeEach(function() {
             JiraTracker.activeRelease = null;
             spyOn(GSLoader, "createSpreadsheet").andCallFake(function(title, callBack, context){
-            	if (title === spreadsheetTitle) {
-	            	callBack.apply(context, [newSpreadsheet]);
-            	}
+                if (title === spreadsheetTitle) {
+                    callBack.apply(context, [newSpreadsheet]);
+                }
             });
             affix("input#releaseTitle[value="+spreadsheetTitle+"] input#releaseId");
         });
@@ -58,7 +67,7 @@ describe("JiraTracker", function() {
     
     describe("Create snapshot", function() {
         var snapshotTitle = "Worksheet Title";
-        var spyOnCreateWorksheet = jasmine.createSpy("createWorksheet")
+        var spyOnCreateWorksheet = jasmine.createSpy("createWorksheet");
         var activeRelease = {
             id: "mySpreadSheetId",
             title: "Release Sheet Title",
@@ -71,6 +80,8 @@ describe("JiraTracker", function() {
     	}
         
         beforeEach(function() {
+            spyOnAjax.andCallThrough();
+            $.fixture("http://jira.cengage.com/rest/api/2/search", "jasmine/fixtures/jiraIssues.json")
             JiraTracker.activeRelease = activeRelease;
         	spyOnCreateWorksheet.andCallFake(function(){
         		activeRelease.worksheets.push(worksheet);
