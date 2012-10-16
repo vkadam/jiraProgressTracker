@@ -36,7 +36,6 @@
     };
 
     //var JiraIssue = new JiraIssue();
-
     JiraIssue.prototype.parse = function(issueData) {
         var _this = this;
         if (issueData) {
@@ -68,7 +67,6 @@
             }
             values.push(attrValue);
         });
-
         return values;
     }
 
