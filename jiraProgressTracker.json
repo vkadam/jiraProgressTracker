@@ -1,0 +1,28 @@
+{
+  "name": "jiraProgressTracker",
+  "title": "Jira Progress Tracker",
+  "description": "Google Chrome plugin to track jira progress over the period",
+  "version": "0.0.1",
+  "homepage": "https://github.com/vkadam/jiraProgressTracker",
+  "author": {
+    "name": "Vishal Kadam",
+    "email": "vishal.4kadam@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vkadam/jiraProgressTracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vkadam/jiraProgressTracker/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/vkadam/jiraProgressTracker/blob/master/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "*"
+  },
+  "keywords": []
+}
