@@ -6,19 +6,20 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: '<json:jiraProgressTracker.json>',
         meta: {
-            banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' + '<%= grunt.template.today("yyyy-mm-dd") %>\n' + '<%= pkg.homepage ? "* " + pkg.homepage + "\n" : "" %>' + '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' + ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */'
+            banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n<%= pkg.homepage ? "* " + pkg.homepage + "\n" : "" %>* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */'
         },
+        clean: ['src/dist'],
         concat: {
             dist: {
                 separator: ';\n/**********************************/\n',
                 src: ['<banner:meta.banner>', 'src/js/base64.js', 'src/js/jiraTracker.js'],
-                dest: 'dist/<%= pkg.name %>.js'
+                dest: 'src/dist/<%= pkg.name %>.js'
             }
         },
         min: {
             dist: {
                 src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
-                dest: 'dist/<%= pkg.name %>.min.js'
+                dest: 'src/dist/<%= pkg.name %>.min.js'
             }
         },
         lint: {
@@ -41,7 +42,6 @@ module.exports = function(grunt) {
                 newcap: true,
                 noarg: true,
                 sub: true,
-                //undef: true,
                 boss: true,
                 eqnull: true,
                 browser: true,
@@ -49,17 +49,15 @@ module.exports = function(grunt) {
                 debug: true
             },
             globals: {
-                jQuery: false,
-                console: true,
-                gapi: true
+                jQuery: false
             }
         },
         uglify: {}
     });
 
-    // Register tasks.
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks("grunt-jasmine-runner");
 
-    // Default task.
-    grunt.registerTask("default", "jasmine lint concat min");
+    // Register tasks.
+    grunt.registerTask("default", "jasmine lint clean concat min");
 };
