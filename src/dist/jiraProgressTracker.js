@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2012-10-16
+/*! Jira Progress Tracker - v0.0.1 - 2012-10-19
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2012 Vishal Kadam; Licensed MIT */
 ;
