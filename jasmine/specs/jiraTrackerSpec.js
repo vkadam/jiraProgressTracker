@@ -8,29 +8,54 @@ describe("JiraTracker", function() {
         spyOnAjax = spyOn($, "ajax");
     });
 
-
+    function spyOnAndReturnDeferred(obj, apiName, sSheet) {
+        spyOn(obj, apiName).andCallFake(function(options) {
+            var deferred = $.Deferred();
+            var lsReq = deferred.promise();
+            options.context = options.context || lsReq;
+            setTimeout(function() {
+                deferred.resolveWith(options.context, [sSheet]);
+            }, 100);
+            return lsReq;
+        });
+    }
     describe("Load release", function() {
         var actualRelease = {
             id: "mySpreadSheetId"
         };
+
         beforeEach(function() {
-        	JiraTracker.activeRelease = null;
-            spyOn(GSLoader, "loadSpreadsheet").andCallFake(function(spreadsheetId){
-            	if (spreadsheetId === "mySpreadSheetId") {
-            		return actualRelease;
-            	}
-            });
+            spyOnAndReturnDeferred(GSLoader, "loadSpreadsheet", actualRelease);
+        });
+
+        afterEach(function() {
+            JiraTracker.activeRelease = null;
         });
 
         it("Load release by spreadsheet id parameter and make it active", function() {
-            JiraTracker.loadRelease("mySpreadSheetId")
-            expect(JiraTracker.activeRelease).toBe(actualRelease);
+            var spreadsheet;
+            JiraTracker.loadRelease("mySpreadSheetId");
+
+            waitsFor(function() {
+                return JiraTracker.activeRelease;
+            }, "Spreadsheet should be created", 1000);
+
+            runs(function() {
+                expect(JiraTracker.activeRelease).toBe(actualRelease);
+            })
         });
 
-        it("Load release from spreadsheet id field make it active", function() {
+        it("Load release from spreadsheet id input control make it active", function() {
             affix("input#releaseId[value=mySpreadSheetId]");
             JiraTracker.loadRelease();
-            expect(JiraTracker.activeRelease).toBe(actualRelease);
+
+            waitsFor(function() {
+                return JiraTracker.activeRelease;
+            }, "Spreadsheet should be created", 1000);
+
+            runs(function() {
+                expect(JiraTracker.activeRelease).toBe(actualRelease);
+            })
         });
     });
 
@@ -40,31 +65,40 @@ describe("JiraTracker", function() {
             id: "mySpreadSheetId",
             title: spreadsheetTitle
         };
-        
+
         beforeEach(function() {
-            JiraTracker.activeRelease = null;
-            spyOn(GSLoader, "createSpreadsheet").andCallFake(function(title, callBack, context){
-                if (title === spreadsheetTitle) {
-                    callBack.apply(context, [newSpreadsheet]);
-                }
-            });
-            affix("input#releaseTitle[value="+spreadsheetTitle+"] input#releaseId");
+            spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
+            affix("input#releaseTitle[value=" + spreadsheetTitle + "] input#releaseId");
         });
 
+        afterEach(function() {
+            JiraTracker.activeRelease = null;
+        });
+
+        function createSpreadsheet(title) {
+            JiraTracker.createBaseline(title);
+
+            waitsFor(function() {
+                return JiraTracker.activeRelease;
+            }, "Spreadsheet should be created", 1000);
+
+            runs(function() {
+                expect(JiraTracker.activeRelease).toBe(newSpreadsheet);
+                expect($("#releaseId")).toHaveValue("mySpreadSheetId");
+                expect($("#releaseTitle")).toHaveValue(spreadsheetTitle);
+            });
+        }
+
         it("Create baseline by spreadsheet title parameter and make it active", function() {
-            JiraTracker.createBaseline(spreadsheetTitle);
-            expect(JiraTracker.activeRelease).toBe(newSpreadsheet);
-            expect($("#releaseId")).toHaveValue("mySpreadSheetId");
-            expect($("#releaseTitle")).toHaveValue(spreadsheetTitle);
+            createSpreadsheet(spreadsheetTitle);
         });
 
         it("Create baseline by spreadsheet title field and make it active", function() {
-            JiraTracker.createBaseline();
-            expect(JiraTracker.activeRelease).toBe(newSpreadsheet);
+            createSpreadsheet();
         });
 
     });
-    
+
     describe("Create snapshot", function() {
         var snapshotTitle = "Worksheet Title";
         var spyOnCreateWorksheet = jasmine.createSpy("createWorksheet");
@@ -74,42 +108,66 @@ describe("JiraTracker", function() {
             worksheets: [],
             createWorksheet: spyOnCreateWorksheet
         };
-    	var worksheet = {
-    		id: "ws1",
-    		title: snapshotTitle
-    	}
-        
+        var worksheet = {
+            id: "ws1",
+            title: snapshotTitle
+        }
+
         beforeEach(function() {
             spyOnAjax.andCallThrough();
-            $.fixture("http://jira.cengage.com/rest/api/2/search", "jasmine/fixtures/jiraIssues.json")
+            $.fixture("http://jira.cengage.com/rest/api/2/search", "jasmine/fixtures/jiraIssues.json");
             JiraTracker.activeRelease = activeRelease;
-        	spyOnCreateWorksheet.andCallFake(function(){
-        		activeRelease.worksheets.push(worksheet);
-        	});
+            spyOnCreateWorksheet.andCallFake(function() {
+                activeRelease.worksheets.push(worksheet);
+            });
         });
 
         it("Create snapshot checks for activeRelease", function() {
-        	JiraTracker.activeRelease = null;
+            JiraTracker.activeRelease = null;
             var exceptionThrown;
             try {
-            	JiraTracker.createSnapshot();
-            }
-            catch (error){
-            	exceptionThrown = error;
+                JiraTracker.createSnapshot();
+            } catch (error) {
+                exceptionThrown = error;
             }
             expect(exceptionThrown).toBe("Release is not loaded");
             expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
         });
 
         it("Create snapshot creates worksheet into activeRelease using snapshot title field", function() {
-            affix("input#snapshotTitle[value="+snapshotTitle+"]");
+            affix("input#snapshotTitle[value=" + snapshotTitle + "]");
 
             JiraTracker.createSnapshot();
-            
+
             expect(spyOnCreateWorksheet).toHaveBeenCalled();
             expect(JiraTracker.activeRelease.worksheets[0]).toBe(worksheet);
             expect(JiraTracker.activeRelease.worksheets[0].id).toBe("ws1");
             expect(JiraTracker.activeRelease.worksheets[0].title).toBe(snapshotTitle);
+        });
+
+        it("Create snapshot makes jira call with correct data to get jira issues", function() {
+            var jiraJQL = "Some jira query",
+                jiraMaxResults = "10",
+                jiraUseId = "User Name",
+                jiraPassword = "password",
+                base64Key = Base64.encode(jiraUseId + ":" + jiraPassword);
+
+
+            affix("input#snapshotTitle[value=" + snapshotTitle + "]");
+            affix("input#jiraJQL[value=" + jiraJQL + "]");
+            affix("input#jiraMaxResults[value=" + jiraMaxResults + "]");
+            affix("input#jiraUseId[value=" + jiraUseId + "]");
+            affix("input#jiraPassword[value=" + jiraPassword + "]");
+
+            JiraTracker.createSnapshot();
+
+            expect(spyOnAjax).toHaveBeenCalled();
+            expect(spyOnAjax.callCount).toBe(1);
+            var jiraCallArgs = spyOnAjax.calls[0].args[0];
+            expect(jiraCallArgs.url).toBe("http://jira.cengage.com/rest/api/2/search");
+            expect(jiraCallArgs.data.jql).toBe(jiraJQL);
+            expect(jiraCallArgs.data.maxResults).toBe(jiraMaxResults);
+            expect(jiraCallArgs.headers.Authorization).toContain(base64Key);
         });
     })
 });

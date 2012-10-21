@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2012-10-19
+/*! Jira Progress Tracker - v0.0.1 - 2012-10-21
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2012 Vishal Kadam; Licensed MIT */
 ;
@@ -221,21 +221,35 @@ var Base64 = {
     var JiraTracker = new JiraTrackerClass();
 
     JiraTrackerClass.prototype.loadRelease = function(releaseId) {
+        var deferred = $.Deferred(),
+            lrReq = {};
+        deferred.promise(lrReq);
+
         if (typeof(releaseId) !== "string") {
             releaseId = $("#releaseId").val();
         }
-        this.activeRelease = GSLoader.loadSpreadsheet(releaseId);
-        this.onReleaseChange.apply(this, [this.activeRelease]);
+
+        GSLoader.loadSpreadsheet({
+            context: this,
+            id: releaseId
+        }).done(function(sSheet) {
+            deferred.resolveWith(this, [sSheet]);
+            this.onReleaseChange.apply(this, [sSheet]);
+        });
+        return lrReq;
     };
 
     JiraTrackerClass.prototype.createBaseline = function(evt, baselineTitle) {
         if (typeof(baselineTitle) !== "string") {
             baselineTitle = $("#releaseTitle").val();
         }
-        GSLoader.createSpreadsheet(baselineTitle, function(spreadsheet) {
+        GSLoader.createSpreadsheet({
+            context: this,
+            title: baselineTitle
+        }).done(function(spreadsheet) {
             this.onReleaseChange(spreadsheet);
             //this.createSnapshot(evt, "Baseline");
-        }, this);
+        });
     };
 
     JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
