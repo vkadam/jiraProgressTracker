@@ -46,11 +46,11 @@
         return this;
     };
 
-    JiraIssue.prototype.toArray = function(issueData) {
+    JiraIssue.prototype.toArray = function() {
         var _this = this;
         var values = [];
         var attrValue;
-        $.each(JiraIssue.fields, function(key, value) {
+        $.each(JiraIssue.fields, function(key) {
             attrValue = _this[key];
             if (("Fix Version" === key || "Component/s" === key) && null !== attrValue) {
                 attrValue = [];
@@ -130,12 +130,12 @@
             headers: {
                 "Authorization": "Basic " + base64Encode
             }
-        }).done(function(data, textStatus, jqXHR) {
+        }).done(function(data) {
             if (typeof(data) === "string") {
                 data = JSON.parse(data);
             }
             var headersTitles = [];
-            $.each(JiraIssue.fields, function(key, value) {
+            $.each(JiraIssue.fields, function(key) {
                 headersTitles.push(key);
             });
 
@@ -192,7 +192,6 @@ function jiraClient() {
     });
 }
 
-var currentSpreadsheet;
 $(function() {
     jiraClient();
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));

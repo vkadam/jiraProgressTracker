@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2012-10-21
+/*! Jira Progress Tracker - v0.0.1 - 2012-10-22
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2012 Vishal Kadam; Licensed MIT */
 ;
@@ -114,8 +114,7 @@ var Base64 = {
         var string = "";
         var i = 0,
             c = 0,
-            c1 = 0,
-            c2 = 0;
+            c1 = 0;
 
         while (i < utftext.length) {
 
@@ -125,13 +124,13 @@ var Base64 = {
                 string += String.fromCharCode(c);
                 i++;
             } else if ((c > 191) && (c < 224)) {
-                c2 = utftext.charCodeAt(i + 1);
-                string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                c1 = utftext.charCodeAt(i + 1);
+                string += String.fromCharCode(((c & 31) << 6) | (c1 & 63));
                 i += 2;
             } else {
-                c2 = utftext.charCodeAt(i + 1);
+                c1 = utftext.charCodeAt(i + 1);
                 c3 = utftext.charCodeAt(i + 2);
-                string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                string += String.fromCharCode(((c & 15) << 12) | ((c1 & 63) << 6) | (c3 & 63));
                 i += 3;
             }
 
@@ -190,11 +189,11 @@ var Base64 = {
         return this;
     };
 
-    JiraIssue.prototype.toArray = function(issueData) {
+    JiraIssue.prototype.toArray = function() {
         var _this = this;
         var values = [];
         var attrValue;
-        $.each(JiraIssue.fields, function(key, value) {
+        $.each(JiraIssue.fields, function(key) {
             attrValue = _this[key];
             if (("Fix Version" === key || "Component/s" === key) && null !== attrValue) {
                 attrValue = [];
@@ -274,12 +273,12 @@ var Base64 = {
             headers: {
                 "Authorization": "Basic " + base64Encode
             }
-        }).done(function(data, textStatus, jqXHR) {
+        }).done(function(data) {
             if (typeof(data) === "string") {
                 data = JSON.parse(data);
             }
             var headersTitles = [];
-            $.each(JiraIssue.fields, function(key, value) {
+            $.each(JiraIssue.fields, function(key) {
                 headersTitles.push(key);
             });
 
@@ -336,7 +335,6 @@ function jiraClient() {
     });
 }
 
-var currentSpreadsheet;
 $(function() {
     jiraClient();
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
