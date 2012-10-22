@@ -1,7 +1,6 @@
 /*global module:false*/
 module.exports = function(grunt) {
 
-    // Project configuration.
     "use strict";
     grunt.initConfig({
         pkg: '<json:jiraProgressTracker.json>',
@@ -55,7 +54,7 @@ module.exports = function(grunt) {
         uglify: {}
     });
 
-    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-jasmine-runner");
 
     // Register tasks.
