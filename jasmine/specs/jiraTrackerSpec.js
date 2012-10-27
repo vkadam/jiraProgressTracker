@@ -42,7 +42,7 @@ describe("JiraTracker", function() {
 
             runs(function() {
                 expect(JiraTracker.activeRelease).toBe(actualRelease);
-            })
+            });
         });
 
         it("Load release from spreadsheet id input control make it active", function() {
@@ -55,7 +55,7 @@ describe("JiraTracker", function() {
 
             runs(function() {
                 expect(JiraTracker.activeRelease).toBe(actualRelease);
-            })
+            });
         });
     });
 
@@ -111,7 +111,7 @@ describe("JiraTracker", function() {
         var worksheet = {
             id: "ws1",
             title: snapshotTitle
-        }
+        };
 
         beforeEach(function() {
             spyOnAjax.andCallThrough();
@@ -169,5 +169,5 @@ describe("JiraTracker", function() {
             expect(jiraCallArgs.data.maxResults).toBe(jiraMaxResults);
             expect(jiraCallArgs.headers.Authorization).toContain(base64Key);
         });
-    })
+    });
 });
