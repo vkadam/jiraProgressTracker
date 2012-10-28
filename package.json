@@ -1,12 +1,30 @@
 {
-  "name": "jiraProgressTracker",
-  "version": "0.0.1",
-  "dependencies": {
-    "grunt-jasmine-runner": "0.6.0",
-    "grunt-contrib-clean": "0.3.1",
-    "grunt-beautify": "0.1.0"
-  },
-  "engines": {
-    "node": ">=0.8"
-  }
+    "name": "jiraProgressTracker",
+    "title": "Jira Progress Tracker",
+    "description": "Google Chrome plugin to track jira progress over the period",
+    "version": "0.0.1",
+    "homepage": "https://github.com/vkadam/jiraProgressTracker",
+    "author": {
+        "name": "Vishal Kadam",
+        "email": "vishal.4kadam@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/vkadam/jiraProgressTracker.git"
+    },
+    "bugs": {
+        "url": "https://github.com/vkadam/jiraProgressTracker/issues"
+    },
+    "licenses": [{
+        "type": "MIT",
+        "url": "https://github.com/vkadam/jiraProgressTracker/blob/master/LICENSE-MIT"
+    }],
+    "dependencies": {
+        "grunt-jasmine-runner": "0.6.0",
+        "grunt-contrib-clean": "0.3.1",
+        "grunt-jsbeautifier": "0.1.0"
+    },
+    "engines": {
+        "node": ">=0.8"
+    }
 }

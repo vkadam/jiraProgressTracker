@@ -152,7 +152,6 @@ describe("JiraTracker", function() {
                 jiraPassword = "password",
                 base64Key = Base64.encode(jiraUseId + ":" + jiraPassword);
 
-
             affix("input#snapshotTitle[value=" + snapshotTitle + "]");
             affix("input#jiraJQL[value=" + jiraJQL + "]");
             affix("input#jiraMaxResults[value=" + jiraMaxResults + "]");

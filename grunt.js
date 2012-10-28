@@ -3,37 +3,41 @@ module.exports = function(grunt) {
 
     "use strict";
     grunt.initConfig({
-        pkg: '<json:jiraProgressTracker.json>',
+        pkg: "<json:jiraProgressTracker.json>",
         meta: {
-            banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n<%= pkg.homepage ? "* " + pkg.homepage + "\n" : "" %>* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */'
+            banner: "/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today('yyyy-mm-dd') %>\n<%= pkg.homepage ? '* ' + pkg.homepage + '\n' : '' %>* Copyright (c) <%= grunt.template.today('yyyy') %> <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */"
         },
-        clean: ['src/dist', '_SpecRunner.html'],
+        clean: ["src/dist", "_SpecRunner.html"],
         concat: {
             dist: {
-                separator: ';\n/**********************************/\n',
-                src: ['<banner:meta.banner>', 'src/js/base64.js', 'src/js/jiraTracker.js'],
-                dest: 'src/dist/<%= pkg.name %>.js'
+                separator: ";\n/**********************************/\n",
+                src: ["<banner:meta.banner>", "src/js/base64.js", "src/js/jiraTracker.js"],
+                dest: "src/dist/<%= pkg.name %>.js"
             }
         },
         min: {
             dist: {
-                src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
-                dest: 'src/dist/<%= pkg.name %>.min.js'
+                src: ["<banner:meta.banner>", "<config:concat.dist.dest>"],
+                dest: "src/dist/<%= pkg.name %>.min.js"
             }
         },
-        beautify: {
-            files: '<config:lint.files>'
+        jsbeautifier: {
+            files: ["<config:lint.files>", "package.json"],
+            options: {
+                "preserve_newlines": true,
+                "max_preserve_newlines": 1
+            }
         },
         lint: {
-            files: ['grunt.js', 'src/js/**/*.js', 'jasmine/specs/**/*Spec.js']
+            files: ["grunt.js", "src/js/**/*.js", "jasmine/specs/**/*Spec.js"]
         },
         jasmine: {
-            src: ['src/lib/*.js', 'src/lib/bootstrap/js/*.js', 'src/lib/gsloader/dist/gsloader.min.js', 'src/js/**/*.js'],
-            specs: ['jasmine/lib/**/*.js', 'jasmine/specs/**/*Spec.js']
+            src: ["src/lib/*.js", "src/lib/bootstrap/js/*.js", "src/lib/gsloader/dist/gsloader.min.js", "src/js/**/*.js"],
+            specs: ["jasmine/lib/**/*.js", "jasmine/specs/**/*Spec.js"]
         },
         watch: {
-            files: '<config:lint.files>',
-            tasks: 'lint'
+            files: "<config:lint.files>",
+            tasks: "lint"
         },
         jshint: {
             options: {
@@ -68,8 +72,8 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-jasmine-runner");
-    grunt.loadNpmTasks('grunt-beautify');
+    grunt.loadNpmTasks("grunt-jsbeautifier");
 
-    // Register tasks.
-    grunt.registerTask("default", "jasmine lint clean concat min");
+    /* Register tasks. */
+    grunt.registerTask("default", "jsbeautifier lint jasmine clean concat min");
 };

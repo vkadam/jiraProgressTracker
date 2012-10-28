@@ -1,8 +1,8 @@
 (function(attachTo, $) {
 
     var JiraIssue = function(jsonObj) {
-            this.parse(jsonObj);
-        };
+        this.parse(jsonObj);
+    };
 
     JiraIssue.getValue = function(issue, p) {
         var obj = issue;
@@ -71,8 +71,8 @@
     };
 
     var JiraTrackerClass = function() {
-            this.activeRelease = null;
-        };
+        this.activeRelease = null;
+    };
 
     var JiraTracker = new JiraTrackerClass();
 
@@ -162,7 +162,7 @@
 }(window, jQuery));
 
 function jiraClient() {
-/* $.ajax({
+    /* $.ajax({
         url : 'http://jira.cengage.com/rest/api/2/search?jql=assignee="vishal.kadam"',
         headers : { "Authorization": "Basic " + Base64.encode('vishal.kadam:cengagejira')}
       })

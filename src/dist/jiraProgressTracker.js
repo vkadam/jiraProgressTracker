@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2012-10-27
+/*! Jira Progress Tracker - v0.0.1 - 2012-10-28
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2012 Vishal Kadam; Licensed MIT */
 ;
@@ -144,8 +144,8 @@ var Base64 = {
 (function(attachTo, $) {
 
     var JiraIssue = function(jsonObj) {
-            this.parse(jsonObj);
-        };
+        this.parse(jsonObj);
+    };
 
     JiraIssue.getValue = function(issue, p) {
         var obj = issue;
@@ -214,8 +214,8 @@ var Base64 = {
     };
 
     var JiraTrackerClass = function() {
-            this.activeRelease = null;
-        };
+        this.activeRelease = null;
+    };
 
     var JiraTracker = new JiraTrackerClass();
 
@@ -305,7 +305,7 @@ var Base64 = {
 }(window, jQuery));
 
 function jiraClient() {
-/* $.ajax({
+    /* $.ajax({
         url : 'http://jira.cengage.com/rest/api/2/search?jql=assignee="vishal.kadam"',
         headers : { "Authorization": "Basic " + Base64.encode('vishal.kadam:cengagejira')}
       })
