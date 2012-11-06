@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2012-10-29
+/*! Jira Progress Tracker - v0.0.1 - 2012-11-05
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2012 Vishal Kadam; Licensed MIT */
 ;
@@ -141,8 +141,19 @@ var Base64 = {
 
 };;
 /**********************************/
+/**
+ * @author Vishal Kadam https://github.com/vkadam
+ */
+
 (function(attachTo, $) {
 
+    /**
+     * Creates an instance of JiraIssue.
+     *
+     * @constructor
+     * @this {JiraIssue}
+     * @param {Object} jsonObj Attributes of jira issue
+     */
     var JiraIssue = function(jsonObj) {
         this.parse(jsonObj);
     };
@@ -178,7 +189,6 @@ var Base64 = {
         "Feature": ["fields", "customfield_12545"]
     };
 
-    //var JiraIssue = new JiraIssue();
     JiraIssue.prototype.parse = function(issueData) {
         var _this = this;
         if (issueData) {
@@ -213,28 +223,103 @@ var Base64 = {
         return values;
     };
 
+    /**
+     * User data
+     * @define {Object}
+     */
+
+    var UserData = {
+        releaseId: ""
+    };
+
+    /**
+     * Creates an instance of JiraTrackerClass.
+     *
+     * @constructor
+     * @this {JiraTrackerClass}
+     */
     var JiraTrackerClass = function() {
         this.activeRelease = null;
     };
 
     var JiraTracker = new JiraTrackerClass();
 
-    JiraTrackerClass.prototype.loadRelease = function(releaseId) {
+    var validators = {
+        "LOAD_RELEASE": {
+            rules: {
+                releaseId: "required"
+            },
+            messages: {
+                releaseId: "Release id is required"
+            },
+            highlight: function(element, errorClass) {
+                $(element).parents(".control-group").addClass(errorClass);
+            },
+            unhighlight: function(element, errorClass) {
+                $(element).parents(".control-group").removeClass(errorClass);
+            }
+        }
+    };
+
+    JiraTrackerClass.prototype.validate = function(requestType) {
+        var validator = $(".jira-tracker").validate(validators[requestType]);
+        validator.form();
+        return validator;
+    };
+
+    /**
+     * Initialization, populates last used values from storage (if any) 
+     * @this {JiraTrackerClass}
+     * @return {Object} The deferred request object if release id is available in cache
+     */
+    JiraTrackerClass.prototype.init = function(evt) {
+        var _this = this;
+        chrome.storage.sync.get("JiraTracker", function(data) {
+            $.extend(UserData, data);
+            if (UserData.releaseId && UserData.releaseId.length > 0) {
+                return _this.loadRelease(evt, UserData.releaseId);
+            }
+        });
+    };
+
+    /**
+     * Loads release by specified release id or value of releaseId element.
+     * @this {JiraTrackerClass}
+     * @param {String=} Optional release id. If not passed value of releaseId element will be used
+     * @return {Object} The deferred request object
+     */
+    JiraTrackerClass.prototype.loadRelease = function(env, releaseId) {
         var deferred = $.Deferred(),
             lrReq = {};
+        // Attaches deferred method to return object 
         deferred.promise(lrReq);
 
-        if (typeof(releaseId) !== "string") {
-            releaseId = $("#releaseId").val();
+        // If release id is passed set it to element. 
+        if (releaseId) {
+            $("#releaseId").val(releaseId);
+        }
+        releaseId = $("#releaseId").val();
+
+        // Validate input 
+        var validator = this.validate("LOAD_RELEASE");
+
+        // Attaches validator errors to return object 
+        $.extend(lrReq, {
+            errors: validator.errorMap
+        });
+
+        // If input is valid then only load spreadsheet 
+        if (validator.valid()) {
+            // Add callback to update active release value
+            deferred.done(this.onReleaseChange);
+            GSLoader.loadSpreadsheet({
+                context: this,
+                id: releaseId
+            }).done(function(sSheet) {
+                deferred.resolveWith(this, [sSheet]);
+            });
         }
 
-        GSLoader.loadSpreadsheet({
-            context: this,
-            id: releaseId
-        }).done(function(sSheet) {
-            deferred.resolveWith(this, [sSheet]);
-            this.onReleaseChange.apply(this, [sSheet]);
-        });
         return lrReq;
     };
 
@@ -336,10 +421,19 @@ function jiraClient() {
 }
 
 $(function() {
-    jiraClient();
+    JiraTracker.init();
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
     $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
     $(".create-snapshot").click($.proxy(JiraTracker.createSnapshot, JiraTracker));
+    /*chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+        console.log("Updated", tabId, changeInfo, tab);
+    });*/
+
+    /*function someFun() {
+        //Call cache userData
+        return;
+    }
+    window.onbeforeunload = someFun;*/
 });
 
 /**

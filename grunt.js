@@ -29,10 +29,10 @@ module.exports = function(grunt) {
             }
         },
         lint: {
-            files: ["grunt.js", "src/js/**/*.js", "jasmine/specs/**/*Spec.js"]
+            files: ["grunt.js", "src/js/**/*.js", "jasmine/specs/**/*Spec.js", "jasmine/lib/*.js"]
         },
         jasmine: {
-            src: ["src/lib/*.js", "src/lib/bootstrap/js/*.js", "src/lib/gsloader/dist/gsloader.min.js", "src/js/**/*.js"],
+            src: ["src/lib/*.min.js", "src/lib/**/js/*.min.js", "src/lib/**/dist/*.min.js", "src/js/**/*.js"],
             specs: ["jasmine/lib/**/*.js", "jasmine/specs/**/*Spec.js"]
         },
         watch: {

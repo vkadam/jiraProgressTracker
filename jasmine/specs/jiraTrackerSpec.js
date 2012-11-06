@@ -13,28 +13,34 @@ describe("JiraTracker", function() {
             var deferred = $.Deferred();
             var lsReq = deferred.promise();
             options.context = options.context || lsReq;
-            setTimeout(function() {
-                deferred.resolveWith(options.context, [sSheet]);
-            }, 100);
+            //setTimeout(function() {
+            deferred.resolveWith(options.context, [sSheet]);
+            //}, 100);
             return lsReq;
         });
     }
-    describe("Load release", function() {
-        var actualRelease = {
-            id: "mySpreadSheetId"
-        };
 
+    describe("on init", function() {
+        var actualRelease = {
+            id: "spreadsheetIdFromCache"
+        };
         beforeEach(function() {
+            affix("form.jira-tracker input#releaseId[name=releaseId]");
             spyOnAndReturnDeferred(GSLoader, "loadSpreadsheet", actualRelease);
+            spyOn(chrome.storage.sync, "get").andCallThrough();
         });
 
         afterEach(function() {
             JiraTracker.activeRelease = null;
         });
 
-        it("Load release by spreadsheet id parameter and make it active", function() {
-            var spreadsheet;
-            JiraTracker.loadRelease("mySpreadSheetId");
+        it("populates release id from user sync data", function() {
+            chrome.storage.sync.set("JiraTracker", {
+                releaseId: "spreadsheetIdFromCache"
+            });
+            var loadReq = JiraTracker.init();
+
+            expect(chrome.storage.sync.get).toHaveBeenCalledWith("JiraTracker", jasmine.any(Function));
 
             waitsFor(function() {
                 return JiraTracker.activeRelease;
@@ -42,11 +48,50 @@ describe("JiraTracker", function() {
 
             runs(function() {
                 expect(JiraTracker.activeRelease).toBe(actualRelease);
+                expect($("#releaseId")).toHaveValue("spreadsheetIdFromCache");
+            });
+        });
+    });
+
+    describe("Load release", function() {
+        var actualRelease = {
+            id: "mySpreadSheetId"
+        };
+
+        beforeEach(function() {
+            affix("form.jira-tracker input#releaseId[name=releaseId]");
+            spyOnAndReturnDeferred(GSLoader, "loadSpreadsheet", actualRelease);
+        });
+
+        afterEach(function() {
+            JiraTracker.activeRelease = null;
+        });
+
+        it("Load release does validation for spreadsheet id", function() {
+            var loadReq = JiraTracker.loadRelease();
+
+            expect(loadReq.errors).toBeDefined();
+            expect(loadReq.errors["releaseId"]).toBeDefined();
+            expect(loadReq.errors["releaseId"]).toBe("Release id is required");
+            expect(GSLoader.loadSpreadsheet.callCount).toBe(0);
+        });
+
+        it("Load release by spreadsheet id parameter and make it active", function() {
+            var spreadsheet;
+            JiraTracker.loadRelease(null, "mySpreadSheetId");
+
+            waitsFor(function() {
+                return JiraTracker.activeRelease;
+            }, "Spreadsheet should be created", 1000);
+
+            runs(function() {
+                expect(JiraTracker.activeRelease).toBe(actualRelease);
+                expect($("#releaseId")).toHaveValue("mySpreadSheetId");
             });
         });
 
         it("Load release from spreadsheet id input control make it active", function() {
-            affix("input#releaseId[value=mySpreadSheetId]");
+            $("#releaseId").val("mySpreadSheetId");
             JiraTracker.loadRelease();
 
             waitsFor(function() {

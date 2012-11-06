@@ -27,5 +27,5 @@
         "128": "images/logo/128.png"
     },
 
-    "permissions": ["tabs", "*://*/*"]
+    "permissions": ["tabs", "storage", "*://*/*"]
 }

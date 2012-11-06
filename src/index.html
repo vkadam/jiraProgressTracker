@@ -14,32 +14,32 @@
 			<div class="control-group">
 				<label class="control-label" for="jiraUseId">Jira User Id</label>
 				<div class="controls">
-					<input type="text" id="jiraUseId" placeholder="Jira User Id" />
+					<input type="text" id="jiraUseId" name="jiraUseId" placeholder="Jira User Id" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="jiraPassword">Password</label>
 				<div class="controls">
-					<input type="password" id="jiraPassword" placeholder="Password" />
+					<input type="password" id="jiraPassword" name="jiraPassword" placeholder="Password" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="releaseTitle">Release Title</label>
 				<div class="controls">
-					<input class="span6" type="text" id="releaseId" placeholder="Release Spreadsheet Id" />
-					<input type="text" id="releaseTitle" placeholder="Release Spreadsheet Title" />
+					<input class="span6" type="text" id="releaseId" name="releaseId" placeholder="Release Spreadsheet Id" />
+					<input type="text" id="releaseTitle" name="releaseTitle" placeholder="Release Spreadsheet Title" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="snapshotTitle">Snapshot Title</label>
 				<div class="controls">
-					<input type="text" id="snapshotTitle" placeholder="Snapshot Title"/>
+					<input type="text" id="snapshotTitle" name="snapshotTitle" placeholder="Snapshot Title"/>
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="jiraJQL">Jira JQL</label>
 				<div class="controls">
-					<textarea class="span8" id="jiraJQL" placeholder="Jira JQL" rows="4"></textarea>
+					<textarea class="span8" id="jiraJQL" name="jiraJQL" placeholder="Jira JQL" rows="4"></textarea>
 					<input type="hidden" id="jiraMaxResults" placeholder="Max Results" value="999"/>
 				</div>
 			</div>
@@ -55,6 +55,8 @@
 	</div>
 </body>
 <script type="text/javascript" src="lib/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="lib/jquery.validate-1.10.0.min.js"></script>
+<script type="text/javascript" src="lib/underscore-1.4.2.min.js"></script>
 <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="lib/gsloader/dist/gsloader.min.js"></script>
 <script type="text/javascript" src="dist/jiraProgressTracker.js"></script>
