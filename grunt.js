@@ -36,8 +36,13 @@ module.exports = function(grunt) {
             specs: ["jasmine/lib/**/*.js", "jasmine/specs/**/*Spec.js"]
         },
         watch: {
-            files: "<config:lint.files>",
-            tasks: "lint"
+            options: {
+                files: "src/js/**/*.js",
+                tasks: ["concat"],
+                interrupt: true,
+                debounceDelay: 5,
+                interval: 5
+            }
         },
         jshint: {
             options: {
@@ -71,6 +76,7 @@ module.exports = function(grunt) {
     });
 
     grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks("grunt-jasmine-runner");
     grunt.loadNpmTasks("grunt-jsbeautifier");
 

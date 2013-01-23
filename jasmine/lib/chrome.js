@@ -4,10 +4,18 @@ chrome["storage"] = {};
 chrome["storage"]["sync"] = {
     _data: {},
     get: function(key, callBack) {
-        callBack.apply(this, [chrome.storage.sync._data[key]]);
+        var storedValue = chrome.storage.sync._data[key];
+        var value = {};
+        if (typeof(storedValue) !== 'undefined') {
+            value[key] = storedValue;
+        }
+        callBack.apply(this, [value]);
     },
-    set: function(key, value) {
-        chrome.storage.sync._data[key] = value;
+    set: function(data) {
+        $.extend(chrome.storage.sync._data, data);
+    },
+    clear: function() {
+        chrome.storage.sync._data = {};
     }
 };
 

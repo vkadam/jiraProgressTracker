@@ -6,6 +6,11 @@ describe("JiraTracker", function() {
             async: false
         });
         spyOnAjax = spyOn($, "ajax");
+        chrome.storage.sync.clear();
+    });
+
+    afterEach(function() {
+        JiraTracker.activeRelease = null;
     });
 
     function spyOnAndReturnDeferred(obj, apiName, sSheet) {
@@ -21,53 +26,58 @@ describe("JiraTracker", function() {
     }
 
     describe("on init", function() {
-        var actualRelease = {
-            id: "spreadsheetIdFromCache"
-        };
         beforeEach(function() {
-            affix("form.jira-tracker input#releaseId[name=releaseId]");
-            spyOnAndReturnDeferred(GSLoader, "loadSpreadsheet", actualRelease);
+            spyOn(JiraTracker, "loadRelease");
             spyOn(chrome.storage.sync, "get").andCallThrough();
         });
 
-        afterEach(function() {
-            JiraTracker.activeRelease = null;
-        });
-
         it("populates release id from user sync data", function() {
-            chrome.storage.sync.set("JiraTracker", {
-                releaseId: "spreadsheetIdFromCache"
+            chrome.storage.sync.set({
+                "JiraTracker": {
+                    releaseId: "spreadsheetIdFromCache"
+                }
             });
-            var loadReq = JiraTracker.init();
+
+            JiraTracker.init();
 
             expect(chrome.storage.sync.get).toHaveBeenCalledWith("JiraTracker", jasmine.any(Function));
 
-            waitsFor(function() {
-                return JiraTracker.activeRelease;
-            }, "Spreadsheet should be created", 1000);
-
-            runs(function() {
-                expect(JiraTracker.activeRelease).toBe(actualRelease);
-                expect($("#releaseId")).toHaveValue("spreadsheetIdFromCache");
-            });
+            expect(JiraTracker.loadRelease).toHaveBeenCalled();
         });
     });
 
     describe("Load release", function() {
-        var actualRelease = {
-            id: "mySpreadSheetId"
-        };
 
         beforeEach(function() {
             affix("form.jira-tracker input#releaseId[name=releaseId]");
-            spyOnAndReturnDeferred(GSLoader, "loadSpreadsheet", actualRelease);
         });
 
-        afterEach(function() {
-            JiraTracker.activeRelease = null;
-        });
+        function loadSpreadsheet(actualSpreadsheetId, expectedSpreadsheetId) {
+            var actualRelease = {
+                id: expectedSpreadsheetId
+            };
+            spyOn(JiraTracker, "onReleaseChange");
+            spyOnAndReturnDeferred(GSLoader, "loadSpreadsheet", actualRelease);
+            var loadedReq = JiraTracker.loadRelease(null, actualSpreadsheetId);
+            var loaded = false;
+            loadedReq.done(function() {
+                loaded = true;
+            });
+
+            waitsFor(function() {
+                return loaded;
+            }, "Spreadsheet should be loaded", 1000);
+
+            runs(function() {
+                expect(GSLoader.loadSpreadsheet).toHaveBeenCalled();
+                expect(GSLoader.loadSpreadsheet.callCount).toBe(1);
+                expect(GSLoader.loadSpreadsheet.mostRecentCall.args[0].id).toBe(expectedSpreadsheetId);
+                expect(JiraTracker.onReleaseChange).toHaveBeenCalledWith(actualRelease);
+            });
+        }
 
         it("Load release does validation for spreadsheet id", function() {
+            spyOn(GSLoader, "loadSpreadsheet");
             var loadReq = JiraTracker.loadRelease();
 
             expect(loadReq.errors).toBeDefined();
@@ -77,69 +87,89 @@ describe("JiraTracker", function() {
         });
 
         it("Load release by spreadsheet id parameter and make it active", function() {
-            var spreadsheet;
-            JiraTracker.loadRelease(null, "mySpreadSheetId");
-
-            waitsFor(function() {
-                return JiraTracker.activeRelease;
-            }, "Spreadsheet should be created", 1000);
-
-            runs(function() {
-                expect(JiraTracker.activeRelease).toBe(actualRelease);
-                expect($("#releaseId")).toHaveValue("mySpreadSheetId");
-            });
+            loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
         });
 
         it("Load release from spreadsheet id input control make it active", function() {
-            $("#releaseId").val("mySpreadSheetId");
-            JiraTracker.loadRelease();
-
-            waitsFor(function() {
-                return JiraTracker.activeRelease;
-            }, "Spreadsheet should be created", 1000);
-
-            runs(function() {
-                expect(JiraTracker.activeRelease).toBe(actualRelease);
-            });
+            $("#releaseId").val("Some Spreadsheet Id From Input Field");
+            loadSpreadsheet(null, "Some Spreadsheet Id From Input Field");
         });
+
+    });
+
+    describe("onReleaseChange", function() {
+
+        beforeEach(function() {
+            affix("input#releaseTitle input#releaseId");
+        });
+
+        it("onReleaseChange poluates id and title fields and make spreadsheet active", function() {
+            var actualRelease = {
+                id: "Some Spreadsheet Id",
+                title: "Some Spreadsheet Title"
+            };
+
+            expect(JiraTracker.activeRelease).toBeNull();
+
+            JiraTracker.onReleaseChange(actualRelease);
+
+            expect($("#releaseId")).toHaveValue("Some Spreadsheet Id");
+            expect($("#releaseTitle")).toHaveValue("Some Spreadsheet Title");
+            expect(JiraTracker.activeRelease).toBe(actualRelease);
+        });
+
+        it("onReleaseChange updates spreadsheet id in user storage", function() {
+            JiraTracker.onReleaseChange({
+                id: "mySpreadSheetId"
+            });
+            var userData;
+            chrome.storage.sync.get("JiraTracker", function(data) {
+                userData = data["JiraTracker"];
+            });
+            expect(userData).toBeDefined();
+            expect(userData.releaseId).toBe("mySpreadSheetId");
+        });
+
     });
 
     describe("Create release baseline", function() {
-        var spreadsheetTitle = "Release Sheet Title";
-        var newSpreadsheet = {
-            id: "mySpreadSheetId",
-            title: spreadsheetTitle
-        };
 
         beforeEach(function() {
+            affix("input#releaseTitle input#releaseId");
+            spyOn(JiraTracker, "onReleaseChange");
+        });
+
+        function createSpreadsheet(actualTitle, expectedTitle) {
+            var newSpreadsheet = {
+                id: "mySpreadSheetId",
+                title: expectedTitle
+            };
             spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
-            affix("input#releaseTitle[value=" + spreadsheetTitle + "] input#releaseId");
-        });
-
-        afterEach(function() {
-            JiraTracker.activeRelease = null;
-        });
-
-        function createSpreadsheet(title) {
-            JiraTracker.createBaseline(title);
+            var createReq = JiraTracker.createBaseline(null, actualTitle);
+            var created = false;
+            createReq.done(function() {
+                created = true;
+            });
 
             waitsFor(function() {
-                return JiraTracker.activeRelease;
+                return created;
             }, "Spreadsheet should be created", 1000);
 
             runs(function() {
-                expect(JiraTracker.activeRelease).toBe(newSpreadsheet);
-                expect($("#releaseId")).toHaveValue("mySpreadSheetId");
-                expect($("#releaseTitle")).toHaveValue(spreadsheetTitle);
+                expect(GSLoader.createSpreadsheet).toHaveBeenCalled();
+                expect(GSLoader.createSpreadsheet.callCount).toBe(1);
+                expect(GSLoader.createSpreadsheet.mostRecentCall.args[0].title).toBe(expectedTitle);
+                expect(JiraTracker.onReleaseChange).toHaveBeenCalled();
             });
         }
 
         it("Create baseline by spreadsheet title parameter and make it active", function() {
-            createSpreadsheet(spreadsheetTitle);
+            createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
         });
 
         it("Create baseline by spreadsheet title field and make it active", function() {
-            createSpreadsheet();
+            $("#releaseTitle").val("My Spreadsheet Title Input Field");
+            createSpreadsheet(null, "My Spreadsheet Title Input Field");
         });
 
     });

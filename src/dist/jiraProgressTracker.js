@@ -1,6 +1,6 @@
-/*! Jira Progress Tracker - v0.0.1 - 2012-11-05
+/*! Jira Progress Tracker - v0.0.1 - 2013-01-23
 * https://github.com/vkadam/jiraProgressTracker
-* Copyright (c) 2012 Vishal Kadam; Licensed MIT */
+* Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 ;
 /**********************************/
 /**
@@ -227,7 +227,6 @@ var Base64 = {
      * User data
      * @define {Object}
      */
-
     var UserData = {
         releaseId: ""
     };
@@ -275,7 +274,7 @@ var Base64 = {
     JiraTrackerClass.prototype.init = function(evt) {
         var _this = this;
         chrome.storage.sync.get("JiraTracker", function(data) {
-            $.extend(UserData, data);
+            $.extend(UserData, data["JiraTracker"]);
             if (UserData.releaseId && UserData.releaseId.length > 0) {
                 return _this.loadRelease(evt, UserData.releaseId);
             }
@@ -327,19 +326,26 @@ var Base64 = {
         if (typeof(baselineTitle) !== "string") {
             baselineTitle = $("#releaseTitle").val();
         }
-        GSLoader.createSpreadsheet({
+        var createReq = GSLoader.createSpreadsheet({
             context: this,
             title: baselineTitle
-        }).done(function(spreadsheet) {
+        });
+        createReq.done(function(spreadsheet) {
             this.onReleaseChange(spreadsheet);
             //this.createSnapshot(evt, "Baseline");
         });
+        return createReq;
     };
 
     JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
         this.activeRelease = releaseSheet;
         $("#releaseId").val(this.activeRelease.id);
         $("#releaseTitle").val(this.activeRelease.title);
+        chrome.storage.sync.set({
+            "JiraTracker": {
+                releaseId: this.activeRelease.id
+            }
+        });
     };
 
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
@@ -389,36 +395,36 @@ var Base64 = {
 
 }(window, jQuery));
 
-function jiraClient() {
-    /* $.ajax({
-        url : 'http://jira.cengage.com/rest/api/2/search?jql=assignee="vishal.kadam"',
-        headers : { "Authorization": "Basic " + Base64.encode('vishal.kadam:cengagejira')}
-      })
-      .done(function(data, textStatus, jqXHR) {
-        $('.jiraResponse').html(JSON.stringify(data));
-      })
-      .fail(function(jqXHR, textStatus, errorThrown) {
-    });*/
+// function jiraClient() {
+//     /* $.ajax({
+//         url : 'http://jira.cengage.com/rest/api/2/search?jql=assignee="vishal.kadam"',
+//         headers : { "Authorization": "Basic " + Base64.encode('vishal.kadam:cengagejira')}
+//       })
+//       .done(function(data, textStatus, jqXHR) {
+//         $('.jiraResponse').html(JSON.stringify(data));
+//       })
+//       .fail(function(jqXHR, textStatus, errorThrown) {
+//     });*/
 
-    var urls = {
-        // "Spreadsheets" : "https://spreadsheets.google.com/feeds/spreadsheets/private/full",
-        // "list_basic" : "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/od6/private/basic",
-        // "Private_Basic" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/basic",
-        // "Private_Full" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/full",
-        // "list_full": "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full"
-        // "document_list_api": "https://docs.google.com/feeds/default/private/full"
-        // "cell_feed": "https://spreadsheets.google.com/feeds/cells/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full/"
-    };
+//     var urls = {
+//         // "Spreadsheets" : "https://spreadsheets.google.com/feeds/spreadsheets/private/full",
+//         // "list_basic" : "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/od6/private/basic",
+//         // "Private_Basic" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/basic",
+//         // "Private_Full" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/full",
+//         // "list_full": "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full"
+//         // "document_list_api": "https://docs.google.com/feeds/default/private/full"
+//         // "cell_feed": "https://spreadsheets.google.com/feeds/cells/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full/"
+//     };
 
-    $.each(urls, function(key, value) {
-        $.ajax({
-            url: value
-        }).done(function(data, textStatus, jqXHR) {
-            //console.log(key, value, data);
-            console.log(jqXHR.responseText);
-        });
-    });
-}
+//     $.each(urls, function(key, value) {
+//         $.ajax({
+//             url: value
+//         }).done(function(data, textStatus, jqXHR) {
+//             //console.log(key, value, data);
+//             console.log(jqXHR.responseText);
+//         });
+//     });
+// }
 
 $(function() {
     JiraTracker.init();
