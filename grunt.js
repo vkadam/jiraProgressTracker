@@ -38,7 +38,7 @@ module.exports = function(grunt) {
         watch: {
             options: {
                 files: "src/js/**/*.js",
-                tasks: ["concat"],
+                tasks: ["concat", "min"],
                 interrupt: true,
                 debounceDelay: 5,
                 interval: 5

@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2013-01-23
+/*! Jira Progress Tracker - v0.0.1 - 2013-01-25
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 ;
@@ -244,6 +244,12 @@ var Base64 = {
     var JiraTracker = new JiraTrackerClass();
 
     var validators = {
+        "heighlighter": function(element, errorClass) {
+            $(element).parents(".control-group").addClass(errorClass);
+        },
+        "unheighlighter": function(element, errorClass) {
+            $(element).parents(".control-group").removeClass(errorClass);
+        },
         "LOAD_RELEASE": {
             rules: {
                 releaseId: "required"
@@ -251,12 +257,18 @@ var Base64 = {
             messages: {
                 releaseId: "Release id is required"
             },
-            highlight: function(element, errorClass) {
-                $(element).parents(".control-group").addClass(errorClass);
+            highlight: this.heighlighter,
+            unhighlight: this.unheighlighter
+        },
+        "CREATE_BASELINE": {
+            rules: {
+                releaseTitle: "required"
             },
-            unhighlight: function(element, errorClass) {
-                $(element).parents(".control-group").removeClass(errorClass);
-            }
+            messages: {
+                releaseTitle: "Release title is required"
+            },
+            highlight: this.heighlighter,
+            unhighlight: this.unheighlighter
         }
     };
 
@@ -281,26 +293,14 @@ var Base64 = {
         });
     };
 
-    /**
-     * Loads release by specified release id or value of releaseId element.
-     * @this {JiraTrackerClass}
-     * @param {String=} Optional release id. If not passed value of releaseId element will be used
-     * @return {Object} The deferred request object
-     */
-    JiraTrackerClass.prototype.loadRelease = function(env, releaseId) {
+    function validateAndProceed(validatorName, callback) {
         var deferred = $.Deferred(),
             lrReq = {};
         // Attaches deferred method to return object 
         deferred.promise(lrReq);
 
-        // If release id is passed set it to element. 
-        if (releaseId) {
-            $("#releaseId").val(releaseId);
-        }
-        releaseId = $("#releaseId").val();
-
         // Validate input 
-        var validator = this.validate("LOAD_RELEASE");
+        var validator = this.validate(validatorName);
 
         // Attaches validator errors to return object 
         $.extend(lrReq, {
@@ -309,6 +309,26 @@ var Base64 = {
 
         // If input is valid then only load spreadsheet 
         if (validator.valid()) {
+            delete $.data(validator.currentForm).validator;
+            callback.apply(this, [deferred]);
+        }
+        return lrReq;
+    }
+
+    /**
+     * Loads release by specified release id or value of releaseId element.
+     * @this {JiraTrackerClass}
+     * @param {String=} Optional release id. If not passed value of releaseId element will be used
+     * @return {Object} The deferred request object
+     */
+    JiraTrackerClass.prototype.loadRelease = function(env, releaseId) {
+        // If release id is passed set it to element. 
+        if (releaseId) {
+            $("#releaseId").val(releaseId);
+        }
+        releaseId = $("#releaseId").val();
+
+        return validateAndProceed.call(this, "LOAD_RELEASE", function(deferred) {
             // Add callback to update active release value
             deferred.done(this.onReleaseChange);
             GSLoader.loadSpreadsheet({
@@ -317,24 +337,26 @@ var Base64 = {
             }).done(function(sSheet) {
                 deferred.resolveWith(this, [sSheet]);
             });
-        }
-
-        return lrReq;
+        });
     };
 
     JiraTrackerClass.prototype.createBaseline = function(evt, baselineTitle) {
-        if (typeof(baselineTitle) !== "string") {
-            baselineTitle = $("#releaseTitle").val();
+        if (baselineTitle) {
+            $("#releaseTitle").val(baselineTitle);
         }
-        var createReq = GSLoader.createSpreadsheet({
-            context: this,
-            title: baselineTitle
+        baselineTitle = $("#releaseTitle").val();
+
+        return validateAndProceed.call(this, "CREATE_BASELINE", function(deferred) {
+            // Add callback to update active release value
+            deferred.done(this.onReleaseChange);
+            GSLoader.createSpreadsheet({
+                context: this,
+                title: baselineTitle
+            }).done(function(sSheet) {
+                deferred.resolveWith(this, [sSheet]);
+                //this.createSnapshot(evt, "Baseline");
+            });
         });
-        createReq.done(function(spreadsheet) {
-            this.onReleaseChange(spreadsheet);
-            //this.createSnapshot(evt, "Baseline");
-        });
-        return createReq;
     };
 
     JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
