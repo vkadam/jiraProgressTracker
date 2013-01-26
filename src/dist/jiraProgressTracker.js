@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2013-01-25
+/*! Jira Progress Tracker - v0.0.1 - 2013-01-26
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 ;
@@ -252,20 +252,28 @@ var Base64 = {
         },
         "LOAD_RELEASE": {
             rules: {
-                releaseId: "required"
+                "releaseId": "required"
             },
             messages: {
-                releaseId: "Release id is required"
+                "releaseId": "Release id is required"
             },
             highlight: this.heighlighter,
             unhighlight: this.unheighlighter
         },
         "CREATE_BASELINE": {
             rules: {
-                releaseTitle: "required"
+                "releaseTitle": "required",
+                "jiraUseId": "required",
+                "jiraPassword": "required",
+                "jiraJQL": "required",
+                "snapshotTitle": "required"
             },
             messages: {
-                releaseTitle: "Release title is required"
+                "releaseTitle": "Release title is required",
+                "jiraUseId": "Jira user name is required",
+                "jiraPassword": "Jira password is required",
+                "jiraJQL": "Jira JQL is required",
+                "snapshotTitle": "Snapshot title is required"
             },
             highlight: this.heighlighter,
             unhighlight: this.unheighlighter
@@ -273,6 +281,7 @@ var Base64 = {
     };
 
     JiraTrackerClass.prototype.validate = function(requestType) {
+        $.data($(".jira-tracker")[0], "validator", null);
         var validator = $(".jira-tracker").validate(validators[requestType]);
         validator.form();
         return validator;
@@ -296,20 +305,19 @@ var Base64 = {
     function validateAndProceed(validatorName, callback) {
         var deferred = $.Deferred(),
             lrReq = {};
-        // Attaches deferred method to return object 
+        // Attach deferred method to return object 
         deferred.promise(lrReq);
 
         // Validate input 
         var validator = this.validate(validatorName);
 
-        // Attaches validator errors to return object 
+        // Attach validator errors to return object 
         $.extend(lrReq, {
             errors: validator.errorMap
         });
 
-        // If input is valid then only load spreadsheet 
+        // If input is valid then only call callback 
         if (validator.valid()) {
-            delete $.data(validator.currentForm).validator;
             callback.apply(this, [deferred]);
         }
         return lrReq;
@@ -354,7 +362,7 @@ var Base64 = {
                 title: baselineTitle
             }).done(function(sSheet) {
                 deferred.resolveWith(this, [sSheet]);
-                //this.createSnapshot(evt, "Baseline");
+                this.createSnapshot(evt, "Baseline");
             });
         });
     };

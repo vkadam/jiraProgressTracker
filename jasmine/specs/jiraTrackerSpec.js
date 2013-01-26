@@ -46,6 +46,11 @@ describe("JiraTracker", function() {
         });
     });
 
+    function doControlValidation(request, controlName, msg) {
+        expect(request.errors[controlName]).toBe(msg);
+        expect($("#" + controlName)).toHaveClass("error");
+    }
+
     describe("Load release", function() {
 
         beforeEach(function() {
@@ -81,20 +86,27 @@ describe("JiraTracker", function() {
             var loadReq = JiraTracker.loadRelease();
 
             expect(loadReq.errors).toBeDefined();
-            expect(loadReq.errors["releaseId"]).toBeDefined();
-            expect(loadReq.errors["releaseId"]).toBe("Release id is required");
+            doControlValidation(loadReq, "releaseId", "Release id is required");
             expect(GSLoader.loadSpreadsheet).not.toHaveBeenCalled();
-            expect($("#releaseId")).toHaveClass("error");
         });
 
         it("Load release by spreadsheet id parameter and make it active", function() {
             loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
         });
 
-        it("Load release from spreadsheet id input control make it active and removed validator object from form", function() {
+        it("Load release from spreadsheet id input control make it active", function() {
             $("#releaseId").val("Some Spreadsheet Id From Input Field");
             loadSpreadsheet(null, "Some Spreadsheet Id From Input Field");
-            expect($("form.jira-tracker")).not.toHaveData("validator");
+        });
+
+        it("Load release removs validator object from form and add new", function() {
+            $("form.jira-tracker").data("validator", {
+                some: "object"
+            });
+            loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
+            var validatorObj = $("form.jira-tracker").data("validator");
+            expect(validatorObj.some).not.toBeDefined();
+            expect(validatorObj instanceof $.validator).toBeTruthy();
         });
 
     });
@@ -137,8 +149,14 @@ describe("JiraTracker", function() {
     describe("Create release baseline", function() {
 
         beforeEach(function() {
-            affix("form.jira-tracker input#releaseTitle[name=releaseTitle]").affix("input#releaseId[name=releaseId]");
-            spyOn(JiraTracker, "onReleaseChange");
+            var container = affix("form.jira-tracker input#releaseTitle[name=releaseTitle]");
+            container.affix("input#releaseId[name=releaseId]");
+            container.affix("input#jiraUseId[name=jiraUseId]");
+            container.affix("input#jiraPassword[name=jiraPassword]");
+            container.affix("input#jiraJQL[name=jiraJQL]");
+            container.affix("input#snapshotTitle[name=snapshotTitle]");
+            spyOn(JiraTracker, "onReleaseChange").andCallThrough();
+            spyOn(JiraTracker, "createSnapshot");
         });
 
         function createSpreadsheet(actualTitle, expectedTitle) {
@@ -147,6 +165,11 @@ describe("JiraTracker", function() {
                 title: expectedTitle
             };
             spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
+            $("#jiraUseId").val("SomeJiraUserId");
+            $("#jiraPassword").val("SomeJiraPassword");
+            $("#jiraJQL").val("SomeJiraJQL");
+            $("#snapshotTitle").val("SomeBaselineTitle");
+
             var createReq = JiraTracker.createBaseline(null, actualTitle);
             var created = false;
             createReq.done(function() {
@@ -174,15 +197,22 @@ describe("JiraTracker", function() {
             createSpreadsheet(null, "My Spreadsheet Title Input Field");
         });
 
-        it("Create baseline does validation for baseline speadsheet title", function() {
+        it("Create baseline does validation", function() {
             spyOn(GSLoader, "createSpreadsheet");
             var createReq = JiraTracker.createBaseline();
 
             expect(createReq.errors).toBeDefined();
-            expect(createReq.errors["releaseTitle"]).toBeDefined();
-            expect(createReq.errors["releaseTitle"]).toBe("Release title is required");
+            doControlValidation(createReq, "releaseTitle", "Release title is required");
+            doControlValidation(createReq, "jiraUseId", "Jira user name is required");
+            doControlValidation(createReq, "jiraPassword", "Jira password is required");
+            doControlValidation(createReq, "jiraJQL", "Jira JQL is required");
+            doControlValidation(createReq, "snapshotTitle", "Snapshot title is required");
             expect(GSLoader.createSpreadsheet).not.toHaveBeenCalled();
-            expect($("#releaseTitle")).toHaveClass("error");
+        });
+
+        it("Create baseline creates baseline worksheet in newly created release spreadsheet", function() {
+            createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
+            expect(JiraTracker.createSnapshot).toHaveBeenCalled();
         });
     });
 
