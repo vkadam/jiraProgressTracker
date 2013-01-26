@@ -250,39 +250,74 @@ var Base64 = {
         "unheighlighter": function(element, errorClass) {
             $(element).parents(".control-group").removeClass(errorClass);
         },
-        "LOAD_RELEASE": {
-            rules: {
-                "releaseId": "required"
-            },
-            messages: {
-                "releaseId": "Release id is required"
-            },
-            highlight: this.heighlighter,
-            unhighlight: this.unheighlighter
-        },
-        "CREATE_BASELINE": {
-            rules: {
-                "releaseTitle": "required",
-                "jiraUseId": "required",
-                "jiraPassword": "required",
-                "jiraJQL": "required",
-                "snapshotTitle": "required"
-            },
-            messages: {
-                "releaseTitle": "Release title is required",
-                "jiraUseId": "Jira user name is required",
-                "jiraPassword": "Jira password is required",
-                "jiraJQL": "Jira JQL is required",
-                "snapshotTitle": "Snapshot title is required"
-            },
-            highlight: this.heighlighter,
-            unhighlight: this.unheighlighter
+        "addValidatorType": function(typeName, validatorDef) {
+            var defaultValidator = {
+                highlight: this.heighlighter,
+                unhighlight: this.unheighlighter,
+                errorClass: "text-error"
+            };
+            this[typeName] = $.extend(defaultValidator, validatorDef);
         }
     };
 
+    validators.addValidatorType.call(validators, "LOAD_RELEASE", {
+        rules: {
+            "releaseId": "required"
+        },
+        messages: {
+            "releaseId": "Release id is required"
+        }
+    });
+
+    validators.addValidatorType.call(validators, "CREATE_BASELINE", {
+        rules: {
+            "releaseTitle": "required",
+            "jiraUseId": "required",
+            "jiraPassword": "required",
+            "jiraJQL": "required",
+            "snapshotTitle": "required"
+        },
+        messages: {
+            "releaseTitle": "Release title is required",
+            "jiraUseId": "Jira user name is required",
+            "jiraPassword": "Jira password is required",
+            "jiraJQL": "Jira JQL is required",
+            "snapshotTitle": "Snapshot title is required"
+        }
+    });
+
+    validators.addValidatorType.call(validators, "CREATE_SNAPSHOT", {
+        rules: {
+            "releaseId": "required",
+            "jiraUseId": "required",
+            "jiraPassword": "required",
+            "jiraJQL": "required",
+            "jiraMaxResults": "required",
+            "snapshotTitle": "required"
+        },
+        messages: {
+            "releaseId": "Release is not loaded",
+            "jiraUseId": "Jira user name is required",
+            "jiraPassword": "Jira password is required",
+            "jiraJQL": "Jira JQL is required",
+            "jiraMaxResults": "Value of max result from is required",
+            "snapshotTitle": "Snapshot title is required"
+        }
+    });
+
     JiraTrackerClass.prototype.validate = function(requestType) {
-        $.data($(".jira-tracker")[0], "validator", null);
-        var validator = $(".jira-tracker").validate(validators[requestType]);
+        var $form = $(".jira-tracker"),
+            oldValidator = $.data($form[0], "validator");
+
+        if (oldValidator && oldValidator.reset) {
+            $.each(oldValidator.errors(), function(idx, ele) {
+                oldValidator.settings.unhighlight.call(oldValidator, ele, oldValidator.settings.errorClass, oldValidator.settings.validClass);
+            });
+            oldValidator.reset();
+        }
+
+        $.data($form[0], "validator", null);
+        var validator = $form.validate(validators[requestType]);
         validator.form();
         return validator;
     };
@@ -380,43 +415,45 @@ var Base64 = {
 
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
         var _this = this;
-        if (!this.activeRelease) {
-            throw "Release is not loaded";
-        }
-        var base64Encode = Base64.encode($("#jiraUseId").val() + ":" + $("#jiraPassword").val());
+        return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
+            var base64Encode = Base64.encode($("#jiraUseId").val() + ":" + $("#jiraPassword").val());
 
-        $.ajax({
-            url: "http://jira.cengage.com/rest/api/2/search",
-            data: {
-                maxResults: $("#jiraMaxResults").val(),
-                jql: $("#jiraJQL").val()
-            },
-            headers: {
-                "Authorization": "Basic " + base64Encode
-            }
-        }).done(function(data) {
-            if (typeof(data) === "string") {
-                data = JSON.parse(data);
-            }
-            var headersTitles = [];
-            $.each(JiraIssue.fields, function(key) {
-                headersTitles.push(key);
-            });
+            $.ajax({
+                url: "http://jira.cengage.com/rest/api/2/search",
+                data: {
+                    maxResults: $("#jiraMaxResults").val(),
+                    jql: $("#jiraJQL").val()
+                },
+                headers: {
+                    "Authorization": "Basic " + base64Encode
+                }
+            }).done(function(data) {
+                if (typeof(data) === "string") {
+                    data = JSON.parse(data);
+                }
+                var headersTitles = [];
+                $.each(JiraIssue.fields, function(key) {
+                    headersTitles.push(key);
+                });
 
-            var jiraIssues = [];
-            var jiraIssue;
-            $.each(data.issues, function(idx, issue) {
-                jiraIssue = new JiraIssue(issue);
-                jiraIssues.push(jiraIssue.toArray());
-            });
-            _this.activeRelease.createWorksheet({
-                title: worksheetTitle || $("#snapshotTitle").val(),
-                headers: headersTitles,
-                rowData: jiraIssues,
-                rows: jiraIssues.length + 1,
-                cols: headersTitles.length
+                var jiraIssues = [];
+                var jiraIssue;
+                $.each(data.issues, function(idx, issue) {
+                    jiraIssue = new JiraIssue(issue);
+                    jiraIssues.push(jiraIssue.toArray());
+                });
+                _this.activeRelease.createWorksheet({
+                    title: worksheetTitle || $("#snapshotTitle").val(),
+                    headers: headersTitles,
+                    rowData: jiraIssues,
+                    rows: jiraIssues.length + 1,
+                    cols: headersTitles.length
+                }).done(function(wSheet) {
+                    deferred.resolveWith(this, [wSheet]);
+                });
             });
         });
+
     };
 
     $.extend(attachTo, {

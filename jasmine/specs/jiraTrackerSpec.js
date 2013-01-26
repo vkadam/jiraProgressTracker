@@ -7,6 +7,13 @@ describe("JiraTracker", function() {
         });
         spyOnAjax = spyOn($, "ajax");
         chrome.storage.sync.clear();
+        var container = affix("form.jira-tracker div.control-group input#releaseTitle[name=releaseTitle]");
+        container.affix("div.control-group input#releaseId[name=releaseId]");
+        container.affix("div.control-group input#jiraUseId[name=jiraUseId]");
+        container.affix("div.control-group input#jiraPassword[name=jiraPassword]");
+        container.affix("div.control-group input#jiraJQL[name=jiraJQL]");
+        container.affix("div.control-group input#jiraMaxResults[name=jiraMaxResults]");
+        container.affix("div.control-group input#snapshotTitle[name=snapshotTitle]");
     });
 
     afterEach(function() {
@@ -18,9 +25,7 @@ describe("JiraTracker", function() {
             var deferred = $.Deferred();
             var lsReq = deferred.promise();
             options.context = options.context || lsReq;
-            //setTimeout(function() {
             deferred.resolveWith(options.context, [sSheet]);
-            //}, 100);
             return lsReq;
         });
     }
@@ -48,14 +53,10 @@ describe("JiraTracker", function() {
 
     function doControlValidation(request, controlName, msg) {
         expect(request.errors[controlName]).toBe(msg);
-        expect($("#" + controlName)).toHaveClass("error");
+        expect($("#" + controlName).parents(".control-group")).toHaveClass("text-error");
     }
 
     describe("Load release", function() {
-
-        beforeEach(function() {
-            affix("form.jira-tracker input#releaseTitle[name=releaseTitle]").affix("input#releaseId[name=releaseId]");
-        });
 
         function loadSpreadsheet(actualSpreadsheetId, expectedSpreadsheetId) {
             var actualRelease = {
@@ -99,23 +100,34 @@ describe("JiraTracker", function() {
             loadSpreadsheet(null, "Some Spreadsheet Id From Input Field");
         });
 
-        it("Load release removs validator object from form and add new", function() {
+        it("Load release resets form and removes oldvalidator object from form and then add new", function() {
+            var resetSpy = jasmine.createSpy("reset");
             $("form.jira-tracker").data("validator", {
-                some: "object"
+                "some": "object",
+                "reset": resetSpy,
+                "errors": function() {
+                    return $("#releaseTitle");
+                },
+                "settings": {
+                    "unhighlight": function(ele, errorClass) {
+                        $(ele).parents(".control-group").removeClass(errorClass);
+                    }
+                }
             });
+            $("#releaseTitle").parents(".control-group").addClass("text-error");
+
             loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
+
             var validatorObj = $("form.jira-tracker").data("validator");
             expect(validatorObj.some).not.toBeDefined();
+            expect(resetSpy).toHaveBeenCalled();
             expect(validatorObj instanceof $.validator).toBeTruthy();
+            expect($("#releaseTitle").parents(".control-group")).not.toHaveClass("text-error");
         });
 
     });
 
     describe("onReleaseChange", function() {
-
-        beforeEach(function() {
-            affix("form.jira-tracker input#releaseTitle[name=releaseTitle]").affix("input#releaseId[name=releaseId]");
-        });
 
         it("onReleaseChange poluates id and title fields and make spreadsheet active", function() {
             var actualRelease = {
@@ -149,12 +161,6 @@ describe("JiraTracker", function() {
     describe("Create release baseline", function() {
 
         beforeEach(function() {
-            var container = affix("form.jira-tracker input#releaseTitle[name=releaseTitle]");
-            container.affix("input#releaseId[name=releaseId]");
-            container.affix("input#jiraUseId[name=jiraUseId]");
-            container.affix("input#jiraPassword[name=jiraPassword]");
-            container.affix("input#jiraJQL[name=jiraJQL]");
-            container.affix("input#snapshotTitle[name=snapshotTitle]");
             spyOn(JiraTracker, "onReleaseChange").andCallThrough();
             spyOn(JiraTracker, "createSnapshot");
         });
@@ -217,73 +223,103 @@ describe("JiraTracker", function() {
     });
 
     describe("Create snapshot", function() {
-        var snapshotTitle = "Worksheet Title";
-        var spyOnCreateWorksheet = jasmine.createSpy("createWorksheet");
-        var activeRelease = {
-            id: "mySpreadSheetId",
-            title: "Release Sheet Title",
-            worksheets: [],
-            createWorksheet: spyOnCreateWorksheet
-        };
-        var worksheet = {
-            id: "ws1",
-            title: snapshotTitle
-        };
+        var snapshotTitle = "Worksheet Title",
+            spyOnCreateWorksheet = jasmine.createSpy("createWorksheet"),
+            activeRelease = {
+                id: "mySpreadSheetId",
+                title: "Release Sheet Title",
+                worksheets: [],
+                createWorksheet: spyOnCreateWorksheet
+            },
+            worksheet = {
+                id: "ws1",
+                title: snapshotTitle
+            },
+            jiraJQL = "Some jira query",
+            jiraMaxResults = "10",
+            jiraUseId = "User Name",
+            jiraPassword = "password",
+            base64Key = Base64.encode(jiraUseId + ":" + jiraPassword);
+
+        function populateValues() {
+            $("input#releaseId").val(activeRelease.id);
+            $("input#snapshotTitle").val(snapshotTitle);
+            $("input#jiraJQL").val(jiraJQL);
+            $("input#jiraMaxResults").val(jiraMaxResults);
+            $("input#jiraUseId").val(jiraUseId);
+            $("input#jiraPassword").val(jiraPassword);
+        }
 
         beforeEach(function() {
             spyOnAjax.andCallThrough();
             $.fixture("http://jira.cengage.com/rest/api/2/search", "jasmine/fixtures/jiraIssues.json");
             JiraTracker.activeRelease = activeRelease;
-            spyOnCreateWorksheet.andCallFake(function() {
+            spyOnCreateWorksheet.reset();
+            spyOnCreateWorksheet.andCallFake(function(options) {
                 activeRelease.worksheets.push(worksheet);
+                var deferred = $.Deferred();
+                var lsReq = deferred.promise();
+                options.context = options.context || lsReq;
+                deferred.resolveWith(options.context, [worksheet]);
+                return lsReq;
             });
         });
 
-        it("Create snapshot checks for activeRelease", function() {
-            JiraTracker.activeRelease = null;
-            var exceptionThrown;
-            try {
-                JiraTracker.createSnapshot();
-            } catch (error) {
-                exceptionThrown = error;
-            }
-            expect(exceptionThrown).toBe("Release is not loaded");
-            expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
-        });
-
         it("Create snapshot creates worksheet into activeRelease using snapshot title field", function() {
-            affix("input#snapshotTitle[value=" + snapshotTitle + "]");
+            populateValues();
+            var createReq = JiraTracker.createSnapshot();
+            var created = false;
+            createReq.done(function() {
+                created = true;
+            });
 
-            JiraTracker.createSnapshot();
+            waitsFor(function() {
+                return created;
+            }, "Worksheet should be created", 1000);
 
-            expect(spyOnCreateWorksheet).toHaveBeenCalled();
-            expect(JiraTracker.activeRelease.worksheets[0]).toBe(worksheet);
-            expect(JiraTracker.activeRelease.worksheets[0].id).toBe("ws1");
-            expect(JiraTracker.activeRelease.worksheets[0].title).toBe(snapshotTitle);
+            runs(function() {
+                expect(spyOnCreateWorksheet).toHaveBeenCalled();
+                expect(JiraTracker.activeRelease.worksheets[0]).toBe(worksheet);
+                expect(JiraTracker.activeRelease.worksheets[0].id).toBe("ws1");
+                expect(JiraTracker.activeRelease.worksheets[0].title).toBe(snapshotTitle);
+            });
         });
 
         it("Create snapshot makes jira call with correct data to get jira issues", function() {
-            var jiraJQL = "Some jira query",
-                jiraMaxResults = "10",
-                jiraUseId = "User Name",
-                jiraPassword = "password",
-                base64Key = Base64.encode(jiraUseId + ":" + jiraPassword);
+            populateValues();
+            var createReq = JiraTracker.createSnapshot();
+            var created = false;
+            createReq.done(function() {
+                created = true;
+            });
 
-            affix("input#snapshotTitle[value=" + snapshotTitle + "]");
-            affix("input#jiraJQL[value=" + jiraJQL + "]");
-            affix("input#jiraMaxResults[value=" + jiraMaxResults + "]");
-            affix("input#jiraUseId[value=" + jiraUseId + "]");
-            affix("input#jiraPassword[value=" + jiraPassword + "]");
+            waitsFor(function() {
+                return created;
+            }, "Worksheet should be created", 1000);
 
-            JiraTracker.createSnapshot();
+            runs(function() {
+                expect(spyOnAjax).toHaveBeenCalled();
+                expect(spyOnAjax.callCount).toBe(1);
+                var jiraCallArgs = spyOnAjax.calls[0].args[0];
+                expect(jiraCallArgs.url).toBe("http://jira.cengage.com/rest/api/2/search");
+                expect(jiraCallArgs.data.jql).toBe(jiraJQL);
+                expect(jiraCallArgs.data.maxResults).toBe(jiraMaxResults);
+                expect(jiraCallArgs.headers.Authorization).toContain(base64Key);
+            });
+        });
 
-            expect(spyOnAjax).toHaveBeenCalled();
-            expect(spyOnAjax.callCount).toBe(1);
-            var jiraCallArgs = spyOnAjax.calls[0].args[0];
-            expect(jiraCallArgs.url).toBe("http://jira.cengage.com/rest/api/2/search");
-            expect(jiraCallArgs.data.jql).toBe(jiraJQL);
-            expect(jiraCallArgs.data.maxResults).toBe(jiraMaxResults);
-            expect(jiraCallArgs.headers.Authorization).toContain(base64Key);
+        it("Create snapshot does validation", function() {
+            $("input#releaseId").val("");
+            var createReq = JiraTracker.createSnapshot();
+
+            expect(createReq.errors).toBeDefined();
+            doControlValidation(createReq, "releaseId", "Release is not loaded");
+            doControlValidation(createReq, "jiraUseId", "Jira user name is required");
+            doControlValidation(createReq, "jiraPassword", "Jira password is required");
+            doControlValidation(createReq, "jiraJQL", "Jira JQL is required");
+            doControlValidation(createReq, "snapshotTitle", "Snapshot title is required");
+            doControlValidation(createReq, "jiraMaxResults", "Value of max result from is required");
+            expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
         });
     });
 });
