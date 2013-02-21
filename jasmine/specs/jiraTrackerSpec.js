@@ -53,7 +53,7 @@ describe("JiraTracker", function() {
 
     function doControlValidation(request, controlName, msg) {
         expect(request.errors[controlName]).toBe(msg);
-        expect($("#" + controlName).parents(".control-group")).toHaveClass("text-error");
+        expect($("#" + controlName).parents(".control-group")).toHaveClass("error");
     }
 
     describe("Load release", function() {
@@ -114,7 +114,7 @@ describe("JiraTracker", function() {
                     }
                 }
             });
-            $("#releaseTitle").parents(".control-group").addClass("text-error");
+            $("#releaseTitle").parents(".control-group").addClass("error");
 
             loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
 
@@ -122,7 +122,7 @@ describe("JiraTracker", function() {
             expect(validatorObj.some).not.toBeDefined();
             expect(resetSpy).toHaveBeenCalled();
             expect(validatorObj instanceof $.validator).toBeTruthy();
-            expect($("#releaseTitle").parents(".control-group")).not.toHaveClass("text-error");
+            expect($("#releaseTitle").parents(".control-group")).not.toHaveClass("error");
         });
 
     });
@@ -162,13 +162,18 @@ describe("JiraTracker", function() {
 
         beforeEach(function() {
             spyOn(JiraTracker, "onReleaseChange").andCallThrough();
-            spyOn(JiraTracker, "createSnapshot");
+            spyOnAndReturnDeferred(JiraTracker, "createSnapshot");
         });
 
         function createSpreadsheet(actualTitle, expectedTitle) {
-            var newSpreadsheet = {
+            var worksheet = {
+                title: "Sheet 1",
+                rename: jasmine.createSpy("worksheet.rename")
+            },
+            newSpreadsheet = {
                 id: "mySpreadSheetId",
-                title: expectedTitle
+                title: expectedTitle,
+                worksheets: [worksheet]
             };
             spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
             $("#jiraUseId").val("SomeJiraUserId");
@@ -176,7 +181,7 @@ describe("JiraTracker", function() {
             $("#jiraJQL").val("SomeJiraJQL");
             $("#snapshotTitle").val("SomeBaselineTitle");
 
-            var createReq = JiraTracker.createBaseline(null, actualTitle);
+            var createReq = JiraTracker.createBaseline({}, actualTitle);
             var created = false;
             createReq.done(function() {
                 created = true;
@@ -194,16 +199,16 @@ describe("JiraTracker", function() {
             });
         }
 
-        it("Create baseline by spreadsheet title parameter and make it active", function() {
+        it("by spreadsheet title parameter and make it active", function() {
             createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
         });
 
-        it("Create baseline by spreadsheet title field and make it active", function() {
+        it("by spreadsheet title field and make it active", function() {
             $("#releaseTitle").val("My Spreadsheet Title Input Field");
             createSpreadsheet(null, "My Spreadsheet Title Input Field");
         });
 
-        it("Create baseline does validation", function() {
+        it("does validation", function() {
             spyOn(GSLoader, "createSpreadsheet");
             var createReq = JiraTracker.createBaseline();
 
@@ -216,9 +221,16 @@ describe("JiraTracker", function() {
             expect(GSLoader.createSpreadsheet).not.toHaveBeenCalled();
         });
 
-        it("Create baseline creates baseline worksheet in newly created release spreadsheet", function() {
+        it("creates baseline worksheet/snapshot in newly created release spreadsheet", function() {
             createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
             expect(JiraTracker.createSnapshot).toHaveBeenCalled();
+        });
+
+        it("calls worksheet.rename for worksheet with correct title", function() {
+            createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
+
+            expect(JiraTracker.activeRelease.worksheets.length).toBe(1);
+            expect(JiraTracker.activeRelease.worksheets[0].rename).toHaveBeenCalledWith("Setup");
         });
     });
 

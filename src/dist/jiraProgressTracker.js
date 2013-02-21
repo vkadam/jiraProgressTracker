@@ -1,4 +1,4 @@
-/*! Jira Progress Tracker - v0.0.1 - 2013-01-26
+/*! Jira Progress Tracker - v0.0.1 - 2013-02-21
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 ;
@@ -243,6 +243,9 @@ var Base64 = {
 
     var JiraTracker = new JiraTrackerClass();
 
+    /**
+     * Static instance of all vaditator definition
+     */
     var validators = {
         "heighlighter": function(element, errorClass) {
             $(element).parents(".control-group").addClass(errorClass);
@@ -253,8 +256,7 @@ var Base64 = {
         "addValidatorType": function(typeName, validatorDef) {
             var defaultValidator = {
                 highlight: this.heighlighter,
-                unhighlight: this.unheighlighter,
-                errorClass: "text-error"
+                unhighlight: this.unheighlighter
             };
             this[typeName] = $.extend(defaultValidator, validatorDef);
         }
@@ -305,6 +307,9 @@ var Base64 = {
         }
     });
 
+    /**
+     * 
+     */
     JiraTrackerClass.prototype.validate = function(requestType) {
         var $form = $(".jira-tracker"),
             oldValidator = $.data($form[0], "validator");
@@ -337,6 +342,14 @@ var Base64 = {
         });
     };
 
+    /**
+     * Validates the form with specified validator name
+     * and on success invoke callback with validator request object.
+     * @constructor
+     * @param {String} Validator name
+     * @param {Function} Callback function which will be invoked if form is valid
+     * @returns {jQuery.Deffered} Returns validator request i.e. instance of jquery deffered, with errors
+     */
     function validateAndProceed(validatorName, callback) {
         var deferred = $.Deferred(),
             lrReq = {};
@@ -384,20 +397,27 @@ var Base64 = {
     };
 
     JiraTrackerClass.prototype.createBaseline = function(evt, baselineTitle) {
+        var _this = this;
         if (baselineTitle) {
             $("#releaseTitle").val(baselineTitle);
         }
         baselineTitle = $("#releaseTitle").val();
 
-        return validateAndProceed.call(this, "CREATE_BASELINE", function(deferred) {
-            // Add callback to update active release value
-            deferred.done(this.onReleaseChange);
+        return validateAndProceed.call(_this, "CREATE_BASELINE", function(deferred) {
+            // Create new spreadsheet using GSLoader
             GSLoader.createSpreadsheet({
-                context: this,
+                context: _this,
                 title: baselineTitle
-            }).done(function(sSheet) {
-                deferred.resolveWith(this, [sSheet]);
-                this.createSnapshot(evt, "Baseline");
+            }).done(_this.onReleaseChange) // Add callback to update active release value
+            .done(function() {
+                // Rename Sheet 1 worksheet to Setup
+                var renameReq = _this.activeRelease.worksheets[0].rename("Setup");
+                // Once Spreadsheet is created successfully, create a baseline snapshot
+                baselineReq = _this.createSnapshot(evt, "Baseline");
+                $.when(renameReq, baselineReq).done(function() {
+                    // Once Baseline is created successfully, execute callbacks
+                    deferred.resolveWith(_this, [_this.activeRelease]);
+                });
             });
         });
     };
