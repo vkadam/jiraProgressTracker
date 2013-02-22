@@ -9,7 +9,7 @@ describe("JiraTracker", function() {
         chrome.storage.sync.clear();
         var container = affix("form.jira-tracker div.control-group input#releaseTitle[name=releaseTitle]");
         container.affix("div.control-group input#releaseId[name=releaseId]");
-        container.affix("div.control-group input#jiraUseId[name=jiraUseId]");
+        container.affix("div.control-group input#jiraUserId[name=jiraUserId]");
         container.affix("div.control-group input#jiraPassword[name=jiraPassword]");
         container.affix("div.control-group input#jiraJQL[name=jiraJQL]");
         container.affix("div.control-group input#jiraMaxResults[name=jiraMaxResults]");
@@ -20,14 +20,18 @@ describe("JiraTracker", function() {
         JiraTracker.activeRelease = null;
     });
 
-    function spyOnAndReturnDeferred(obj, apiName, sSheet) {
-        spyOn(obj, apiName).andCallFake(function(options) {
-            var deferred = $.Deferred();
-            var lsReq = deferred.promise();
-            options.context = options.context || lsReq;
-            deferred.resolveWith(options.context, [sSheet]);
+    function returnDeffered(resolveWithThis) {
+        return function(options) {
+            var deferred = $.Deferred(),
+                lsReq = deferred.promise(),
+                context = options.context || lsReq;
+            deferred.resolveWith(context, [resolveWithThis]);
             return lsReq;
-        });
+        };
+    }
+
+    function spyOnAndReturnDeferred(obj, apiName, resolveWithThis) {
+        spyOn(obj, apiName).andCallFake(returnDeffered(resolveWithThis));
     }
 
     describe("on init", function() {
@@ -158,7 +162,7 @@ describe("JiraTracker", function() {
 
     });
 
-    describe("Create release baseline", function() {
+    describe("Create release", function() {
 
         beforeEach(function() {
             spyOn(JiraTracker, "onReleaseChange").andCallThrough();
@@ -168,7 +172,8 @@ describe("JiraTracker", function() {
         function createSpreadsheet(actualTitle, expectedTitle) {
             var worksheet = {
                 title: "Sheet 1",
-                rename: jasmine.createSpy("worksheet.rename")
+                rename: jasmine.createSpy("worksheet.rename"),
+                addRows: jasmine.createSpy("worksheet.addRows").andCallFake(returnDeffered())
             },
             newSpreadsheet = {
                 id: "mySpreadSheetId",
@@ -176,7 +181,7 @@ describe("JiraTracker", function() {
                 worksheets: [worksheet]
             };
             spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
-            $("#jiraUseId").val("SomeJiraUserId");
+            $("#jiraUserId").val("SomeJiraUserId");
             $("#jiraPassword").val("SomeJiraPassword");
             $("#jiraJQL").val("SomeJiraJQL");
             $("#snapshotTitle").val("SomeBaselineTitle");
@@ -214,7 +219,7 @@ describe("JiraTracker", function() {
 
             expect(createReq.errors).toBeDefined();
             doControlValidation(createReq, "releaseTitle", "Release title is required");
-            doControlValidation(createReq, "jiraUseId", "Jira user name is required");
+            doControlValidation(createReq, "jiraUserId", "Jira user name is required");
             doControlValidation(createReq, "jiraPassword", "Jira password is required");
             doControlValidation(createReq, "jiraJQL", "Jira JQL is required");
             doControlValidation(createReq, "snapshotTitle", "Snapshot title is required");
@@ -231,6 +236,19 @@ describe("JiraTracker", function() {
 
             expect(JiraTracker.activeRelease.worksheets.length).toBe(1);
             expect(JiraTracker.activeRelease.worksheets[0].rename).toHaveBeenCalledWith("Setup");
+        });
+
+        it("adds release setting into setup worksheet", function() {
+            createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
+            var addRowCall = JiraTracker.activeRelease.worksheets[0].addRows,
+                expectRows = [
+                    ["Jira-User-Id", "SomeJiraUserId"],
+                    ["Jira-Basic-Authorization", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA=="],
+                    ["Jira-JQL", "SomeJiraJQL"]
+                ];
+            expect(JiraTracker.activeRelease.worksheets.length).toBe(1);
+            expect(addRowCall.callCount).toBe(1);
+            expect(addRowCall).toHaveBeenCalledWith(expectRows);
         });
     });
 
@@ -249,16 +267,16 @@ describe("JiraTracker", function() {
             },
             jiraJQL = "Some jira query",
             jiraMaxResults = "10",
-            jiraUseId = "User Name",
+            jiraUserId = "User Name",
             jiraPassword = "password",
-            base64Key = Base64.encode(jiraUseId + ":" + jiraPassword);
+            base64Key = Base64.encode(jiraUserId + ":" + jiraPassword);
 
         function populateValues() {
             $("input#releaseId").val(activeRelease.id);
             $("input#snapshotTitle").val(snapshotTitle);
             $("input#jiraJQL").val(jiraJQL);
             $("input#jiraMaxResults").val(jiraMaxResults);
-            $("input#jiraUseId").val(jiraUseId);
+            $("input#jiraUserId").val(jiraUserId);
             $("input#jiraPassword").val(jiraPassword);
         }
 
@@ -326,7 +344,7 @@ describe("JiraTracker", function() {
 
             expect(createReq.errors).toBeDefined();
             doControlValidation(createReq, "releaseId", "Release is not loaded");
-            doControlValidation(createReq, "jiraUseId", "Jira user name is required");
+            doControlValidation(createReq, "jiraUserId", "Jira user name is required");
             doControlValidation(createReq, "jiraPassword", "Jira password is required");
             doControlValidation(createReq, "jiraJQL", "Jira JQL is required");
             doControlValidation(createReq, "snapshotTitle", "Snapshot title is required");

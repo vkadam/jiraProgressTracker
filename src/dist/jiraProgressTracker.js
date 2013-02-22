@@ -1,8 +1,6 @@
-/*! Jira Progress Tracker - v0.0.1 - 2013-02-21
+/* Jira Progress Tracker - v0.0.2rc - 2013-02-22
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
-;
-/**********************************/
 /**
  *
  *  Base64 encode / decode
@@ -274,14 +272,14 @@ var Base64 = {
     validators.addValidatorType.call(validators, "CREATE_BASELINE", {
         rules: {
             "releaseTitle": "required",
-            "jiraUseId": "required",
+            "jiraUserId": "required",
             "jiraPassword": "required",
             "jiraJQL": "required",
             "snapshotTitle": "required"
         },
         messages: {
             "releaseTitle": "Release title is required",
-            "jiraUseId": "Jira user name is required",
+            "jiraUserId": "Jira user name is required",
             "jiraPassword": "Jira password is required",
             "jiraJQL": "Jira JQL is required",
             "snapshotTitle": "Snapshot title is required"
@@ -291,7 +289,7 @@ var Base64 = {
     validators.addValidatorType.call(validators, "CREATE_SNAPSHOT", {
         rules: {
             "releaseId": "required",
-            "jiraUseId": "required",
+            "jiraUserId": "required",
             "jiraPassword": "required",
             "jiraJQL": "required",
             "jiraMaxResults": "required",
@@ -299,7 +297,7 @@ var Base64 = {
         },
         messages: {
             "releaseId": "Release is not loaded",
-            "jiraUseId": "Jira user name is required",
+            "jiraUserId": "Jira user name is required",
             "jiraPassword": "Jira password is required",
             "jiraJQL": "Jira JQL is required",
             "jiraMaxResults": "Value of max result from is required",
@@ -405,18 +403,29 @@ var Base64 = {
 
         return validateAndProceed.call(_this, "CREATE_BASELINE", function(deferred) {
             // Create new spreadsheet using GSLoader
+            GSLoader.log("Creating spreadsheet with title =", baselineTitle);
             GSLoader.createSpreadsheet({
                 context: _this,
                 title: baselineTitle
             }).done(_this.onReleaseChange) // Add callback to update active release value
             .done(function() {
-                // Rename Sheet 1 worksheet to Setup
-                var renameReq = _this.activeRelease.worksheets[0].rename("Setup");
-                // Once Spreadsheet is created successfully, create a baseline snapshot
-                baselineReq = _this.createSnapshot(evt, "Baseline");
+                var jiraUserIdRow = ["Jira-User-Id", $("#jiraUserId").val()],
+                    base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val()),
+                    jiraBasicAuthRow = ["Jira-Basic-Authorization", base64Encode],
+                    jiraJQLRow = ["Jira-JQL", $("#jiraJQL").val()],
+                    releaseSettings = [jiraUserIdRow, jiraBasicAuthRow, jiraJQLRow],
+                    // Rename Sheet 1 worksheet to Setup
+                    renameReq = _this.activeRelease.worksheets[0].rename("Setup"),
+                    // Once Spreadsheet is created successfully, create a baseline snapshot
+                    baselineReq = _this.createSnapshot(evt, "Baseline");
                 $.when(renameReq, baselineReq).done(function() {
-                    // Once Baseline is created successfully, execute callbacks
-                    deferred.resolveWith(_this, [_this.activeRelease]);
+                    // Adds release details into setup worksheet
+                    GSLoader.log("Saving release settings into setup worksheet");
+                    _this.activeRelease.worksheets[0].addRows(releaseSettings).done(function() {
+                        GSLoader.log("Release settings saved successfully");
+                        // Once Baseline is created successfully, execute callbacks
+                        deferred.resolveWith(_this, [_this.activeRelease]);
+                    });
                 });
             });
         });
@@ -436,7 +445,7 @@ var Base64 = {
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
         var _this = this;
         return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
-            var base64Encode = Base64.encode($("#jiraUseId").val() + ":" + $("#jiraPassword").val());
+            var base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
 
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",
