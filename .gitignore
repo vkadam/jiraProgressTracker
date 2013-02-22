@@ -4,3 +4,4 @@ target/
 _SpecRunner.html
 *.crx
 *.log
+.grunt

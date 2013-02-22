@@ -40,7 +40,7 @@ describe("JiraTracker", function() {
             spyOn(chrome.storage.sync, "get").andCallThrough();
         });
 
-        it("populates release id from user sync data", function() {
+        it("populates release id from user sync data and load release", function() {
             chrome.storage.sync.set({
                 "JiraTracker": {
                     releaseId: "spreadsheetIdFromCache"
@@ -82,6 +82,7 @@ describe("JiraTracker", function() {
                 expect(GSLoader.loadSpreadsheet).toHaveBeenCalled();
                 expect(GSLoader.loadSpreadsheet.callCount).toBe(1);
                 expect(GSLoader.loadSpreadsheet.mostRecentCall.args[0].id).toBe(expectedSpreadsheetId);
+                expect(GSLoader.loadSpreadsheet.mostRecentCall.args[0].wanted).toEqual(["Setup"]);
                 expect(JiraTracker.onReleaseChange).toHaveBeenCalledWith(actualRelease);
             });
         }
@@ -133,24 +134,39 @@ describe("JiraTracker", function() {
 
     describe("onReleaseChange", function() {
 
-        it("onReleaseChange poluates id and title fields and make spreadsheet active", function() {
+        it("onReleaseChange poluates fields and make spreadsheet active", function() {
             var actualRelease = {
                 id: "Some Spreadsheet Id",
-                title: "Some Spreadsheet Title"
+                title: "Some Spreadsheet Title",
+                getWorksheet: function() {
+                    return {
+                        title: "Setup",
+                        rows: [{
+                            "jira-user-id": "SomeJiraUserId",
+                            "jira-basic-authorization": "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==",
+                            "jira-jql": "SomeJiraJQL"
+                        }]
+                    };
+                }
             };
 
             expect(JiraTracker.activeRelease).toBeNull();
 
             JiraTracker.onReleaseChange(actualRelease);
 
+            expect($("#jiraUserId")).toHaveValue("SomeJiraUserId");
+            expect($("#jiraPassword")).toHaveValue("It5AS3cr3t");
+            expect($("#jiraPassword")).toHaveData("jira-basic-authorization", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==");
             expect($("#releaseId")).toHaveValue("Some Spreadsheet Id");
             expect($("#releaseTitle")).toHaveValue("Some Spreadsheet Title");
+            expect($("#jiraJQL")).toHaveValue("SomeJiraJQL");
             expect(JiraTracker.activeRelease).toBe(actualRelease);
         });
 
         it("onReleaseChange updates spreadsheet id in user storage", function() {
             JiraTracker.onReleaseChange({
-                id: "mySpreadSheetId"
+                id: "mySpreadSheetId",
+                getWorksheet: jasmine.createSpy("spreadsheet.getWorksheet")
             });
             var userData;
             chrome.storage.sync.get("JiraTracker", function(data) {
@@ -178,7 +194,8 @@ describe("JiraTracker", function() {
             newSpreadsheet = {
                 id: "mySpreadSheetId",
                 title: expectedTitle,
-                worksheets: [worksheet]
+                worksheets: [worksheet],
+                getWorksheet: jasmine.createSpy("spreadsheet.getWorksheet")
             };
             spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
             $("#jiraUserId").val("SomeJiraUserId");
@@ -242,9 +259,8 @@ describe("JiraTracker", function() {
             createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
             var addRowCall = JiraTracker.activeRelease.worksheets[0].addRows,
                 expectRows = [
-                    ["Jira-User-Id", "SomeJiraUserId"],
-                    ["Jira-Basic-Authorization", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA=="],
-                    ["Jira-JQL", "SomeJiraJQL"]
+                    ["jira-user-id", "jira-basic-authorization", "jira-jql"],
+                    ["SomeJiraUserId", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==", "SomeJiraJQL"]
                 ];
             expect(JiraTracker.activeRelease.worksheets.length).toBe(1);
             expect(addRowCall.callCount).toBe(1);

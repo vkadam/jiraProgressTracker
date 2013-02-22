@@ -37,7 +37,7 @@ module.exports = function(grunt) {
         connect: {
             jasmine: {
                 options: {
-                    port: 8889
+                    port: 8890
                 }
             }
         },

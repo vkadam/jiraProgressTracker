@@ -98,6 +98,11 @@
         this.activeRelease = null;
     };
 
+    var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
+        JIRA_SETUP_WORKSHEET_USER_ID = "jira-user-id",
+        JIRA_SETUP_WORKSHEET_BASIC_AUTH = "jira-basic-authorization",
+        JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
+
     var JiraTracker = new JiraTrackerClass();
 
     /**
@@ -246,7 +251,8 @@
             deferred.done(this.onReleaseChange);
             GSLoader.loadSpreadsheet({
                 context: this,
-                id: releaseId
+                id: releaseId,
+                wanted: ["Setup"]
             }).done(function(sSheet) {
                 deferred.resolveWith(this, [sSheet]);
             });
@@ -268,11 +274,10 @@
                 title: baselineTitle
             }).done(_this.onReleaseChange) // Add callback to update active release value
             .done(function() {
-                var jiraUserIdRow = ["Jira-User-Id", $("#jiraUserId").val()],
+                var titles = [JIRA_SETUP_WORKSHEET_USER_ID, JIRA_SETUP_WORKSHEET_BASIC_AUTH, JIRA_SETUP_WORKSHEET_JQL],
                     base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val()),
-                    jiraBasicAuthRow = ["Jira-Basic-Authorization", base64Encode],
-                    jiraJQLRow = ["Jira-JQL", $("#jiraJQL").val()],
-                    releaseSettings = [jiraUserIdRow, jiraBasicAuthRow, jiraJQLRow],
+                    values = [$("#jiraUserId").val(), base64Encode, $("#jiraJQL").val()],
+                    releaseSettings = [titles, values],
                     // Rename Sheet 1 worksheet to Setup
                     renameReq = _this.activeRelease.worksheets[0].rename("Setup"),
                     // Once Spreadsheet is created successfully, create a baseline snapshot
@@ -290,8 +295,18 @@
         });
     };
 
+    /*
+     * Keep updated the JiraTracker with latest release.
+     * @param {Object} Spreasheet object which needs to be make active
+     */
     JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
         this.activeRelease = releaseSheet;
+        var setupSheet = this.activeRelease.getWorksheet(JIRA_SETUP_WORKSHEET_TITLE);
+        if (setupSheet && setupSheet.rows.length > 0) {
+            $("#jiraUserId").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_USER_ID]);
+            $("#jiraPassword").val("It5AS3cr3t").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH, setupSheet.rows[0][JIRA_SETUP_WORKSHEET_BASIC_AUTH]);
+            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]);
+        }
         $("#releaseId").val(this.activeRelease.id);
         $("#releaseTitle").val(this.activeRelease.title);
         chrome.storage.sync.set({
