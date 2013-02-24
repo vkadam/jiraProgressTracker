@@ -319,7 +319,10 @@
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
         var _this = this;
         return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
-            var base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
+            var base64Encode = $("#jiraPassword").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
+            if (_.isUndefined(base64Encode)) {
+                base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
+            }
 
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",

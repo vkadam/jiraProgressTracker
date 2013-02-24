@@ -1,4 +1,4 @@
-/* Jira Progress Tracker - v0.0.2rc - 2013-02-22
+/* Jira Progress Tracker - v0.0.2rc - 2013-02-24
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 /**
@@ -460,7 +460,10 @@ var Base64 = {
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
         var _this = this;
         return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
-            var base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
+            var base64Encode = $("#jiraPassword").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
+            if (_.isUndefined(base64Encode)) {
+                base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
+            }
 
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",

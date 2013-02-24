@@ -281,11 +281,11 @@ describe("JiraTracker", function() {
                 id: "ws1",
                 title: snapshotTitle
             },
-            jiraJQL = "Some jira query",
-            jiraMaxResults = "10",
-            jiraUserId = "User Name",
-            jiraPassword = "password",
-            base64Key = Base64.encode(jiraUserId + ":" + jiraPassword);
+            jiraJQL,
+            jiraMaxResults,
+            jiraUserId,
+            jiraPassword,
+            base64Key;
 
         function populateValues() {
             $("input#releaseId").val(activeRelease.id);
@@ -309,6 +309,11 @@ describe("JiraTracker", function() {
                 deferred.resolveWith(options.context, [worksheet]);
                 return lsReq;
             });
+            jiraJQL = "Some jira query";
+            jiraMaxResults = "10";
+            jiraUserId = "User Name";
+            jiraPassword = "password";
+            base64Key = Base64.encode(jiraUserId + ":" + jiraPassword);
         });
 
         it("Create snapshot creates worksheet into activeRelease using snapshot title field", function() {
@@ -351,6 +356,25 @@ describe("JiraTracker", function() {
                 expect(jiraCallArgs.data.jql).toBe(jiraJQL);
                 expect(jiraCallArgs.data.maxResults).toBe(jiraMaxResults);
                 expect(jiraCallArgs.headers.Authorization).toContain(base64Key);
+            });
+        });
+
+        it("Create snapshot uses saved jira basic authentication to makes jira call to get jira issues", function() {
+            $("input#jiraPassword").data("jira-basic-authorization", "Some-Stored-Basic-Authentication-Value");
+            populateValues();
+            var createReq = JiraTracker.createSnapshot(),
+                created = false;
+            createReq.done(function() {
+                created = true;
+            });
+
+            waitsFor(function() {
+                return created;
+            }, "Worksheet should be created", 1000);
+
+            runs(function() {
+                var jiraCallArgs = spyOnAjax.calls[0].args[0];
+                expect(jiraCallArgs.headers.Authorization).toContain("Some-Stored-Basic-Authentication-Value");
             });
         });
 
