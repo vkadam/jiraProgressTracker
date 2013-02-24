@@ -196,11 +196,21 @@
      */
     JiraTrackerClass.prototype.init = function(evt) {
         var _this = this;
+        this.bindEvents();
         chrome.storage.sync.get("JiraTracker", function(data) {
             $.extend(UserData, data["JiraTracker"]);
             if (UserData.releaseId && UserData.releaseId.length > 0) {
                 return _this.loadRelease(evt, UserData.releaseId);
             }
+        });
+    };
+
+    /**
+     * Bind different types of events to form elements.
+     */
+    JiraTrackerClass.prototype.bindEvents = function() {
+        $("form.jira-tracker input#jiraUserId, form.jira-tracker input#jiraPassword").on("change", function() {
+            $("form.jira-tracker input#jiraPassword").removeData(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
         });
     };
 
@@ -305,7 +315,8 @@
         if (setupSheet && setupSheet.rows.length > 0) {
             $("#jiraUserId").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_USER_ID]);
             $("#jiraPassword").val("It5AS3cr3t").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH, setupSheet.rows[0][JIRA_SETUP_WORKSHEET_BASIC_AUTH]);
-            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]);
+            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]).prop("disabled", true);
+            $("#releaseTitle").prop("disabled", true);
         }
         $("#releaseId").val(this.activeRelease.id);
         $("#releaseTitle").val(this.activeRelease.title);

@@ -37,6 +37,7 @@ describe("JiraTracker", function() {
     describe("on init", function() {
         beforeEach(function() {
             spyOn(JiraTracker, "loadRelease");
+            spyOn(JiraTracker, "bindEvents");
             spyOn(chrome.storage.sync, "get").andCallThrough();
         });
 
@@ -52,6 +53,36 @@ describe("JiraTracker", function() {
             expect(chrome.storage.sync.get).toHaveBeenCalledWith("JiraTracker", jasmine.any(Function));
 
             expect(JiraTracker.loadRelease).toHaveBeenCalled();
+        });
+
+        it("calls binds events", function() {
+            JiraTracker.init();
+            expect(JiraTracker.bindEvents).toHaveBeenCalled();
+        });
+    });
+
+    describe("bind Events", function() {
+        
+        it("jiraPassword.change clears basic auth data attribute", function() {
+            expect($("#jiraPassword")).not.toHandle("change");
+            $("#jiraPassword").data("jira-basic-authorization", "some value");
+
+            JiraTracker.bindEvents();
+            $("#jiraPassword").trigger("change");
+
+            expect($("#jiraPassword")).toHandle("change");
+            expect($("#jiraPassword")).not.toHaveData("jira-basic-authorization");
+        });
+
+        it("jiraUserId.change clears basic auth data attribute", function() {
+            expect($("#jiraUserId")).not.toHandle("change");
+            $("#jiraPassword").data("jira-basic-authorization", "some value");
+
+            JiraTracker.bindEvents();
+            $("#jiraUserId").trigger("change");
+
+            expect($("#jiraUserId")).toHandle("change");
+            expect($("#jiraPassword")).not.toHaveData("jira-basic-authorization");
         });
     });
 
@@ -133,22 +164,22 @@ describe("JiraTracker", function() {
     });
 
     describe("onReleaseChange", function() {
+        var actualRelease = {
+            id: "Some Spreadsheet Id",
+            title: "Some Spreadsheet Title",
+            getWorksheet: function() {
+                return {
+                    title: "Setup",
+                    rows: [{
+                        "jira-user-id": "SomeJiraUserId",
+                        "jira-basic-authorization": "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==",
+                        "jira-jql": "SomeJiraJQL"
+                    }]
+                };
+            }
+        };
 
         it("onReleaseChange poluates fields and make spreadsheet active", function() {
-            var actualRelease = {
-                id: "Some Spreadsheet Id",
-                title: "Some Spreadsheet Title",
-                getWorksheet: function() {
-                    return {
-                        title: "Setup",
-                        rows: [{
-                            "jira-user-id": "SomeJiraUserId",
-                            "jira-basic-authorization": "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==",
-                            "jira-jql": "SomeJiraJQL"
-                        }]
-                    };
-                }
-            };
 
             expect(JiraTracker.activeRelease).toBeNull();
 
@@ -161,6 +192,14 @@ describe("JiraTracker", function() {
             expect($("#releaseTitle")).toHaveValue("Some Spreadsheet Title");
             expect($("#jiraJQL")).toHaveValue("SomeJiraJQL");
             expect(JiraTracker.activeRelease).toBe(actualRelease);
+        });
+
+        it("onReleaseChange disables releaseTitle and jiraJQL controls", function() {
+
+            JiraTracker.onReleaseChange(actualRelease);
+
+            expect($("#releaseTitle")).toBeDisabled();
+            expect($("#jiraJQL")).toBeDisabled();
         });
 
         it("onReleaseChange updates spreadsheet id in user storage", function() {
@@ -297,6 +336,9 @@ describe("JiraTracker", function() {
         }
 
         beforeEach(function() {
+            spyOn(JiraTracker, "loadRelease");
+            JiraTracker.init();
+
             spyOnAjax.andCallThrough();
             $.fixture("http://jira.cengage.com/rest/api/2/search", "jasmine/fixtures/jiraIssues.json");
             JiraTracker.activeRelease = activeRelease;
@@ -316,7 +358,7 @@ describe("JiraTracker", function() {
             base64Key = Base64.encode(jiraUserId + ":" + jiraPassword);
         });
 
-        it("Create snapshot creates worksheet into activeRelease using snapshot title field", function() {
+        it("creates worksheet into activeRelease using snapshot title field", function() {
             populateValues();
             var createReq = JiraTracker.createSnapshot();
             var created = false;
@@ -336,7 +378,7 @@ describe("JiraTracker", function() {
             });
         });
 
-        it("Create snapshot makes jira call with correct data to get jira issues", function() {
+        it("makes jira call with correct data to get jira issues", function() {
             populateValues();
             var createReq = JiraTracker.createSnapshot();
             var created = false;
@@ -359,9 +401,7 @@ describe("JiraTracker", function() {
             });
         });
 
-        it("Create snapshot uses saved jira basic authentication to makes jira call to get jira issues", function() {
-            $("input#jiraPassword").data("jira-basic-authorization", "Some-Stored-Basic-Authentication-Value");
-            populateValues();
+        function assertForBasicKey(checkThisKey){
             var createReq = JiraTracker.createSnapshot(),
                 created = false;
             createReq.done(function() {
@@ -374,8 +414,24 @@ describe("JiraTracker", function() {
 
             runs(function() {
                 var jiraCallArgs = spyOnAjax.calls[0].args[0];
-                expect(jiraCallArgs.headers.Authorization).toContain("Some-Stored-Basic-Authentication-Value");
+                expect(jiraCallArgs.headers.Authorization).toContain(checkThisKey);
             });
+        }
+
+        it("uses saved jira basic authentication to makes jira call to get jira issues", function() {
+            populateValues();
+            $("input#jiraPassword").data("jira-basic-authorization", "Some-Stored-Basic-Authentication-Value");
+
+            assertForBasicKey("Some-Stored-Basic-Authentication-Value");
+        });
+
+        it("uses entered password instead of stored basic authentication for jira call if password control value is changed", function() {
+            populateValues();
+            $("input#jiraPassword").data("jira-basic-authorization", "Some-Stored-Basic-Authentication-Value");
+            
+            $("input#jiraPassword").trigger("change");
+
+            assertForBasicKey(base64Key);
         });
 
         it("Create snapshot does validation", function() {
