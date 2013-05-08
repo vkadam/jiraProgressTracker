@@ -96,6 +96,8 @@
      */
     var JiraTrackerClass = function() {
         this.activeRelease = null;
+        Logger.useDefaults(Logger.DEBUG);
+        this.logger = Logger.get("jiraTracker");
     };
 
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
@@ -279,7 +281,7 @@
 
         return validateAndProceed.call(_this, "CREATE_BASELINE", function(deferred) {
             // Create new spreadsheet using GSLoader
-            GSLoader.log("Creating spreadsheet with title =", baselineTitle);
+            _this.logger.debug("Creating spreadsheet with title =", baselineTitle);
             GSLoader.createSpreadsheet({
                 context: _this,
                 title: baselineTitle
@@ -295,9 +297,9 @@
                     baselineReq = _this.createSnapshot(evt, "Baseline");
                 $.when(renameReq, baselineReq).done(function() {
                     // Adds release details into setup worksheet
-                    GSLoader.log("Saving release settings into setup worksheet");
+                    _this.logger.debug("Saving release settings into setup worksheet");
                     _this.activeRelease.worksheets[0].addRows(releaseSettings).done(function() {
-                        GSLoader.log("Release settings saved successfully");
+                        _this.logger.debug("Release settings saved successfully");
                         // Once Baseline is created successfully, execute callbacks
                         deferred.resolveWith(_this, [_this.activeRelease]);
                     });
@@ -336,7 +338,7 @@
                 base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
             }
 
-            GSLoader.log("Getting jira issues");
+            _this.logger.debug("Getting jira issues");
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",
                 data: {
@@ -362,7 +364,7 @@
                     jiraIssues.push(jiraIssue.toArray());
                 });
 
-                GSLoader.log("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
+                _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
 
                 _this.activeRelease.createWorksheet({
                     title: worksheetTitle || $("#snapshotTitle").val(),
@@ -371,7 +373,7 @@
                     rows: jiraIssues.length + 1,
                     cols: headersTitles.length
                 }).done(function(wSheet) {
-                    GSLoader.log("Snapshot", wSheet.title, "created successfully");
+                    _this.logger.debug("Snapshot", wSheet.title, "created successfully");
                     deferred.resolveWith(this, [wSheet]);
                 });
             });
