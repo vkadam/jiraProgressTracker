@@ -222,6 +222,7 @@
      * @param {Function} Callback function which will be invoked if form is valid
      * @returns {jQuery.Deffered} Returns validator request i.e. instance of jquery deffered, with errors
      */
+
     function validateAndProceed(validatorName, callback) {
         var deferred = $.Deferred(),
             lrReq = {};
@@ -335,6 +336,7 @@
                 base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
             }
 
+            GSLoader.log("Getting jira issues");
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",
                 data: {
@@ -359,6 +361,9 @@
                     jiraIssue = new JiraIssue(issue);
                     jiraIssues.push(jiraIssue.toArray());
                 });
+
+                GSLoader.log("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
+
                 _this.activeRelease.createWorksheet({
                     title: worksheetTitle || $("#snapshotTitle").val(),
                     headers: headersTitles,
@@ -366,6 +371,7 @@
                     rows: jiraIssues.length + 1,
                     cols: headersTitles.length
                 }).done(function(wSheet) {
+                    GSLoader.log("Snapshot", wSheet.title, "created successfully");
                     deferred.resolveWith(this, [wSheet]);
                 });
             });

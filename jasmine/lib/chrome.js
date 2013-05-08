@@ -27,3 +27,10 @@ chrome["tabs"] = {
         addListener: function() {}
     }
 };
+
+chrome["alarms"] = {
+    create: function() {},
+    onAlarm: {
+        addListener: function() {}
+    }
+};

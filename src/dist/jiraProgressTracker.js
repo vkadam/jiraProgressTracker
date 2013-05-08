@@ -1,4 +1,4 @@
-/* Jira Progress Tracker - v0.0.2rc - 2013-02-24
+/* Jira Progress Tracker - v0.0.2rc - 2013-05-08
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 /**
@@ -137,7 +137,8 @@ var Base64 = {
         return string;
     }
 
-};;
+};
+;
 /**********************************/
 /**
  * @author Vishal Kadam https://github.com/vkadam
@@ -363,6 +364,7 @@ var Base64 = {
      * @param {Function} Callback function which will be invoked if form is valid
      * @returns {jQuery.Deffered} Returns validator request i.e. instance of jquery deffered, with errors
      */
+
     function validateAndProceed(validatorName, callback) {
         var deferred = $.Deferred(),
             lrReq = {};
@@ -476,6 +478,7 @@ var Base64 = {
                 base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
             }
 
+            GSLoader.log("Getting jira issues");
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",
                 data: {
@@ -500,6 +503,9 @@ var Base64 = {
                     jiraIssue = new JiraIssue(issue);
                     jiraIssues.push(jiraIssue.toArray());
                 });
+
+                GSLoader.log("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
+
                 _this.activeRelease.createWorksheet({
                     title: worksheetTitle || $("#snapshotTitle").val(),
                     headers: headersTitles,
@@ -507,6 +513,7 @@ var Base64 = {
                     rows: jiraIssues.length + 1,
                     cols: headersTitles.length
                 }).done(function(wSheet) {
+                    GSLoader.log("Snapshot", wSheet.title, "created successfully");
                     deferred.resolveWith(this, [wSheet]);
                 });
             });

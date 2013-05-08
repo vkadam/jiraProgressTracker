@@ -62,7 +62,7 @@ describe("JiraTracker", function() {
     });
 
     describe("bind Events", function() {
-        
+
         it("jiraPassword.change clears basic auth data attribute", function() {
             expect($("#jiraPassword")).not.toHandle("change");
             $("#jiraPassword").data("jira-basic-authorization", "some value");
@@ -171,10 +171,11 @@ describe("JiraTracker", function() {
                 return {
                     title: "Setup",
                     rows: [{
-                        "jira-user-id": "SomeJiraUserId",
-                        "jira-basic-authorization": "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==",
-                        "jira-jql": "SomeJiraJQL"
-                    }]
+                            "jira-user-id": "SomeJiraUserId",
+                            "jira-basic-authorization": "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==",
+                            "jira-jql": "SomeJiraJQL"
+                        }
+                    ]
                 };
             }
         };
@@ -230,12 +231,12 @@ describe("JiraTracker", function() {
                 rename: jasmine.createSpy("worksheet.rename"),
                 addRows: jasmine.createSpy("worksheet.addRows").andCallFake(returnDeffered())
             },
-            newSpreadsheet = {
-                id: "mySpreadSheetId",
-                title: expectedTitle,
-                worksheets: [worksheet],
-                getWorksheet: jasmine.createSpy("spreadsheet.getWorksheet")
-            };
+                newSpreadsheet = {
+                    id: "mySpreadSheetId",
+                    title: expectedTitle,
+                    worksheets: [worksheet],
+                    getWorksheet: jasmine.createSpy("spreadsheet.getWorksheet")
+                };
             spyOnAndReturnDeferred(GSLoader, "createSpreadsheet", newSpreadsheet);
             $("#jiraUserId").val("SomeJiraUserId");
             $("#jiraPassword").val("SomeJiraPassword");
@@ -401,7 +402,7 @@ describe("JiraTracker", function() {
             });
         });
 
-        function assertForBasicKey(checkThisKey){
+        function assertForBasicKey(checkThisKey) {
             var createReq = JiraTracker.createSnapshot(),
                 created = false;
             createReq.done(function() {
@@ -428,7 +429,7 @@ describe("JiraTracker", function() {
         it("uses entered password instead of stored basic authentication for jira call if password control value is changed", function() {
             populateValues();
             $("input#jiraPassword").data("jira-basic-authorization", "Some-Stored-Basic-Authentication-Value");
-            
+
             $("input#jiraPassword").trigger("change");
 
             assertForBasicKey(base64Key);
