@@ -4,3 +4,9 @@
 [submodule "src/lib/js-logger"]
 	path = src/lib/js-logger
 	url = git@github.com:jonnyreeves/js-logger.git
+[submodule "src/lib/moment"]
+	path = src/lib/moment
+	url = git@github.com:timrwood/moment.git
+[submodule "src/lib/handlebars"]
+	path = src/lib/handlebars
+	url = git@github.com:wycats/handlebars.js.git

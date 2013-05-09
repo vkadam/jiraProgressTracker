@@ -1,0 +1,41 @@
+<form class="form-horizontal jira-tracker">
+	<div class="control-group">
+		<label class="control-label" for="jiraUserId">Jira User Id</label>
+		<div class="controls">
+			<input type="text" id="jiraUserId" name="jiraUserId" placeholder="Jira User Id" />
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label" for="jiraPassword">Password</label>
+		<div class="controls">
+			<input type="password" id="jiraPassword" name="jiraPassword" placeholder="Password" />
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label" for="releaseTitle">Release Title</label>
+		<div class="controls">
+			<input class="span6" type="text" id="releaseId" name="releaseId" placeholder="Release Spreadsheet Id" />
+			<input type="text" id="releaseTitle" name="releaseTitle" placeholder="Release Spreadsheet Title" />
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label" for="snapshotTitle">Snapshot Title</label>
+		<div class="controls">
+			<input type="text" id="snapshotTitle" name="snapshotTitle" placeholder="Snapshot Title"/>
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label" for="jiraJQL">Jira JQL</label>
+		<div class="controls">
+			<textarea class="span8" id="jiraJQL" name="jiraJQL" placeholder="Jira JQL" rows="4"></textarea>
+			<input type="text" id="jiraMaxResults" name="jiraMaxResults" placeholder="Max Results" value="999" class="hide"/>
+		</div>
+	</div>
+	<div class="control-group">
+		<div class="controls">
+			<button type="button" class="btn load-release btn-primary">Load Release</button>
+			<button type="button" class="btn create-release">Create Release (Baseline)</button>
+			<button type="button" class="btn create-snapshot">Create Snapshot</button>
+		</div>
+	</div>
+</form>

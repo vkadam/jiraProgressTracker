@@ -13,6 +13,7 @@
     var BackgroundClass = function() {
         Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get("jiraTrackerBackground");
+        this.inProgress = false;
     };
 
     var Background = new BackgroundClass();
@@ -25,7 +26,7 @@
         this.logger.debug("Creating watchSnapshot chrome alarm");
 
         chrome.alarms.create('watchSnapshot', {
-            periodInMinutes: 10
+            periodInMinutes: 60
         });
 
         chrome.alarms.onAlarm.addListener($.proxy(this.onAlarmListener, this));
@@ -36,10 +37,12 @@
      * @this {BackgroundClass}
      */
     BackgroundClass.prototype.onAlarmListener = function() {
-        this.logger.debug("Inside alarm listener, checking for today's snapshot");
-        if (!JiraTracker.getSnapshotForToday()) {
-            this.logger.debug("Today's snapshot doesn't exists creating one");
+        var _this = this;
+
+        if (!_this.inProgress && !JiraTracker.getSnapshotForToday()) {
+            _this.logger.debug("Today's snapshot doesn't exists creating one");
             JiraTracker.createSnapshotForToday();
+            _this.inProgress = true;
 
             /*this.logger.debug("Sending chrome.runtime message", Date());
             var _this = this;

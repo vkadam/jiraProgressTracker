@@ -192,21 +192,18 @@
     };
 
     /**
-     * Initialization, populates last used values from storage (if any)
+     * Initialization
      * @this {JiraTrackerClass}
      * @return {Object} The deferred request object if release id is available in cache
      */
     JiraTrackerClass.prototype.init = function(evt) {
-        var _this = this;
-        this.bindEvents();
-        chrome.storage.sync.get("JiraTracker", function(data) {
-            $.extend(UserData, data["JiraTracker"]);
-            if (UserData.releaseId && UserData.releaseId.length > 0) {
-                return _this.loadRelease(evt, UserData.releaseId);
-            }
-        });
+        this.injectUI()
+            .bindEvents()
+            .loadReleaseFromStorage(evt);
 
-        /*chrome.runtime.onConnect.addListener(function(port) {
+        /*
+        var _this = this;
+        chrome.runtime.onConnect.addListener(function(port) {
             _this.logger.debug("Inside JiraTracker onConnect response callback", Date());
             port.onMessage.addListener(function(msg) {
                 _this.logger.debug("Inside JiraTracker onMessage response callback", Date());
@@ -218,12 +215,49 @@
     };
 
     /**
+     * Inject ui into container div
+     * @this {JiraTrackerClass}
+     * @return {JiraTrackerClass} Instance of JiraTrackerClass
+     */
+    JiraTrackerClass.prototype.injectUI = function() {
+        $(".container").prepend(JiraTrackerTemplates["src/views/jiraTrackerForm.hbs"]());
+        return this;
+    };
+
+    /**
+     * Populates last used values from storage (if any)
+     * @this {JiraTrackerClass}
+     * @return {Object} The deferred request object if release id is available in cache
+     */
+
+    JiraTrackerClass.prototype.loadReleaseFromStorage = function(evt) {
+        var _this = this,
+            deferred = $.Deferred(),
+            lrfsReq = {};
+        // Attach deferred method to return object 
+        deferred.promise(lrfsReq);
+        _this.logger.debug("Getting last saved state from sync storage");
+        chrome.storage.sync.get("JiraTracker", function(data) {
+            $.extend(UserData, data["JiraTracker"]);
+            if (UserData.releaseId && UserData.releaseId.length > 0) {
+                _this.logger.debug("Last loaded release was", UserData.releaseId, "loading is again...");
+                _this.loadRelease(evt, UserData.releaseId).done(function(sSheet) {
+                    _this.logger.debug("Release loaded from last saved state...", sSheet);
+                    deferred.resolveWith(_this, [sSheet]);
+                });
+            }
+        });
+        return lrfsReq;
+    };
+
+    /**
      * Bind different types of events to form elements.
      */
     JiraTrackerClass.prototype.bindEvents = function() {
         $("form.jira-tracker input#jiraUserId, form.jira-tracker input#jiraPassword").on("change", function() {
             $("form.jira-tracker input#jiraPassword").removeData(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
         });
+        return this;
     };
 
     /**
@@ -251,7 +285,10 @@
 
         // If input is valid then only call callback 
         if (validator.valid()) {
+            this.logger.debug("Validation of", validatorName, "successed.");
             callback.apply(this, [deferred]);
+        } else {
+            this.logger.debug("Validation of", validatorName, "failed");
         }
         return lrReq;
     }
@@ -268,6 +305,7 @@
             $("#releaseId").val(releaseId);
         }
         releaseId = $("#releaseId").val();
+        this.logger.debug("Loading release with id", releaseId);
 
         return validateAndProceed.call(this, "LOAD_RELEASE", function(deferred) {
             // Add callback to update active release value
@@ -341,16 +379,38 @@
     };
 
     JiraTrackerClass.prototype.getSnapshotForToday = function() {
-        this.logger.debug("Checking for today's snapshot");
-        return true;
+        var _this = this,
+            result = false,
+            todaysDate = moment().format("MM-DD-YYYY");
+
+        if (_this.activeRelease) {
+            this.logger.debug("Checking for today's snapshot");
+            $.each(_this.activeRelease.worksheets, function(idx, wSheet) {
+                /* its a break of each */
+                if (moment(todaysDate, "MM-DD-YYYY").isSame(moment(wSheet.title, "MM-DD-YYYY"))) {
+                    result = wSheet;
+                    return;
+                }
+            });
+        } else {
+            this.logger.debug("No release is loaded, loading last used one");
+            _this.loadReleaseFromStorage();
+        }
+        return result;
     };
 
     JiraTrackerClass.prototype.createSnapshotForToday = function() {
         this.logger.debug("Creating today's snapshot");
+        return this.createSnapshot(null, "Snapshot " + moment().format("MM-DD-YYYY"));
     };
 
-    JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
+    JiraTrackerClass.prototype.createSnapshot = function(evt, snapshotTitle) {
         var _this = this;
+        if (snapshotTitle) {
+            $("#snapshotTitle").val(snapshotTitle);
+        }
+        snapshotTitle = $("#snapshotTitle").val();
+
         return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
             var base64Encode = $("#jiraPassword").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
             if (_.isUndefined(base64Encode)) {
@@ -386,7 +446,7 @@
                 _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
 
                 _this.activeRelease.createWorksheet({
-                    title: worksheetTitle || $("#snapshotTitle").val(),
+                    title: snapshotTitle,
                     headers: headersTitles,
                     rowData: jiraIssues,
                     rows: jiraIssues.length + 1,

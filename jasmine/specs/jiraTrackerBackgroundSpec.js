@@ -1,5 +1,9 @@
 describe("JiraTracker Background", function() {
 
+    afterEach(function() {
+        JiraTracker.Background.inProgress = false;
+    });
+
     describe("on init", function() {
 
         beforeEach(function() {
@@ -11,7 +15,7 @@ describe("JiraTracker Background", function() {
             JiraTracker.Background.init();
             expect(chrome.alarms.create).toHaveBeenCalled();
             expect(chrome.alarms.create.argsForCall[0][0]).toBe("watchSnapshot");
-            expect(chrome.alarms.create.argsForCall[0][1].periodInMinutes).toBe(10);
+            expect(chrome.alarms.create.argsForCall[0][1].periodInMinutes).toBe(60);
         });
 
         it("adds listner for onAlarm", function() {
@@ -37,6 +41,7 @@ describe("JiraTracker Background", function() {
 
             JiraTracker.getSnapshotForToday.reset();
             JiraTracker.createSnapshotForToday.reset();
+            JiraTracker.Background.inProgress = false;
 
             snapshot = "Some snapshot";
             JiraTracker.Background.onAlarmListener();

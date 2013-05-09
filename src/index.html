@@ -10,47 +10,6 @@
 		<div class="navbar-inner"></div>
 	</div>
 	<div class="container">
-		<form class="form-horizontal jira-tracker">
-			<div class="control-group">
-				<label class="control-label" for="jiraUserId">Jira User Id</label>
-				<div class="controls">
-					<input type="text" id="jiraUserId" name="jiraUserId" placeholder="Jira User Id" />
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="jiraPassword">Password</label>
-				<div class="controls">
-					<input type="password" id="jiraPassword" name="jiraPassword" placeholder="Password" />
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="releaseTitle">Release Title</label>
-				<div class="controls">
-					<input class="span6" type="text" id="releaseId" name="releaseId" placeholder="Release Spreadsheet Id" />
-					<input type="text" id="releaseTitle" name="releaseTitle" placeholder="Release Spreadsheet Title" />
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="snapshotTitle">Snapshot Title</label>
-				<div class="controls">
-					<input type="text" id="snapshotTitle" name="snapshotTitle" placeholder="Snapshot Title"/>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="jiraJQL">Jira JQL</label>
-				<div class="controls">
-					<textarea class="span8" id="jiraJQL" name="jiraJQL" placeholder="Jira JQL" rows="4"></textarea>
-					<input type="hidden" id="jiraMaxResults" placeholder="Max Results" value="999"/>
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<button type="button" class="btn load-release btn-primary">Load Release</button>
-					<button type="button" class="btn create-release">Create Release (Baseline)</button>
-					<button type="button" class="btn create-snapshot">Create Snapshot</button>
-				</div>
-			</div>
-		</form>
 		<div class="jiraResponse"></div>
 	</div>
 </body>
@@ -59,7 +18,11 @@
 <script type="text/javascript" src="lib/underscore-1.4.2.min.js"></script>
 <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="lib/js-logger/src/logger.min.js"></script>
+<script type="text/javascript" src="lib/moment/min/moment.min.js"></script>
+<!-- <script type="text/javascript" src="lib/moment/min/langs.min.js"></script> -->
+<script type="text/javascript" src="lib/handlebars/dist/handlebars.runtime.js"></script>
 <script type="text/javascript" src="lib/gsloader/dist/gsloader.min.js"></script>
+<script type="text/javascript" src="dist/jiraTrackerTemplates.js"></script>
 <script type="text/javascript" src="dist/jiraProgressTracker.js"></script>
 <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=googleDriveClientLoaded"></script>
 </html>
