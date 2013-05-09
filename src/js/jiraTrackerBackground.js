@@ -11,16 +11,18 @@
      * @this {BackgroundClass}
      */
     var BackgroundClass = function() {
-        // this.activeRelease = null;
+        Logger.useDefaults(Logger.DEBUG);
+        this.logger = Logger.get("jiraTrackerBackground");
     };
 
     var Background = new BackgroundClass();
 
     /**
-     * Initialization, creates the chrome.alarms for "watchSnapshot"
+     * Initialization, creates the chrome.alarms for "watchSnapshot" and adds listener for it
      * @this {BackgroundClass}
      */
     BackgroundClass.prototype.init = function() {
+        this.logger.debug("Creating watchSnapshot chrome alarm");
 
         chrome.alarms.create('watchSnapshot', {
             periodInMinutes: 10
@@ -29,8 +31,27 @@
         chrome.alarms.onAlarm.addListener($.proxy(this.onAlarmListener, this));
     };
 
+    /**
+     * Alarm listenr for "watchSnapshot"
+     * @this {BackgroundClass}
+     */
     BackgroundClass.prototype.onAlarmListener = function() {
-        console.log("On Snapshot alarm istener...", snapshotAlarm, JiraTracker, Date());
+        this.logger.debug("Inside alarm listener, checking for today's snapshot");
+        if (!JiraTracker.getSnapshotForToday()) {
+            this.logger.debug("Today's snapshot doesn't exists creating one");
+            JiraTracker.createSnapshotForToday();
+
+            /*this.logger.debug("Sending chrome.runtime message", Date());
+            var _this = this;
+            var port = chrome.runtime.connect("jlgedebcjnapdcpffnppjjededbakaje");
+
+            port.postMessage({
+                counter: 1
+            });
+            port.onMessage.addListener(function getResp(response) {
+                _this.logger.debug("Inside onMessage response callback", Date());
+            });*/
+        }
     };
 
     $.extend(JiraTracker, {
@@ -38,3 +59,7 @@
     });
 
 }(window.JiraTracker, jQuery));
+
+$(function() {
+    JiraTracker.Background.init();
+});

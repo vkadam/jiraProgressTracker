@@ -1,4 +1,4 @@
-/* Jira Progress Tracker - v0.0.2rc - 2013-05-08
+/* Jira Progress Tracker - v0.0.2rc - 2013-05-09
 * https://github.com/vkadam/jiraProgressTracker
 * Copyright (c) 2013 Vishal Kadam; Licensed MIT */
 /**
@@ -314,7 +314,7 @@ var Base64 = {
     });
 
     /**
-     * 
+     *
      */
     JiraTrackerClass.prototype.validate = function(requestType) {
         var $form = $(".jira-tracker"),
@@ -334,7 +334,7 @@ var Base64 = {
     };
 
     /**
-     * Initialization, populates last used values from storage (if any) 
+     * Initialization, populates last used values from storage (if any)
      * @this {JiraTrackerClass}
      * @return {Object} The deferred request object if release id is available in cache
      */
@@ -347,6 +347,16 @@ var Base64 = {
                 return _this.loadRelease(evt, UserData.releaseId);
             }
         });
+
+        /*chrome.runtime.onConnect.addListener(function(port) {
+            _this.logger.debug("Inside JiraTracker onConnect response callback", Date());
+            port.onMessage.addListener(function(msg) {
+                _this.logger.debug("Inside JiraTracker onMessage response callback", Date());
+                port.postMessage({
+                    counter: msg.counter + 1
+                });
+            });
+        });*/
     };
 
     /**
@@ -472,6 +482,15 @@ var Base64 = {
         });
     };
 
+    JiraTrackerClass.prototype.getSnapshotForToday = function() {
+        this.logger.debug("Checking for today's snapshot");
+        return true;
+    };
+
+    JiraTrackerClass.prototype.createSnapshotForToday = function() {
+        this.logger.debug("Creating today's snapshot");
+    };
+
     JiraTrackerClass.prototype.createSnapshot = function(evt, worksheetTitle) {
         var _this = this;
         return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
@@ -520,7 +539,6 @@ var Base64 = {
                 });
             });
         });
-
     };
 
     $.extend(attachTo, {
@@ -581,5 +599,5 @@ $(function() {
  */
 
 window.googleDriveClientLoaded = function() {
-    GSLoader.enableLog().auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
+    GSLoader.auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
 };
