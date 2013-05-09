@@ -39,21 +39,17 @@
     BackgroundClass.prototype.onAlarmListener = function() {
         var _this = this;
 
+        /*// _this.logger.debug("Sending message for JiraProgressTracker extension");
+		chrome.runtime.sendMessage({
+			greeting: "hello"
+		}, function(response) {
+			// _this.logger.debug("Response is", chrome.runtime.lastError, response, arguments);
+		});*/
+
         if (!_this.inProgress && !JiraTracker.getSnapshotForToday()) {
             _this.logger.debug("Today's snapshot doesn't exists creating one");
-            JiraTracker.createSnapshotForToday();
+            // JiraTracker.createSnapshotForToday();
             _this.inProgress = true;
-
-            /*this.logger.debug("Sending chrome.runtime message", Date());
-            var _this = this;
-            var port = chrome.runtime.connect("jlgedebcjnapdcpffnppjjededbakaje");
-
-            port.postMessage({
-                counter: 1
-            });
-            port.onMessage.addListener(function getResp(response) {
-                _this.logger.debug("Inside onMessage response callback", Date());
-            });*/
         }
     };
 

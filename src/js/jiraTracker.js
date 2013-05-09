@@ -201,16 +201,15 @@
             .bindEvents()
             .loadReleaseFromStorage(evt);
 
-        /*
-        var _this = this;
-        chrome.runtime.onConnect.addListener(function(port) {
-            _this.logger.debug("Inside JiraTracker onConnect response callback", Date());
-            port.onMessage.addListener(function(msg) {
-                _this.logger.debug("Inside JiraTracker onMessage response callback", Date());
-                port.postMessage({
-                    counter: msg.counter + 1
+        /*chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+            console.log(sender.tab ?
+                "from a background script:" + sender.tab.url :
+                "from the extension");
+            if (request.greeting == "hello") {
+                sendResponse({
+                    farewell: "goodbye"
                 });
-            });
+            };
         });*/
     };
 
