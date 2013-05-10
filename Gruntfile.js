@@ -13,7 +13,7 @@ module.exports = function(grunt) {
                 banner: "<%= meta.banner %>"
             },
             dist: {
-                src: ["src/js/base64.js", "src/js/jiraTracker.js"],
+                src: ["src/js/moment-zone.js", "src/js/base64.js", "src/js/jiraTracker.js"],
                 dest: "src/dist/<%= pkg.name %>.js"
             }
         },

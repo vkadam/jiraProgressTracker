@@ -485,29 +485,15 @@ describe("JiraTracker", function() {
         });
     });
 
-    describe("Create snapshotForToday", function() {
-
-        beforeEach(function() {
-            spyOn(JiraTracker, "createSnapshot").andCallFake(returnDeffered());
-        });
-
-        it("create snapshot with correct worksheet title", function() {
-            var csftReq = JiraTracker.createSnapshotForToday();
-
-            expect(csftReq.done).toBeDefined();
-            expect(JiraTracker.createSnapshot).toHaveBeenCalledWith(null, "Snapshot " + moment().format("MM-DD-YYYY"));
-        });
-    });
-
-    describe("getSnapshotForToday", function() {
+    describe("canSnapshotBeGenerated", function() {
         var activeRelease,
             worksheet1 = {
                 id: "ws1",
-                title: "Snapshot 05-06-2013"
+                title: "Snapshot 08-15-2012"
             },
             worksheet2 = {
                 id: "ws2",
-                title: "Snapshot " + moment().format("MM-DD-YYYY")
+                title: "Changes as per test"
             };
 
         beforeEach(function() {
@@ -523,13 +509,14 @@ describe("JiraTracker", function() {
 
         it("load release from user sync data if no active release found", function() {
             expect(JiraTracker.activeRelease).toBeNull();
+            spyOn(JiraTracker, "getJiraServerTime").andReturn(moment("08-15-2012"));
 
-            JiraTracker.getSnapshotForToday();
+            JiraTracker.canSnapshotBeGenerated();
 
             expect(JiraTracker.loadReleaseFromStorage).toHaveBeenCalled();
 
             JiraTracker.loadReleaseFromStorage.reset();
-            JiraTracker.getSnapshotForToday();
+            JiraTracker.canSnapshotBeGenerated();
 
             expect(JiraTracker.loadReleaseFromStorage).not.toHaveBeenCalled();
         });
@@ -537,15 +524,55 @@ describe("JiraTracker", function() {
         it("returns false is release is not loaded", function() {
             expect(JiraTracker.activeRelease).toBeNull();
 
-            expect(JiraTracker.getSnapshotForToday()).toBeFalsy();
+            expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
         });
 
-        it("returns true is snapshot is already created for today", function() {
+        it("returns false if time is between work start time and work end time", function() {
+            JiraTracker.loadReleaseFromStorage();
+            var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(9);
+            spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+
+            expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+        });
+
+        // Yesterday
+        it("returns yesterday's date if snapshot is missing for yesterday and time is before work start time", function() {
             expect(JiraTracker.activeRelease).toBeNull();
             JiraTracker.loadReleaseFromStorage();
-            activeRelease.worksheets.push(worksheet2);
+            var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(7);
+            spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
 
-            expect(JiraTracker.getSnapshotForToday()).toBeTruthy();
+            expect(JiraTracker.canSnapshotBeGenerated()).toBe("08-16-2012");
+        });
+
+        it("returns false if snapshot is available for yesterday and time is before work start time", function() {
+            JiraTracker.loadReleaseFromStorage();
+            var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(7);
+            spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+
+            worksheet2.title = "Snapshot 08-16-2012";
+            activeRelease.worksheets.push(worksheet2);
+            expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+        });
+
+        // Today
+        it("returns today's date if snapshot is missing for today and time is after work end time", function() {
+            expect(JiraTracker.activeRelease).toBeNull();
+            JiraTracker.loadReleaseFromStorage();
+            var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(18);
+            spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+
+            expect(JiraTracker.canSnapshotBeGenerated()).toBe("08-17-2012");
+        });
+
+        it("returns false if snapshot is available for today and time is after work end time", function() {
+            JiraTracker.loadReleaseFromStorage();
+            var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(18);
+            spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+
+            worksheet2.title = "Snapshot 08-17-2012";
+            activeRelease.worksheets.push(worksheet2);
+            expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
         });
 
     });

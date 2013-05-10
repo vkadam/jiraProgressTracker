@@ -377,30 +377,56 @@
         });
     };
 
-    JiraTrackerClass.prototype.getSnapshotForToday = function() {
+    /**
+     * Returns jira server time
+     * @this {JiraTrackerClass}
+     * @return {Date} Date object of jira server time
+     */
+    JiraTrackerClass.prototype.getJiraServerTime = function() {
+        /* Cengage jira server is in EST */
+        return moment().toZone(-4);
+    };
+
+    /**
+     * Return false if snapshot can not be generated. Else return date as snapshot title
+     * @this {JiraTrackerClass}
+     * @return {Boolean/String} false if can not be generated else date string
+     */
+    JiraTrackerClass.prototype.canSnapshotBeGenerated = function() {
         var _this = this,
             result = false,
-            todaysDate = moment().format("MM-DD-YYYY");
+            todaysDate = _this.getJiraServerTime(), //.format("MM-DD-YYYY");
+            workStartTime = todaysDate.clone().startOf('hour').hour(8),
+            workEndTime = todaysDate.clone().startOf('hour').hour(17);
+
+        /** Get yesterday's date if server time hour is between 0-8 i.e. midnight to 8am
+         * Get today's date if server time hour is between 17-24 i.e. 5pm to midnight
+         * This is because, 8am to 5pm is working hour and snapshot shoudn't be created
+         * for this time.
+         */
+        if (todaysDate.isBefore(workStartTime)) { // Before or on 8am
+            todaysDate.subtract('days', 1);
+        } else if (todaysDate.isAfter(workStartTime) && todaysDate.isBefore(workEndTime)) {
+            return result;
+        }
+        todaysDate = todaysDate.format("MM-DD-YYYY");
 
         if (_this.activeRelease) {
-            this.logger.debug("Checking for today's snapshot");
+            /* If Snapshot is not available for a date so can be generated */
+            result = todaysDate;
             $.each(_this.activeRelease.worksheets, function(idx, wSheet) {
-                /* its a break of each */
+                /* return is a break of $.each. Return false if snapshot is found for date */
                 if (moment(todaysDate, "MM-DD-YYYY").isSame(moment(wSheet.title, "MM-DD-YYYY"))) {
-                    result = wSheet;
+                    _this.logger.debug("Snapshot for", todaysDate, "is available, NO need to create one");
+                    result = false;
                     return;
                 }
             });
         } else {
-            this.logger.debug("No release is loaded, loading last used one");
+            _this.logger.debug("No release is loaded, loading last used one");
             _this.loadReleaseFromStorage();
         }
         return result;
-    };
-
-    JiraTrackerClass.prototype.createSnapshotForToday = function() {
-        this.logger.debug("Creating today's snapshot");
-        return this.createSnapshot(null, "Snapshot " + moment().format("MM-DD-YYYY"));
     };
 
     JiraTrackerClass.prototype.createSnapshot = function(evt, snapshotTitle) {

@@ -1,5 +1,15 @@
 describe("JiraTracker Background", function() {
 
+    function returnDeffered(resolveWithThis) {
+        return function(options) {
+            var deferred = $.Deferred(),
+                lsReq = deferred.promise(),
+                context = options && options.context || lsReq;
+            deferred.resolveWith(context, [resolveWithThis]);
+            return lsReq;
+        };
+    }
+
     afterEach(function() {
         JiraTracker.Background.inProgress = false;
     });
@@ -28,25 +38,25 @@ describe("JiraTracker Background", function() {
     describe("on Alarm Listener", function() {
         var snapshot;
         beforeEach(function() {
-            spyOn(JiraTracker, "getSnapshotForToday").andCallFake(function() {
+            spyOn(JiraTracker, "canSnapshotBeGenerated").andCallFake(function() {
                 return snapshot;
             });
-            spyOn(JiraTracker, "createSnapshotForToday");
+            spyOn(JiraTracker, "createSnapshot").andCallFake(returnDeffered());
         });
 
-        xit("creates snapshot for today using JiraTracker only if its not there", function() {
+        it("creates snapshot with correct title using JiraTracker only if its required", function() {
             JiraTracker.Background.onAlarmListener();
-            expect(JiraTracker.getSnapshotForToday).toHaveBeenCalled();
-            expect(JiraTracker.createSnapshotForToday).toHaveBeenCalled();
+            expect(JiraTracker.canSnapshotBeGenerated).toHaveBeenCalled();
+            expect(JiraTracker.createSnapshot).not.toHaveBeenCalled();
 
-            JiraTracker.getSnapshotForToday.reset();
-            JiraTracker.createSnapshotForToday.reset();
+            JiraTracker.canSnapshotBeGenerated.reset();
+            JiraTracker.createSnapshot.reset();
             JiraTracker.Background.inProgress = false;
 
-            snapshot = "Some snapshot";
+            snapshot = "New snapshot date title";
             JiraTracker.Background.onAlarmListener();
-            expect(JiraTracker.getSnapshotForToday).toHaveBeenCalled();
-            expect(JiraTracker.createSnapshotForToday).not.toHaveBeenCalled();
+            expect(JiraTracker.canSnapshotBeGenerated).toHaveBeenCalled();
+            expect(JiraTracker.createSnapshot).toHaveBeenCalledWith(null, snapshot);
 
         });
 

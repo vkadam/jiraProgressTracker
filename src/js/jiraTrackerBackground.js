@@ -38,7 +38,7 @@
      */
     BackgroundClass.prototype.onAlarmListener = function() {
         var _this = this;
-
+        // _this.logger.debug("Inside onAlarmListener");
         /*// _this.logger.debug("Sending message for JiraProgressTracker extension");
 		chrome.runtime.sendMessage({
 			greeting: "hello"
@@ -46,9 +46,13 @@
 			// _this.logger.debug("Response is", chrome.runtime.lastError, response, arguments);
 		});*/
 
-        if (!_this.inProgress && !JiraTracker.getSnapshotForToday()) {
-            _this.logger.debug("Today's snapshot doesn't exists creating one");
-            // JiraTracker.createSnapshotForToday();
+        var newSnapshotTitle = JiraTracker.canSnapshotBeGenerated();
+        if (!_this.inProgress && newSnapshotTitle) {
+            _this.logger.debug("Snapshot for", newSnapshotTitle, "doesn't exists creating one");
+            JiraTracker.createSnapshot(null, newSnapshotTitle).done(function(wSheet) {
+                _this.logger.debug("Snapshot for", newSnapshotTitle, "created", wSheet);
+                _this.inProgress = false;
+            });
             _this.inProgress = true;
         }
     };
