@@ -26,7 +26,7 @@
         this.logger.debug("Creating watchSnapshot chrome alarm");
 
         chrome.alarms.create('watchSnapshot', {
-            periodInMinutes: 60
+            periodInMinutes: 30
         });
 
         chrome.alarms.onAlarm.addListener($.proxy(this.onAlarmListener, this));
@@ -49,8 +49,8 @@
         var newSnapshotTitle = JiraTracker.canSnapshotBeGenerated();
         if (!_this.inProgress && newSnapshotTitle) {
             _this.logger.debug("Snapshot for", newSnapshotTitle, "doesn't exists creating one");
-            JiraTracker.createSnapshot(null, newSnapshotTitle).done(function(wSheet) {
-                _this.logger.debug("Snapshot for", newSnapshotTitle, "created", wSheet);
+            JiraTracker.createSnapshot(null, newSnapshotTitle).always(function() {
+                // _this.logger.debug("Snapshot for", newSnapshotTitle, "created", wSheet);
                 _this.inProgress = false;
             });
             _this.inProgress = true;
