@@ -3,10 +3,13 @@
 	url = https://github.com/vkadam/gsloader.git
 [submodule "src/lib/js-logger"]
 	path = src/lib/js-logger
-	url = git@github.com:jonnyreeves/js-logger.git
+	url = https://github.com/jonnyreeves/js-logger.git
 [submodule "src/lib/moment"]
 	path = src/lib/moment
-	url = git@github.com:timrwood/moment.git
+	url = https://github.com/timrwood/moment.git
 [submodule "src/lib/handlebars"]
 	path = src/lib/handlebars
-	url = git@github.com:wycats/handlebars.js.git
+	url = https://github.com/wycats/handlebars.js.git
+[submodule "src/lib/steal"]
+	path = src/lib/steal
+	url = https://github.com/bitovi/steal.git

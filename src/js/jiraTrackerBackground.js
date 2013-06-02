@@ -1,9 +1,7 @@
 /**
  * @author Vishal Kadam https://github.com/vkadam
  */
-
-(function(JiraTracker, $) {
-
+steal("js/jiraTracker.js", function(JiraTrackerInst) {
     /**
      * Creates an instance of BackgroundClass.
      *
@@ -46,10 +44,10 @@
 			// _this.logger.debug("Response is", chrome.runtime.lastError, response, arguments);
 		});*/
 
-        var newSnapshotTitle = JiraTracker.canSnapshotBeGenerated();
+        var newSnapshotTitle = JiraTrackerInst.canSnapshotBeGenerated();
         if (!_this.inProgress && newSnapshotTitle) {
             _this.logger.debug("Snapshot for", newSnapshotTitle, "doesn't exists creating one");
-            JiraTracker.createSnapshot(null, newSnapshotTitle).always(function() {
+            JiraTrackerInst.createSnapshot(null, newSnapshotTitle).always(function() {
                 // _this.logger.debug("Snapshot for", newSnapshotTitle, "created", wSheet);
                 _this.inProgress = false;
             });
@@ -57,12 +55,9 @@
         }
     };
 
-    $.extend(JiraTracker, {
+    $.extend(JiraTrackerInst, {
         Background: Background
     });
-
-}(window.JiraTracker, jQuery));
-
-$(function() {
-    JiraTracker.Background.init();
+}, function(JiraTrackerInst) {
+    JiraTrackerInst.Background.init();
 });

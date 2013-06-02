@@ -36,6 +36,7 @@
         "grunt-contrib-clean": "~0.4.0",
         "grunt-contrib-watch": "~0.2.0",
         "grunt-open": "~0.2.0",
-        "grunt-contrib-handlebars": "~0.5.8"
+        "grunt-contrib-handlebars": "~0.5.8",
+        "grunt-template-jasmine-steal": "~0.3.1"
     }
 }

@@ -1,9 +1,9 @@
 /**
  * @author Vishal Kadam https://github.com/vkadam
  */
-
-(function(attachTo, $) {
-
+steal("jquery", "underscore", "js-logger", "handlebars", "moment")
+    .then("jquery/validate", "dist/jiraTrackerTemplates.js", "gsloader",
+    "js/base64.js", "js/moment-zone.js", "google/client", function() {
     /**
      * Creates an instance of JiraIssue.
      *
@@ -202,15 +202,15 @@
             .loadReleaseFromStorage(evt);
 
         /*chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-            console.log(sender.tab ?
-                "from a background script:" + sender.tab.url :
-                "from the extension");
-            if (request.greeting == "hello") {
-                sendResponse({
-                    farewell: "goodbye"
-                });
-            };
-        });*/
+                console.log(sender.tab ?
+                    "from a background script:" + sender.tab.url :
+                    "from the extension");
+                if (request.greeting == "hello") {
+                    sendResponse({
+                        farewell: "goodbye"
+                    });
+                };
+            });*/
     };
 
     /**
@@ -268,9 +268,11 @@
      * @returns {jQuery.Deffered} Returns validator request i.e. instance of jquery deffered, with errors
      */
 
-    function validateAndProceed(validatorName, callback) {
+    function validateAndProceed(validatorName, successCallBack, errorCallBack) {
         var deferred = $.Deferred(),
             lrReq = {};
+        successCallBack = successCallBack || $.noop,
+        errorCallBack = errorCallBack || $.noop;
         // Attach deferred method to return object 
         deferred.promise(lrReq);
 
@@ -282,12 +284,13 @@
             errors: validator.errorMap
         });
 
-        // If input is valid then only call callback 
+        // If input is valid then only call successCallBack 
         if (validator.valid()) {
             this.logger.debug("Validation of", validatorName, "successed.");
-            callback.apply(this, [deferred]);
+            successCallBack.apply(this, [deferred]);
         } else {
             this.logger.debug("Validation of", validatorName, "failed");
+            errorCallBack.apply(this, [deferred]);
         }
         return lrReq;
     }
@@ -484,63 +487,20 @@
         });
     };
 
-    $.extend(attachTo, {
+    $.extend(window, {
         JiraTracker: JiraTracker
     });
-
-}(window, jQuery));
-
-// function jiraClient() {
-//     /* $.ajax({
-//         url : 'http://jira.cengage.com/rest/api/2/search?jql=assignee="vishal.kadam"',
-//         headers : { "Authorization": "Basic " + Base64.encode('vishal.kadam:cengagejira')}
-//       })
-//       .done(function(data, textStatus, jqXHR) {
-//         $('.jiraResponse').html(JSON.stringify(data));
-//       })
-//       .fail(function(jqXHR, textStatus, errorThrown) {
-//     });*/
-
-//     var urls = {
-//         // "Spreadsheets" : "https://spreadsheets.google.com/feeds/spreadsheets/private/full",
-//         // "list_basic" : "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/od6/private/basic",
-//         // "Private_Basic" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/basic",
-//         // "Private_Full" : "https://spreadsheets.google.com/feeds/worksheets/0AlpsUVqaDZHSdG4yR2hXZjJpbmRNS2s3RTU4eVQyQ2c/private/full",
-//         // "list_full": "https://spreadsheets.google.com/feeds/list/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full"
-//         // "document_list_api": "https://docs.google.com/feeds/default/private/full"
-//         // "cell_feed": "https://spreadsheets.google.com/feeds/cells/0AlpsUVqaDZHSdE9xQlZBVVVNTWJ0dkRxM2w0RktXb2c/od6/private/full/"
-//     };
-
-//     $.each(urls, function(key, value) {
-//         $.ajax({
-//             url: value
-//         }).done(function(data, textStatus, jqXHR) {
-//             //console.log(key, value, data);
-//             console.log(jqXHR.responseText);
-//         });
-//     });
-// }
-
-$(function() {
+    return JiraTracker;
+}, function() {
     JiraTracker.init();
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
     $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
     $(".create-snapshot").click($.proxy(JiraTracker.createSnapshot, JiraTracker));
-    /*chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-        console.log("Updated", tabId, changeInfo, tab);
-    });*/
-
-    /*function someFun() {
-        //Call cache userData
-        return;
-    }
-    window.onbeforeunload = someFun;*/
 });
 
 /**
  * Called when the client library is loaded.
  */
-
 window.googleDriveClientLoaded = function() {
     GSLoader.auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
 };

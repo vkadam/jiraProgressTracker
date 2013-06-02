@@ -1,4 +1,4 @@
-/*global module:false*/
+/*global module:false, require:false*/
 module.exports = function(grunt) {
     "use strict";
     grunt.initConfig({
@@ -7,23 +7,12 @@ module.exports = function(grunt) {
             banner: "/* <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today('yyyy-mm-dd') %>\n<%= pkg.homepage ? '* ' + pkg.homepage + '\\n' : '' %>* Copyright (c) <%= grunt.template.today('yyyy') %> <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */\n"
         },
         clean: ["src/dist/"],
-        concat: {
-            options: {
-                separator: ";\n/**********************************/\n",
-                banner: "<%= meta.banner %>"
-            },
-            dist: {
-                src: ["src/js/moment-zone.js", "src/js/base64.js", "src/js/jiraTracker.js"],
-                dest: "src/dist/<%= pkg.name %>.js"
-            }
-        },
         uglify: {
             options: {
                 banner: "<%= meta.banner %>"
             },
             dist: {
                 files: {
-                    "src/dist/<%= pkg.name %>.min.js": ["<%= concat.dist.dest %>"],
                     "src/dist/jiraTrackerTemplates.min.js": ["src/dist/jiraTrackerTemplates.js"]
                 }
             }
@@ -49,22 +38,23 @@ module.exports = function(grunt) {
         },
         jasmine: {
             all: {
-                src: ["src/lib/*.min.js", "src/lib/bootstrap/js/*.min.js",
-                        "src/lib/js-logger/src/*.min.js", "src/lib/moment/min/*.min.js",
-                        "src/lib/handlebars/dist/handlebars.runtime.js", "src/lib/gsloader/dist/*.min.js",
-                        "jasmine/lib/**/*.js", "src/dist/jiraTrackerTemplates.min.js",
-                        "src/dist/jiraProgressTracker.js", "src/js/jiraTrackerBackground.js"
-                ],
                 options: {
                     specs: ["jasmine/specs/**/*Spec.js"],
-                    host: "http://127.0.0.1:<%= connect.jasmine.options.port %>/"
+                    helpers: ["jasmine/lib/jasmine-helper.js", "jasmine/lib/**/*.js"],
+                    host: "http://127.0.0.1:<%= connect.jasmine.options.port %>/",
+                    template: require('grunt-template-jasmine-steal'),
+                    templateOptions: {
+                        steal: {
+                            url: "src/lib/steal/steal.js"
+                        }
+                    }
                 }
             }
         },
         watch: {
             options: {
-                files: ["src/js/**/*.js", "src/views/**/*.hbs"],
-                tasks: ["dist", "uglify"],
+                files: ["src/views/**/*.hbs"],
+                tasks: ["dist"],
                 interrupt: true,
                 debounceDelay: 5,
                 interval: 5
@@ -114,7 +104,6 @@ module.exports = function(grunt) {
     /* These plugins provide necessary tasks. */
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
-    grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks("grunt-contrib-clean");
@@ -124,8 +113,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-handlebars');
 
     /* Register tasks. */
-
-    grunt.registerTask("dist", ["concat", "handlebars", "uglify"]);
+    grunt.registerTask("dist", ["handlebars", "uglify"]);
     grunt.registerTask("default", ["jsbeautifier", "jshint", "dist", "connect", "jasmine"]);
     grunt.registerTask("test", ["dist", "connect", "jasmine"]);
     grunt.registerTask("jasmine-server", ["dist", "jasmine:all:build", "open:jasmine", "connect::keepalive"]);
