@@ -32,7 +32,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         "Assignee": ["fields", "assignee", "displayName"],
         "Reporter": ["fields", "reporter", "displayName"],
         "Priority": ["fields", "priority", "name"],
-        "Resolution": ["fields", "resolution"],
+        "Resolution": ["fields", "resolution", "name"],
         "Created Date": ["fields", "created"],
         "Due Date": ["fields", "duedate"],
         "Fix Version": ["fields", "fixVersions"],
@@ -235,7 +235,9 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
             lrfsReq = {};
         // Attach deferred method to return object 
         deferred.promise(lrfsReq);
+
         _this.logger.debug("Getting last saved state from sync storage");
+
         chrome.storage.sync.get("JiraTracker", function(data) {
             $.extend(UserData, data["JiraTracker"]);
             if (UserData.releaseId && UserData.releaseId.length > 0) {
@@ -243,6 +245,8 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
                 _this.loadRelease(evt, UserData.releaseId).done(function(sSheet) {
                     _this.logger.debug("Release loaded from last saved state...", sSheet);
                     deferred.resolveWith(_this, [sSheet]);
+                }).fail(function(errorMessage, sSheet) {
+                    deferred.rejectWith(_this, [errorMessage, sSheet]);
                 });
             }
         });
@@ -289,8 +293,9 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
             this.logger.debug("Validation of", validatorName, "successed.");
             successCallBack.apply(this, [deferred]);
         } else {
-            this.logger.debug("Validation of", validatorName, "failed");
-            errorCallBack.apply(this, [deferred]);
+            var errorMessage = "Validation of " + validatorName + " failed";
+            this.logger.debug(errorMessage);
+            errorCallBack.apply(this, [errorMessage, deferred]);
         }
         return lrReq;
     }
@@ -309,16 +314,21 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         releaseId = $("#releaseId").val();
         this.logger.debug("Loading release with id", releaseId);
 
-        return validateAndProceed.call(this, "LOAD_RELEASE", function(deferred) {
+        function validationSuccess(deferred) {
             // Add callback to update active release value
-            deferred.done(this.onReleaseChange);
             GSLoader.loadSpreadsheet({
                 context: this,
                 id: releaseId,
                 wanted: ["Setup"]
-            }).done(function(sSheet) {
+            }).then(this.onReleaseChange).then(function(sSheet) {
                 deferred.resolveWith(this, [sSheet]);
+            }, function(errorMessage, sSheet) {
+                deferred.rejectWith(this, [errorMessage, sSheet]);
             });
+        }
+
+        return validateAndProceed.call(this, "LOAD_RELEASE", validationSuccess, function(errorMessage, deferred) {
+            deferred.rejectWith(this, [errorMessage]);
         });
     };
 
@@ -329,32 +339,38 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         }
         baselineTitle = $("#releaseTitle").val();
 
-        return validateAndProceed.call(_this, "CREATE_BASELINE", function(deferred) {
+        function validationSuccess(deferred) {
             // Create new spreadsheet using GSLoader
             _this.logger.debug("Creating spreadsheet with title =", baselineTitle);
             GSLoader.createSpreadsheet({
                 context: _this,
                 title: baselineTitle
-            }).done(_this.onReleaseChange) // Add callback to update active release value
-            .done(function() {
+                /* Add callback to update active release value */
+            }).then(_this.onReleaseChange).then(function() {
+                // Rename Sheet 1 worksheet to Setup
+                return _this.activeRelease.worksheets[0].rename("Setup");
+            }).then(function() {
                 var titles = [JIRA_SETUP_WORKSHEET_USER_ID, JIRA_SETUP_WORKSHEET_BASIC_AUTH, JIRA_SETUP_WORKSHEET_JQL],
                     base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val()),
                     values = [$("#jiraUserId").val(), base64Encode, $("#jiraJQL").val()],
-                    releaseSettings = [titles, values],
-                    // Rename Sheet 1 worksheet to Setup
-                    renameReq = _this.activeRelease.worksheets[0].rename("Setup"),
-                    // Once Spreadsheet is created successfully, create a baseline snapshot
-                    baselineReq = _this.createSnapshot(evt, "Baseline");
-                $.when(renameReq, baselineReq).done(function() {
-                    // Adds release details into setup worksheet
-                    _this.logger.debug("Saving release settings into setup worksheet");
-                    _this.activeRelease.worksheets[0].addRows(releaseSettings).done(function() {
-                        _this.logger.debug("Release settings saved successfully");
-                        // Once Baseline is created successfully, execute callbacks
-                        deferred.resolveWith(_this, [_this.activeRelease]);
-                    });
-                });
+                    releaseSettings = [titles, values];
+                // Adds release details into setup worksheet
+                _this.logger.debug("Saving release settings into setup worksheet");
+                return _this.activeRelease.worksheets[0].addRows(releaseSettings);
+            }).then(function() {
+                _this.logger.debug("Release settings saved successfully");
+                // Once Spreadsheet is created successfully, create a baseline snapshot
+                return _this.createSnapshot(evt, "Baseline");
+            }).then(function() {
+                // Once Baseline is created successfully, execute callbacks
+                deferred.resolveWith(_this, [_this.activeRelease]);
+            }, function(errorMessage) {
+                deferred.rejectWith(_this, [errorMessage]);
             });
+        }
+
+        return validateAndProceed.call(_this, "CREATE_BASELINE", validationSuccess, function(errorMessage, deferred) {
+            deferred.rejectWith(this, [errorMessage]);
         });
     };
 
@@ -491,7 +507,9 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         JiraTracker: JiraTracker
     });
     return JiraTracker;
-}, function() {
+},
+
+function() {
     JiraTracker.init();
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
     $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
@@ -499,7 +517,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
 });
 
 /**
- * Called when the client library is loaded.
+ * Called when the google drive client library is loaded.
  */
 window.googleDriveClientLoaded = function() {
     GSLoader.auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);

@@ -1,30 +1,5 @@
 steal("js/jiraTrackerBackground.js", function() {
     describe("JiraTracker Background", function() {
-        function returnDeffered(defferedOpts) {
-            defferedOpts = $.extend({
-                // 1: Resolve, 0: Reject, -1: Pending
-                status: 1,
-                result: undefined
-            }, defferedOpts);
-
-            var deferred = $.Deferred(),
-                promise = deferred.promise(),
-                returnObj = {
-                    deferredObj: deferred,
-                    promiseObj: promise,
-                    callBack: function(options) {
-                        var context = options && options.context || promise;
-                        if (defferedOpts.status === 1) {
-                            deferred.resolveWith(context, [defferedOpts.result]);
-                        } else if (defferedOpts.status === 0) {
-                            deferred.rejectWith(context, [defferedOpts.result]);
-                        }
-                        return promise;
-                    }
-                };
-            return returnObj;
-        }
-
         afterEach(function() {
             JiraTracker.Background.inProgress = false;
         });
@@ -64,7 +39,7 @@ steal("js/jiraTrackerBackground.js", function() {
             });
 
             it("creates snapshot with correct title using JiraTracker only if its required", function() {
-                spyOn(JiraTracker, "createSnapshot").andCallFake(returnDeffered().callBack);
+                spyOn(JiraTracker, "createSnapshot").andCallFake(jasmine.deferred().callBack);
 
                 // Snapshot can not be generated
                 JiraTracker.Background.onAlarmListener();
@@ -84,7 +59,7 @@ steal("js/jiraTrackerBackground.js", function() {
             });
 
             it("updates inProgress parameters correctly for successful response", function() {
-                var deferredSpy = returnDeffered({
+                var deferredSpy = jasmine.deferred({
                     status: -1
                 });
                 snapshot = "New snapshot date title";
@@ -101,7 +76,7 @@ steal("js/jiraTrackerBackground.js", function() {
             });
 
             it("updates inProgress parameters correctly for un-successful response", function() {
-                var deferredSpy = returnDeffered({
+                var deferredSpy = jasmine.deferred({
                     status: -1
                 });
                 snapshot = "New snapshot date title";
