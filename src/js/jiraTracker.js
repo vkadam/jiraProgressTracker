@@ -3,82 +3,7 @@
  */
 steal("jquery", "underscore", "js-logger", "handlebars", "moment")
     .then("jquery/validate", "dist/jiraTrackerTemplates.js", "gsloader",
-    "js/base64.js", "js/moment-zone.js", "google/client", function() {
-    /**
-     * Creates an instance of JiraIssue.
-     *
-     * @constructor
-     * @this {JiraIssue}
-     * @param {Object} jsonObj Attributes of jira issue
-     */
-    var JiraIssue = function(jsonObj) {
-        this.parse(jsonObj);
-    };
-
-    JiraIssue.getValue = function(issue, p) {
-        var obj = issue;
-        for (var i = 0, len = p.length; i < len - 1; i++) {
-            obj = obj[p[i]];
-        }
-        return obj ? obj[p[len - 1]] : null;
-    };
-
-    JiraIssue.fields = {
-        "Project": ["fields", "project", "key"],
-        "Key": ["key"],
-        "Issue Type": ["fields", "issuetype", "name"],
-        "Summary": ["fields", "summary"],
-        "Status": ["fields", "status", "name"],
-        "Assignee": ["fields", "assignee", "displayName"],
-        "Reporter": ["fields", "reporter", "displayName"],
-        "Priority": ["fields", "priority", "name"],
-        "Resolution": ["fields", "resolution", "name"],
-        "Created Date": ["fields", "created"],
-        "Due Date": ["fields", "duedate"],
-        "Fix Version": ["fields", "fixVersions"],
-        "Resolution Date": ["fields", "resolutiondate"],
-        "Component/s": ["fields", "components"],
-        "Labels": ["fields", "labels"],
-        "Points": ["fields", "customfield_10792"],
-        "Team": ["fields", "customfield_11261", "value"],
-        "Work Stream": ["fields", "customfield_12544", "value"],
-        "Epic/Theme": ["fields", "customfield_10850"],
-        "Feature": ["fields", "customfield_12545"]
-    };
-
-    JiraIssue.prototype.parse = function(issueData) {
-        var _this = this;
-        if (issueData) {
-            $.each(JiraIssue.fields, function(key, value) {
-                _this[key] = JiraIssue.getValue(issueData, value);
-            });
-        }
-        return this;
-    };
-
-    JiraIssue.prototype.toArray = function() {
-        var _this = this;
-        var values = [];
-        var attrValue;
-        $.each(JiraIssue.fields, function(key) {
-            attrValue = _this[key];
-            if (("Fix Version" === key || "Component/s" === key) && null !== attrValue) {
-                attrValue = [];
-                $.each(_this[key], function(idx, val) {
-                    attrValue.push(val.name);
-                });
-                attrValue = attrValue.join("\n");
-            } else if (("Labels" === key || "Epic/Theme" === key || "Feature" === key) && null !== attrValue) {
-                attrValue = [];
-                $.each(_this[key], function(idx, val) {
-                    attrValue.push(val);
-                });
-                attrValue = attrValue.join("\n");
-            }
-            values.push(attrValue);
-        });
-        return values;
-    };
+    "js/base64.js", "js/moment-zone.js", "js/models/jiraIssue.js", function() {
 
     /**
      * User data
@@ -455,7 +380,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         }
         snapshotTitle = $("#snapshotTitle").val();
 
-        return validateAndProceed.call(this, "CREATE_SNAPSHOT", function(deferred) {
+        function validationSuccess(deferred) {
             var base64Encode = $("#jiraPassword").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
             if (_.isUndefined(base64Encode)) {
                 base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
@@ -471,35 +396,43 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
                 headers: {
                     "Authorization": "Basic " + base64Encode
                 }
-            }).done(function(data) {
+            }).then(function(data) {
                 if (typeof(data) === "string") {
                     data = JSON.parse(data);
                 }
-                var headersTitles = [];
-                $.each(JiraIssue.fields, function(key) {
-                    headersTitles.push(key);
-                });
 
-                var jiraIssues = [];
-                var jiraIssue;
+                var jiraIssues = [],
+                    jiraIssue;
                 $.each(data.issues, function(idx, issue) {
                     jiraIssue = new JiraIssue(issue);
                     jiraIssues.push(jiraIssue.toArray());
                 });
 
                 _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
+                return jiraIssues;
+            }).then(function(jiraIssues) {
+                var headersTitles = [];
+                $.each(JiraIssue.fields, function(key) {
+                    headersTitles.push(key);
+                });
 
-                _this.activeRelease.createWorksheet({
+                return _this.activeRelease.createWorksheet({
                     title: snapshotTitle,
                     headers: headersTitles,
                     rowData: jiraIssues,
                     rows: jiraIssues.length + 1,
                     cols: headersTitles.length
-                }).done(function(wSheet) {
-                    _this.logger.debug("Snapshot", wSheet.title, "created successfully");
-                    deferred.resolveWith(this, [wSheet]);
                 });
+            }).then(function(wSheet) {
+                _this.logger.debug("Snapshot", wSheet.title, "created successfully");
+                deferred.resolveWith(this, [wSheet]);
+            }, function(jqXHR, textStatus) {
+                deferred.rejectWith(this, [textStatus]);
             });
+        }
+
+        return validateAndProceed.call(this, "CREATE_SNAPSHOT", validationSuccess, function(errorMessage, deferred) {
+            deferred.rejectWith(this, [errorMessage]);
         });
     };
 
@@ -507,18 +440,15 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         JiraTracker: JiraTracker
     });
     return JiraTracker;
-},
-
-function() {
+}, function() {
     JiraTracker.init();
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
     $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
     $(".create-snapshot").click($.proxy(JiraTracker.createSnapshot, JiraTracker));
-});
-
-/**
- * Called when the google drive client library is loaded.
- */
-window.googleDriveClientLoaded = function() {
-    GSLoader.auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
-};
+    /**
+     * Called when the google drive client library is loaded.
+     */
+    window.googleDriveClientLoaded = function() {
+        GSLoader.auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
+    };
+}, "google/client");

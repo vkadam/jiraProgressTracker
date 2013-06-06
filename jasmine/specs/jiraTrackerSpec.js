@@ -10,6 +10,7 @@ steal("js/jiraTracker.js", function() {
             spyOnAjax = spyOn($, "ajax");
             chrome.storage.sync.clear();
             affix(".container");
+            JiraTracker.activeRelease = null;
         });
 
         afterEach(function() {
@@ -461,17 +462,15 @@ steal("js/jiraTracker.js", function() {
                 } else {
                     createReq = JiraTracker.createSnapshot();
                 }
-                var created = false;
-                createReq.done(function() {
-                    created = true;
-                });
 
                 waitsFor(function() {
-                    return created;
+                    return createReq.state() === "resolved";
                 }, "Worksheet should be created", 200);
 
                 runs(function() {
                     expect(spyOnCreateWorksheet).toHaveBeenCalled();
+                    expect(spyOnCreateWorksheet.callCount).toBe(1);
+                    expect(spyOnCreateWorksheet.mostRecentCall.args[0].rowData.length).toBe(50);
                     expect(JiraTracker.activeRelease.worksheets[0]).toBe(worksheet);
                     expect(JiraTracker.activeRelease.worksheets[0].id).toBe("ws1");
                     expect($("#snapshotTitle")).toHaveValue(snapshotTitle);
@@ -489,13 +488,9 @@ steal("js/jiraTracker.js", function() {
             it("makes jira call with correct data to get jira issues", function() {
                 populateValues();
                 var createReq = JiraTracker.createSnapshot();
-                var created = false;
-                createReq.done(function() {
-                    created = true;
-                });
 
                 waitsFor(function() {
-                    return created;
+                    return createReq.state() === "resolved";
                 }, "Worksheet should be created", 200);
 
                 runs(function() {
@@ -542,19 +537,54 @@ steal("js/jiraTracker.js", function() {
                 assertForBasicKey(base64Key);
             });
 
-            it("Create snapshot does validation", function() {
+            it("does validation", function() {
                 $("#releaseId").val("");
                 $("#jiraMaxResults").val("").show();
-                var createReq = JiraTracker.createSnapshot();
+                var errorCallback = jasmine.createSpy("JiraTracker.createSnapshot.errorCallback"),
+                    createReq = JiraTracker.createSnapshot().fail(errorCallback);
 
-                expect(createReq.errors).toBeDefined();
-                doControlValidation(createReq, "releaseId", "Release is not loaded");
-                doControlValidation(createReq, "jiraUserId", "Jira user name is required");
-                doControlValidation(createReq, "jiraPassword", "Jira password is required");
-                doControlValidation(createReq, "jiraJQL", "Jira JQL is required");
-                doControlValidation(createReq, "snapshotTitle", "Snapshot title is required");
-                doControlValidation(createReq, "jiraMaxResults", "Value of max result from is required");
-                expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
+                waitsFor(function() {
+                    return (createReq.state() === "rejected");
+                }, "JiraTracker.createBaseline should fail", 200);
+
+                runs(function() {
+                    expect(createReq.errors).toBeDefined();
+                    doControlValidation(createReq, "releaseId", "Release is not loaded");
+                    doControlValidation(createReq, "jiraUserId", "Jira user name is required");
+                    doControlValidation(createReq, "jiraPassword", "Jira password is required");
+                    doControlValidation(createReq, "jiraJQL", "Jira JQL is required");
+                    doControlValidation(createReq, "snapshotTitle", "Snapshot title is required");
+                    doControlValidation(createReq, "jiraMaxResults", "Value of max result from is required");
+                    expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
+                });
+            });
+
+            function createBaselineAndCallErrorBack() {
+                populateValues();
+                var errorCallback = jasmine.createSpy("JiraTracker.createSnapshot.errorCallback"),
+                    loadedReq = JiraTracker.createSnapshot({}, "Snapshot title").fail(errorCallback);
+
+                waitsFor(function() {
+                    return (loadedReq.state() === "rejected");
+                }, "JiraTracker.createSnapshot should fail", 200);
+
+                runs(function() {
+                    expect(errorCallback).toHaveBeenCalled();
+                });
+            }
+
+            it("call error callback in case of error for getting jira issues", function() {
+                $.fixture("http://jira.cengage.com/rest/api/2/search", function() {
+                    return [401, "Get Jira Issue Error", null];
+                });
+                createBaselineAndCallErrorBack();
+            });
+
+            it("call error callback in case of activeRelease.createWorksheet failure", function() {
+                spyOnCreateWorksheet.andCallFake(jasmine.deferred({
+                    "status": 0
+                }).callBack);
+                createBaselineAndCallErrorBack();
             });
         });
 
