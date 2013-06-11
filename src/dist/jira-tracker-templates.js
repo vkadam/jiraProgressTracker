@@ -1,6 +1,6 @@
 this["JiraTrackerTemplates"] = this["JiraTrackerTemplates"] || {};
 
-this["JiraTrackerTemplates"]["src/views/jiraTrackerForm.hbs"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+this["JiraTrackerTemplates"]["src/views/jira-tracker-form.hbs"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [2,'>= 1.0.0-rc.3'];
 helpers = helpers || Handlebars.helpers; data = data || {};
   

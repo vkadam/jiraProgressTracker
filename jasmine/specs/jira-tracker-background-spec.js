@@ -1,4 +1,4 @@
-steal("js/jiraTrackerBackground.js", function() {
+steal("js/jira-tracker-background.js", function() {
     describe("JiraTracker Background", function() {
         afterEach(function() {
             JiraTracker.Background.inProgress = false;

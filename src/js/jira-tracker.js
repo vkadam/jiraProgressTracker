@@ -2,8 +2,8 @@
  * @author Vishal Kadam https://github.com/vkadam
  */
 steal("jquery", "underscore", "js-logger", "handlebars", "moment")
-    .then("jquery/validate", "dist/jiraTrackerTemplates.js", "gsloader",
-    "js/base64.js", "js/moment-zone.js", "js/models/jiraIssue.js", function() {
+    .then("jquery/validate", "dist/jira-tracker-templates.js", "gsloader",
+    "js/base64.js", "js/moment-zone.js", "js/models/jira-issue.js", function() {
 
     /**
      * User data
@@ -144,7 +144,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
      * @return {JiraTrackerClass} Instance of JiraTrackerClass
      */
     JiraTrackerClass.prototype.injectUI = function() {
-        $(".container").prepend(JiraTrackerTemplates["src/views/jiraTrackerForm.hbs"]());
+        $(".container").prepend(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
         return this;
     };
 
@@ -319,6 +319,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
                 releaseId: this.activeRelease.id
             }
         });
+        return this.activeRelease;
     };
 
     /**

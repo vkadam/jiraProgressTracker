@@ -1,7 +1,7 @@
 /**
  * @author Vishal Kadam https://github.com/vkadam
  */
-steal("js/jiraTracker.js", function(JiraTrackerInst) {
+steal("js/jira-tracker.js", function(JiraTrackerInst) {
     /**
      * Creates an instance of BackgroundClass.
      *

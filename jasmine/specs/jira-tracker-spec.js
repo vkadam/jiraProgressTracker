@@ -1,4 +1,4 @@
-steal("js/jiraTracker.js", function() {
+steal("js/jira-tracker.js", function() {
     describe("JiraTracker", function() {
         var spyOnAjax;
         beforeEach(function() {
@@ -226,12 +226,13 @@ steal("js/jiraTracker.js", function() {
                 JiraTracker.injectUI();
             });
 
-            it("onReleaseChange poluates fields and make spreadsheet active", function() {
+            it("onReleaseChange poluates fields, make spreadsheet active and returns activeRelease", function() {
 
                 expect(JiraTracker.activeRelease).toBeNull();
 
-                JiraTracker.onReleaseChange(actualRelease);
+                var returnObj = JiraTracker.onReleaseChange(actualRelease);
 
+                expect(returnObj).toBe(JiraTracker.activeRelease);
                 expect($("#jiraUserId")).toHaveValue("SomeJiraUserId");
                 expect($("#jiraPassword")).toHaveValue("It5AS3cr3t");
                 expect($("#jiraPassword")).toHaveData("jira-basic-authorization", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==");

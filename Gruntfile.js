@@ -13,7 +13,7 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    "src/dist/jiraTrackerTemplates.min.js": ["src/dist/jiraTrackerTemplates.js"]
+                    "src/dist/jira-tracker-templates.min.js": ["src/dist/jira-tracker-templates.js"]
                 }
             }
         },
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
         jasmine: {
             all: {
                 options: {
-                    specs: ["jasmine/specs/**/*Spec.js"],
+                    specs: ["jasmine/specs/**/*spec.js"],
                     helpers: ["jasmine/lib/jasmine-helper.js", "jasmine/lib/**/*.js"],
                     host: "http://127.0.0.1:<%= connect.jasmine.options.port %>/",
                     template: require('grunt-template-jasmine-steal'),
@@ -61,7 +61,7 @@ module.exports = function(grunt) {
             }
         },
         jshint: {
-            files: ["package.json", "Gruntfile.js", "src/js/**/*.js", "jasmine/specs/**/*Spec.js", "jasmine/lib/*.js"],
+            files: ["package.json", "Gruntfile.js", "src/js/**/*.js", "jasmine/specs/**/*spec.js", "jasmine/lib/*.js"],
             options: {
                 curly: true,
                 eqeqeq: true,
@@ -95,7 +95,7 @@ module.exports = function(grunt) {
                     namespace: "JiraTrackerTemplates"
                 },
                 files: {
-                    "src/dist/jiraTrackerTemplates.js": ["src/views/*.hbs"]
+                    "src/dist/jira-tracker-templates.js": ["src/views/*.hbs"]
                 }
             }
         }
