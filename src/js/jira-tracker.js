@@ -194,7 +194,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
      * @constructor
      * @param {String} Validator name
      * @param {Function} Callback function which will be invoked if form is valid
-     * @returns {jQuery.Deffered} Returns validator request i.e. instance of jquery deffered, with errors
+     * @returns {jQuery.Deferred} Returns validator request i.e. instance of jquery deferred, with errors
      */
 
     function validateAndProceed(validatorName, successCallBack, errorCallBack) {
@@ -397,20 +397,26 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
                 headers: {
                     "Authorization": "Basic " + base64Encode
                 }
-            }).then(function(data) {
-                if (typeof(data) === "string") {
-                    data = JSON.parse(data);
+            }).then(function(data, textStatus, jqXHR) {
+                var deferred = $.Deferred();
+                try {
+                    if (typeof(data) === "string") {
+                        data = JSON.parse(data);
+                    }
+
+                    var jiraIssues = [],
+                        jiraIssue;
+                    $.each(data.issues, function(idx, issue) {
+                        jiraIssue = new JiraIssue(issue);
+                        jiraIssues.push(jiraIssue.toArray());
+                    });
+
+                    _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
+                    deferred.resolve(jiraIssues);
+                } catch (e) {
+                    deferred.reject("Exception while parsing jira issue response");
                 }
-
-                var jiraIssues = [],
-                    jiraIssue;
-                $.each(data.issues, function(idx, issue) {
-                    jiraIssue = new JiraIssue(issue);
-                    jiraIssues.push(jiraIssue.toArray());
-                });
-
-                _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
-                return jiraIssues;
+                return deferred.promise();
             }).then(function(jiraIssues) {
                 var headersTitles = [];
                 $.each(JiraIssue.fields, function(key) {

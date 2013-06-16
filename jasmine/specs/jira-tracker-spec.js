@@ -403,7 +403,7 @@ steal("js/jira-tracker.js", function() {
             });
         });
 
-        describe("Create snapshot", function() {
+        describe("createSnapshot", function() {
             var snapshotTitle = "Worksheet Title",
                 spyOnCreateWorksheet = jasmine.createSpy("createWorksheet"),
                 activeRelease = {
@@ -577,6 +577,13 @@ steal("js/jira-tracker.js", function() {
             it("call error callback in case of error for getting jira issues", function() {
                 $.fixture("http://jira.cengage.com/rest/api/2/search", function() {
                     return [401, "Get Jira Issue Error", null];
+                });
+                createBaselineAndCallErrorBack();
+            });
+
+            it("call error callback in case of parsing jira issues response", function() {
+                $.fixture("http://jira.cengage.com/rest/api/2/search", function() {
+                    return [200, "jira response parsing exception", "null"];
                 });
                 createBaselineAndCallErrorBack();
             });
