@@ -1,26 +1,21 @@
-/**
- * @author Vishal Kadam https://github.com/vkadam
- */
-steal("js/jira-tracker.js", function(JiraTrackerInst) {
+define(["jquery", "js-logger", "js/jira-tracker"], function($, Logger, JiraTracker) {
     /**
-     * Creates an instance of BackgroundClass.
+     * Creates an instance of Background
      *
      * @constructor
-     * @this {BackgroundClass}
+     * @this {Background}
      */
-    var BackgroundClass = function() {
+    var Background = function() {
         Logger.useDefaults(Logger.DEBUG);
-        this.logger = Logger.get("jiraTrackerBackground");
+        this.logger = Logger.get("Background");
         this.inProgress = false;
     };
 
-    var Background = new BackgroundClass();
-
     /**
      * Initialization, creates the chrome.alarms for "watchSnapshot" and adds listener for it
-     * @this {BackgroundClass}
+     * @this {Background}
      */
-    BackgroundClass.prototype.init = function() {
+    Background.prototype.init = function() {
         this.logger.debug("Creating watchSnapshot chrome alarm");
 
         chrome.alarms.create('watchSnapshot', {
@@ -32,9 +27,9 @@ steal("js/jira-tracker.js", function(JiraTrackerInst) {
 
     /**
      * Alarm listenr for "watchSnapshot"
-     * @this {BackgroundClass}
+     * @this {Background}
      */
-    BackgroundClass.prototype.onAlarmListener = function() {
+    Background.prototype.onAlarmListener = function() {
         var _this = this;
         // _this.logger.debug("Inside onAlarmListener");
         /*// _this.logger.debug("Sending message for JiraProgressTracker extension");
@@ -44,10 +39,10 @@ steal("js/jira-tracker.js", function(JiraTrackerInst) {
 			// _this.logger.debug("Response is", chrome.runtime.lastError, response, arguments);
 		});*/
 
-        var newSnapshotTitle = JiraTrackerInst.canSnapshotBeGenerated();
+        var newSnapshotTitle = JiraTracker.canSnapshotBeGenerated();
         if (!_this.inProgress && newSnapshotTitle) {
             _this.logger.debug("Snapshot for", newSnapshotTitle, "doesn't exists creating one");
-            JiraTrackerInst.createSnapshot(null, newSnapshotTitle).always(function() {
+            JiraTracker.createSnapshot(null, newSnapshotTitle).always(function() {
                 // _this.logger.debug("Snapshot for", newSnapshotTitle, "created", wSheet);
                 _this.inProgress = false;
             });
@@ -55,9 +50,5 @@ steal("js/jira-tracker.js", function(JiraTrackerInst) {
         }
     };
 
-    $.extend(JiraTrackerInst, {
-        Background: Background
-    });
-}, function(JiraTrackerInst) {
-    JiraTrackerInst.Background.init();
+    return new Background();
 });

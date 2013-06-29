@@ -4,7 +4,7 @@
  * NOTE: This doesn't support day light saving yet.
  * Need to use moment-timezone when its production ready
  */
-steal("moment", function() {
+define(["moment"], function(moment) {
     moment.fn.toZone = function(zoneOffsetHrs) {
         var localDateObj = this.clone();
         localDateObj.add(localDateObj.zone() * 60000);
@@ -13,4 +13,5 @@ steal("moment", function() {
         // return value is the time in specified zoneOffsetHrs
         return zM;
     };
+    return moment;
 });

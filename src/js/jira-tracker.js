@@ -1,10 +1,9 @@
-/**
- * @author Vishal Kadam https://github.com/vkadam
- */
-steal("jquery", "underscore", "js-logger", "handlebars", "moment")
-    .then("jquery/validate", "dist/jira-tracker-templates.js", "gsloader",
-    "js/base64.js", "js/moment-zone.js", "js/models/jira-issue.js", function() {
+define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
+        "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
+        "jquery/validate"
+], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue) {
 
+    /*global chrome:false*/
     /**
      * User data
      * @define {Object}
@@ -29,8 +28,6 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         JIRA_SETUP_WORKSHEET_USER_ID = "jira-user-id",
         JIRA_SETUP_WORKSHEET_BASIC_AUTH = "jira-basic-authorization",
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
-
-    var JiraTracker = new JiraTrackerClass();
 
     /**
      * Static instance of all vaditator definition
@@ -125,6 +122,15 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
         this.injectUI()
             .bindEvents()
             .loadReleaseFromStorage(evt);
+
+        // /*
+        // * Authorize and load gsloader.drive.load/gapi.client.load("drive", "v2", this.onLoad);
+        // * TODO: Decouple it to authorize and the load rather than client loading to authorize
+        // */
+        // var GSLoaderAuth = require("js/plugins/gsloader-auth"),
+        // GSLoaderDrive = require("js/plugins/gsloader-drive");
+
+        // GSLoaderAuth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoaderDrive.load, GSLoaderDrive);
 
         /*chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 console.log(sender.tab ?
@@ -397,7 +403,7 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
                 headers: {
                     "Authorization": "Basic " + base64Encode
                 }
-            }).then(function(data, textStatus, jqXHR) {
+            }).then(function(data /*, textStatus, jqXHR*/ ) {
                 var deferred = $.Deferred();
                 try {
                     if (typeof(data) === "string") {
@@ -442,20 +448,5 @@ steal("jquery", "underscore", "js-logger", "handlebars", "moment")
             deferred.rejectWith(this, [errorMessage]);
         });
     };
-
-    $.extend(window, {
-        JiraTracker: JiraTracker
-    });
-    return JiraTracker;
-}, function() {
-    JiraTracker.init();
-    $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
-    $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
-    $(".create-snapshot").click($.proxy(JiraTracker.createSnapshot, JiraTracker));
-    /**
-     * Called when the google drive client library is loaded.
-     */
-    window.googleDriveClientLoaded = function() {
-        GSLoader.auth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoader.drive.load, GSLoader.drive);
-    };
-}, "google/client");
+    return new JiraTrackerClass();
+});

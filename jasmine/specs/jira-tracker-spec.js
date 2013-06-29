@@ -1,4 +1,6 @@
-steal("js/jira-tracker.js", function() {
+define(["jquery", "js/jira-tracker", "gsloader",
+        "js/base64", "js/moment-zone", "jasmine-helper"
+], function($, JiraTracker, GSLoader, Base64, moment, Deferred) {
     describe("JiraTracker", function() {
         var spyOnAjax;
         beforeEach(function() {
@@ -43,7 +45,7 @@ steal("js/jira-tracker.js", function() {
             });
 
             it("populates release id from user sync data and load release", function() {
-                JiraTracker.loadRelease.andCallFake(jasmine.deferred().callBack);
+                JiraTracker.loadRelease.andCallFake(new Deferred().callBack);
                 JiraTracker.loadReleaseFromStorage();
 
                 expect(chrome.storage.sync.get).toHaveBeenCalledWith("JiraTracker", jasmine.any(Function));
@@ -51,14 +53,14 @@ steal("js/jira-tracker.js", function() {
             });
 
             it("returns deferred object", function() {
-                JiraTracker.loadRelease.andCallFake(jasmine.deferred().callBack);
+                JiraTracker.loadRelease.andCallFake(new Deferred().callBack);
                 var loadStorageReq = JiraTracker.loadReleaseFromStorage();
                 expect(loadStorageReq).toBeDefined();
                 expect(loadStorageReq.done).toBeDefined();
             });
 
             it("call error callback incase of loadRelease fails", function() {
-                JiraTracker.loadRelease.andCallFake(jasmine.deferred({
+                JiraTracker.loadRelease.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
 
@@ -119,7 +121,7 @@ steal("js/jira-tracker.js", function() {
                 var actualRelease = {
                     id: expectedSpreadsheetId
                 };
-                GSLoader.loadSpreadsheet.andCallFake(jasmine.deferred({
+                GSLoader.loadSpreadsheet.andCallFake(new Deferred({
                     "result": actualRelease
                 }).callBack);
                 var loadedReq = JiraTracker.loadRelease(null, actualSpreadsheetId);
@@ -146,7 +148,7 @@ steal("js/jira-tracker.js", function() {
             });
 
             function loadSpreedsheetAndCallErrorBack(spreadsheetId) {
-                GSLoader.loadSpreadsheet.andCallFake(jasmine.deferred({
+                GSLoader.loadSpreadsheet.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
 
@@ -268,19 +270,19 @@ steal("js/jira-tracker.js", function() {
             var newSpreadsheet;
             beforeEach(function() {
                 spyOn(JiraTracker, "onReleaseChange").andCallThrough();
-                spyOn(JiraTracker, "createSnapshot").andCallFake(jasmine.deferred().callBack);
+                spyOn(JiraTracker, "createSnapshot").andCallFake(new Deferred().callBack);
                 JiraTracker.injectUI();
                 var worksheet = {
                     title: "Sheet 1",
-                    rename: jasmine.createSpy("worksheet.rename").andCallFake(jasmine.deferred().callBack),
-                    addRows: jasmine.createSpy("worksheet.addRows").andCallFake(jasmine.deferred().callBack)
+                    rename: jasmine.createSpy("worksheet.rename").andCallFake(new Deferred().callBack),
+                    addRows: jasmine.createSpy("worksheet.addRows").andCallFake(new Deferred().callBack)
                 };
                 newSpreadsheet = {
                     id: "mySpreadSheetId",
                     worksheets: [worksheet],
                     getWorksheet: jasmine.createSpy("spreadsheet.getWorksheet")
                 };
-                spyOn(GSLoader, "createSpreadsheet").andCallFake(jasmine.deferred({
+                spyOn(GSLoader, "createSpreadsheet").andCallFake(new Deferred({
                     "result": newSpreadsheet
                 }).callBack);
 
@@ -375,28 +377,28 @@ steal("js/jira-tracker.js", function() {
             }
 
             it("call error callback in case of GSLoader.createSpreadsheet failure", function() {
-                GSLoader.createSpreadsheet.andCallFake(jasmine.deferred({
+                GSLoader.createSpreadsheet.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
                 createBaselineAndCallErrorBack();
             });
 
             it("call error callback in case of worksheet.rename failure", function() {
-                newSpreadsheet.worksheets[0].rename.andCallFake(jasmine.deferred({
+                newSpreadsheet.worksheets[0].rename.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
                 createBaselineAndCallErrorBack();
             });
 
             it("call error callback in case of JiraTracker.createSnapshot failure", function() {
-                JiraTracker.createSnapshot.andCallFake(jasmine.deferred({
+                JiraTracker.createSnapshot.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
                 createBaselineAndCallErrorBack();
             });
 
             it("call error callback in case of worksheet.addRows failure", function() {
-                newSpreadsheet.worksheets[0].addRows.andCallFake(jasmine.deferred({
+                newSpreadsheet.worksheets[0].addRows.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
                 createBaselineAndCallErrorBack();
@@ -589,7 +591,7 @@ steal("js/jira-tracker.js", function() {
             });
 
             it("call error callback in case of activeRelease.createWorksheet failure", function() {
-                spyOnCreateWorksheet.andCallFake(jasmine.deferred({
+                spyOnCreateWorksheet.andCallFake(new Deferred({
                     "status": 0
                 }).callBack);
                 createBaselineAndCallErrorBack();

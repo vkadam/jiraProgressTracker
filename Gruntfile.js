@@ -1,4 +1,4 @@
-/*global module:false, require:false*/
+/*global module:false*/
 module.exports = function(grunt) {
     "use strict";
     grunt.initConfig({
@@ -21,7 +21,8 @@ module.exports = function(grunt) {
             files: "<%= jshint.files %>",
             options: {
                 "preserve_newlines": true,
-                "max_preserve_newlines": 2
+                "max_preserve_newlines": 2,
+                "keep_array_indentation": true
             }
         },
         connect: {
@@ -40,12 +41,30 @@ module.exports = function(grunt) {
             all: {
                 options: {
                     specs: ["jasmine/specs/**/*spec.js"],
-                    helpers: ["jasmine/lib/jasmine-helper.js", "jasmine/lib/**/*.js"],
                     host: "http://127.0.0.1:<%= connect.jasmine.options.port %>/",
-                    template: require('grunt-template-jasmine-steal'),
+                    template: require("grunt-template-jasmine-requirejs"),
                     templateOptions: {
-                        steal: {
-                            url: "src/lib/steal/steal.js"
+                        requireConfigFile: "src/require-config.js",
+                        requireConfig: {
+                            baseUrl: "src",
+                            paths: {
+                                "jasmine-fixtures": "../jasmine/lib/jasmine-fixtures/jasmine-fixture",
+                                "jasmine-jquery": "../jasmine/lib/jasmine-jquery/jasmine-jquery",
+                                "jquery-fixture": "../jasmine/lib/jquery-fixture/jquerymx-3.2.custom",
+                                "jasmine-helper": "../jasmine/lib/jasmine-helper"
+                            },
+                            shim: {
+                                "jasmine-fixtures": {
+                                    deps: ["jquery"]
+                                },
+                                "jasmine-jquery": {
+                                    deps: ["jquery"]
+                                },
+                                "jquery-fixture": {
+                                    deps: ["jquery"]
+                                }
+                            },
+                            deps: ["jquery", "jasmine-fixtures", "jasmine-jquery", "jquery-fixture", "../jasmine/lib/chrome"]
                         }
                     }
                 }
@@ -70,29 +89,36 @@ module.exports = function(grunt) {
                 newcap: true,
                 noarg: true,
                 sub: true,
+                undef: true,
                 boss: true,
                 eqnull: true,
                 browser: true,
                 unused: true,
-                debug: true
-            },
-            globals: {
-                jQuery: false,
-                jasmine: false,
-                describe: false,
-                it: false,
-                spyOn: false,
-                expect: false,
-                waitsFor: false,
-                runs: false,
-                beforeEach: false,
-                afterEach: false
+                debug: true,
+                camelcase: true,
+                globals: {
+                    requirejs: false,
+                    require: false,
+                    define: false,
+                    jasmine: false,
+                    describe: false,
+                    it: false,
+                    spyOn: false,
+                    expect: false,
+                    waitsFor: false,
+                    runs: false,
+                    beforeEach: false,
+                    afterEach: false,
+                    affix: false,
+                    chrome: true
+                }
             }
         },
         handlebars: {
             compile: {
                 options: {
-                    namespace: "JiraTrackerTemplates"
+                    namespace: "JiraTrackerTemplates",
+                    amd: true
                 },
                 files: {
                     "src/dist/jira-tracker-templates.js": ["src/views/*.hbs"]

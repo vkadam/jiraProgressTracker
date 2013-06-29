@@ -10,6 +10,3 @@
 [submodule "src/lib/handlebars"]
 	path = src/lib/handlebars
 	url = https://github.com/wycats/handlebars.js.git
-[submodule "src/lib/steal"]
-	path = src/lib/steal
-	url = https://github.com/bitovi/steal.git
