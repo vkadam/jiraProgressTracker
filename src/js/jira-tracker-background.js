@@ -50,5 +50,5 @@ define(["jquery", "js-logger", "js/jira-tracker"], function($, Logger, JiraTrack
         }
     };
 
-    return new Background();
+    return Background;
 });
