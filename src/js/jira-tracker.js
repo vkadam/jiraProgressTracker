@@ -1,7 +1,7 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
-        "jquery/validate"
-], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue) {
+        "js/jira-form-validators", "jquery/validate"
+], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue, JiraValidators) {
 
     /*global chrome:false*/
     /**
@@ -13,12 +13,12 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     };
 
     /**
-     * Creates an instance of JiraTrackerClass.
+     * Creates an instance of JiraTracker.
      *
      * @constructor
-     * @this {JiraTrackerClass}
+     * @this {JiraTracker}
      */
-    var JiraTrackerClass = function() {
+    var JiraTracker = function() {
         this.activeRelease = null;
         Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get("jiraTracker");
@@ -30,73 +30,9 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
 
     /**
-     * Static instance of all vaditator definition
-     */
-    var validators = {
-        "heighlighter": function(element, errorClass) {
-            $(element).parents(".control-group").addClass(errorClass);
-        },
-        "unheighlighter": function(element, errorClass) {
-            $(element).parents(".control-group").removeClass(errorClass);
-        },
-        "addValidatorType": function(typeName, validatorDef) {
-            var defaultValidator = {
-                highlight: this.heighlighter,
-                unhighlight: this.unheighlighter
-            };
-            this[typeName] = $.extend(defaultValidator, validatorDef);
-        }
-    };
-
-    validators.addValidatorType.call(validators, "LOAD_RELEASE", {
-        rules: {
-            "releaseId": "required"
-        },
-        messages: {
-            "releaseId": "Release id is required"
-        }
-    });
-
-    validators.addValidatorType.call(validators, "CREATE_BASELINE", {
-        rules: {
-            "releaseTitle": "required",
-            "jiraUserId": "required",
-            "jiraPassword": "required",
-            "jiraJQL": "required",
-            "snapshotTitle": "required"
-        },
-        messages: {
-            "releaseTitle": "Release title is required",
-            "jiraUserId": "Jira user name is required",
-            "jiraPassword": "Jira password is required",
-            "jiraJQL": "Jira JQL is required",
-            "snapshotTitle": "Snapshot title is required"
-        }
-    });
-
-    validators.addValidatorType.call(validators, "CREATE_SNAPSHOT", {
-        rules: {
-            "releaseId": "required",
-            "jiraUserId": "required",
-            "jiraPassword": "required",
-            "jiraJQL": "required",
-            "jiraMaxResults": "required",
-            "snapshotTitle": "required"
-        },
-        messages: {
-            "releaseId": "Release is not loaded",
-            "jiraUserId": "Jira user name is required",
-            "jiraPassword": "Jira password is required",
-            "jiraJQL": "Jira JQL is required",
-            "jiraMaxResults": "Value of max result from is required",
-            "snapshotTitle": "Snapshot title is required"
-        }
-    });
-
-    /**
      *
      */
-    JiraTrackerClass.prototype.validate = function(requestType) {
+    JiraTracker.prototype.validate = function(requestType) {
         var $form = $(".jira-tracker"),
             oldValidator = $.data($form[0], "validator");
 
@@ -108,17 +44,17 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         }
 
         $.data($form[0], "validator", null);
-        var validator = $form.validate(validators[requestType]);
+        var validator = $form.validate(JiraValidators.get(requestType));
         validator.form();
         return validator;
     };
 
     /**
      * Initialization
-     * @this {JiraTrackerClass}
+     * @this {JiraTracker}
      * @return {Object} The deferred request object if release id is available in cache
      */
-    JiraTrackerClass.prototype.init = function(evt) {
+    JiraTracker.prototype.init = function(evt) {
         this.injectUI()
             .bindEvents()
             .loadReleaseFromStorage(evt);
@@ -146,21 +82,21 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
     /**
      * Inject ui into container div
-     * @this {JiraTrackerClass}
-     * @return {JiraTrackerClass} Instance of JiraTrackerClass
+     * @this {JiraTracker}
+     * @return {JiraTracker} Instance of JiraTracker
      */
-    JiraTrackerClass.prototype.injectUI = function() {
+    JiraTracker.prototype.injectUI = function() {
         $(".container").prepend(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
         return this;
     };
 
     /**
      * Populates last used values from storage (if any)
-     * @this {JiraTrackerClass}
+     * @this {JiraTracker}
      * @return {Object} The deferred request object if release id is available in cache
      */
 
-    JiraTrackerClass.prototype.loadReleaseFromStorage = function(evt) {
+    JiraTracker.prototype.loadReleaseFromStorage = function(evt) {
         var _this = this,
             deferred = $.Deferred(),
             lrfsReq = {};
@@ -187,7 +123,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     /**
      * Bind different types of events to form elements.
      */
-    JiraTrackerClass.prototype.bindEvents = function() {
+    JiraTracker.prototype.bindEvents = function() {
         $("form.jira-tracker input#jiraUserId, form.jira-tracker input#jiraPassword").on("change", function() {
             $("form.jira-tracker input#jiraPassword").removeData(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
         });
@@ -233,11 +169,11 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
     /**
      * Loads release by specified release id or value of releaseId element.
-     * @this {JiraTrackerClass}
+     * @this {JiraTracker}
      * @param {String=} Optional release id. If not passed value of releaseId element will be used
      * @return {Object} The deferred request object
      */
-    JiraTrackerClass.prototype.loadRelease = function(env, releaseId) {
+    JiraTracker.prototype.loadRelease = function(env, releaseId) {
         // If release id is passed set it to element. 
         if (releaseId) {
             $("#releaseId").val(releaseId);
@@ -263,7 +199,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         });
     };
 
-    JiraTrackerClass.prototype.createBaseline = function(evt, baselineTitle) {
+    JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
         var _this = this;
         if (baselineTitle) {
             $("#releaseTitle").val(baselineTitle);
@@ -309,7 +245,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * Keep updated the JiraTracker with latest release.
      * @param {Object} Spreasheet object which needs to be make active
      */
-    JiraTrackerClass.prototype.onReleaseChange = function(releaseSheet) {
+    JiraTracker.prototype.onReleaseChange = function(releaseSheet) {
         this.activeRelease = releaseSheet;
         var setupSheet = this.activeRelease.getWorksheet(JIRA_SETUP_WORKSHEET_TITLE);
         if (setupSheet && setupSheet.rows.length > 0) {
@@ -330,20 +266,20 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
     /**
      * Returns jira server time
-     * @this {JiraTrackerClass}
+     * @this {JiraTracker}
      * @return {Date} Date object of jira server time
      */
-    JiraTrackerClass.prototype.getJiraServerTime = function() {
+    JiraTracker.prototype.getJiraServerTime = function() {
         /* Cengage jira server is in EST */
         return moment().toZone(-4);
     };
 
     /**
      * Return false if snapshot can not be generated. Else return date as snapshot title
-     * @this {JiraTrackerClass}
+     * @this {JiraTracker}
      * @return {Boolean/String} false if can not be generated else date string
      */
-    JiraTrackerClass.prototype.canSnapshotBeGenerated = function() {
+    JiraTracker.prototype.canSnapshotBeGenerated = function() {
         var _this = this,
             result = false,
             todaysDate = _this.getJiraServerTime(), //.format("MM-DD-YYYY");
@@ -380,7 +316,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         return result;
     };
 
-    JiraTrackerClass.prototype.createSnapshot = function(evt, snapshotTitle) {
+    JiraTracker.prototype.createSnapshot = function(evt, snapshotTitle) {
         var _this = this;
         if (snapshotTitle) {
             $("#snapshotTitle").val(snapshotTitle);
@@ -420,7 +356,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
                     deferred.resolve(jiraIssues);
                 } catch (e) {
-                    deferred.reject("Exception while parsing jira issue response");
+                    deferred.reject({}, "Exception while parsing jira issue response");
                 }
                 return deferred.promise();
             }).then(function(jiraIssues) {
@@ -440,7 +376,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 _this.logger.debug("Snapshot", wSheet.title, "created successfully");
                 deferred.resolveWith(this, [wSheet]);
             }, function(jqXHR, textStatus) {
-                deferred.rejectWith(this, [textStatus]);
+                deferred.rejectWith(this, [textStatus || jqXHR]);
+                _this.logger.error(textStatus || jqXHR);
             });
         }
 
@@ -448,5 +385,5 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             deferred.rejectWith(this, [errorMessage]);
         });
     };
-    return new JiraTrackerClass();
+    return new JiraTracker();
 });

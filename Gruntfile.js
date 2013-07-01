@@ -80,7 +80,7 @@ module.exports = function(grunt) {
             }
         },
         jshint: {
-            files: ["package.json", "Gruntfile.js", "src/js/**/*.js", "jasmine/specs/**/*spec.js", "jasmine/lib/*.js"],
+            files: ["package.json", "Gruntfile.js", "src/*.js", "src/js/**/*.js", "jasmine/specs/**/*spec.js", "jasmine/lib/*.js"],
             options: {
                 curly: true,
                 eqeqeq: true,

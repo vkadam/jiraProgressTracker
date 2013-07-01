@@ -1,7 +1,7 @@
 /*
  * Authorize and load gsloader.drive.load/gapi.client.load("drive", "v2", this.onLoad);
  * TODO: Decouple it to authorize and the load rather than client loading to authorize
-*/
+ */
 /**
  * Called when the google drive client library is loaded.
  */

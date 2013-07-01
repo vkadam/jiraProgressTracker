@@ -1,14 +1,12 @@
-define(["jquery", "js/jira-tracker", "gsloader",
-        "js/base64", "js/moment-zone", "jasmine-helper"
-], function($, JiraTracker, GSLoader, Base64, moment, Deferred) {
+define(["jquery", "js/jira-tracker", "gsloader", "js/base64",
+        "js/moment-zone", "jasmine-helper", "js-logger"
+], function($, JiraTracker, GSLoader, Base64, moment, Deferred, Logger) {
     describe("JiraTracker", function() {
         var spyOnAjax;
         beforeEach(function() {
             $.ajaxSetup({
                 async: false
             });
-            // jasmine.getStyleFixtures().fixturesPath = "src/";
-            // loadStyleFixtures("lib/bootstrap/css/bootstrap.css");
             spyOnAjax = spyOn($, "ajax");
             chrome.storage.sync.clear();
             affix(".container");
@@ -363,45 +361,54 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 });
             });
 
-            function createBaselineAndCallErrorBack() {
-                var errorCallback = jasmine.createSpy("JiraTracker.createBaseline.errorCallback"),
-                    loadedReq = JiraTracker.createBaseline({}, "Baseline title").fail(errorCallback);
-
-                waitsFor(function() {
-                    return (loadedReq.state() === "rejected");
-                }, "JiraTracker.createBaseline should fail", 200);
-
-                runs(function() {
-                    expect(errorCallback).toHaveBeenCalled();
+            describe("call error callback", function() {
+                beforeEach(function() {
+                    Logger.useDefaults();
                 });
-            }
+                afterEach(function() {
+                    Logger.setLevel(Logger.OFF);
+                });
 
-            it("call error callback in case of GSLoader.createSpreadsheet failure", function() {
-                GSLoader.createSpreadsheet.andCallFake(new Deferred({
-                    "status": 0
-                }).callBack);
-                createBaselineAndCallErrorBack();
-            });
+                function createBaselineAndCallErrorBack() {
+                    var errorCallback = jasmine.createSpy("JiraTracker.createBaseline.errorCallback"),
+                        loadedReq = JiraTracker.createBaseline({}, "Baseline title").fail(errorCallback);
 
-            it("call error callback in case of worksheet.rename failure", function() {
-                newSpreadsheet.worksheets[0].rename.andCallFake(new Deferred({
-                    "status": 0
-                }).callBack);
-                createBaselineAndCallErrorBack();
-            });
+                    waitsFor(function() {
+                        return (loadedReq.state() === "rejected");
+                    }, "JiraTracker.createBaseline should fail", 200);
 
-            it("call error callback in case of JiraTracker.createSnapshot failure", function() {
-                JiraTracker.createSnapshot.andCallFake(new Deferred({
-                    "status": 0
-                }).callBack);
-                createBaselineAndCallErrorBack();
-            });
+                    runs(function() {
+                        expect(errorCallback).toHaveBeenCalled();
+                    });
+                }
 
-            it("call error callback in case of worksheet.addRows failure", function() {
-                newSpreadsheet.worksheets[0].addRows.andCallFake(new Deferred({
-                    "status": 0
-                }).callBack);
-                createBaselineAndCallErrorBack();
+                it("in case of GSLoader.createSpreadsheet failure", function() {
+                    GSLoader.createSpreadsheet.andCallFake(new Deferred({
+                        "status": 0
+                    }).callBack);
+                    createBaselineAndCallErrorBack();
+                });
+
+                it("in case of worksheet.rename failure", function() {
+                    newSpreadsheet.worksheets[0].rename.andCallFake(new Deferred({
+                        "status": 0
+                    }).callBack);
+                    createBaselineAndCallErrorBack();
+                });
+
+                it("in case of JiraTracker.createSnapshot failure", function() {
+                    JiraTracker.createSnapshot.andCallFake(new Deferred({
+                        "status": 0
+                    }).callBack);
+                    createBaselineAndCallErrorBack();
+                });
+
+                it("in case of worksheet.addRows failure", function() {
+                    newSpreadsheet.worksheets[0].addRows.andCallFake(new Deferred({
+                        "status": 0
+                    }).callBack);
+                    createBaselineAndCallErrorBack();
+                });
             });
         });
 
@@ -592,7 +599,8 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             it("call error callback in case of activeRelease.createWorksheet failure", function() {
                 spyOnCreateWorksheet.andCallFake(new Deferred({
-                    "status": 0
+                    "status": 0,
+                    "result": "Create worksheet failed"
                 }).callBack);
                 createBaselineAndCallErrorBack();
             });
