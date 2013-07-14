@@ -1,7 +1,7 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
-        "js/jira-form-validators", "jquery/validate"
-], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue, JiraValidators) {
+        "js/jira-form-validators", "js/snapshot-comparator", "jquery/validate"
+], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue, JiraValidators, Snapshot) {
 
     /*global chrome:false*/
     /**
@@ -27,6 +27,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
         JIRA_SETUP_WORKSHEET_USER_ID = "jira-user-id",
         JIRA_SETUP_WORKSHEET_BASIC_AUTH = "jira-basic-authorization",
+        BASELINE_SNAPSHOT = 1,
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
 
     /**
@@ -196,6 +197,25 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         return validateAndProceed.call(this, "LOAD_RELEASE", validationSuccess, function(errorMessage, deferred) {
             deferred.rejectWith(this, [errorMessage]);
+        });
+    };
+
+    JiraTracker.prototype.compareSnapshot = function() {
+
+        var _this = this;
+        var baselineWS = _this.activeRelease.worksheets[BASELINE_SNAPSHOT];
+        var latestWS = _this.activeRelease.worksheets[_this.activeRelease.worksheets.length - 1];
+        $.when(baselineWS.fetch(), latestWS.fetch())
+            .done(function() {
+            var baselineSnapshot = new Snapshot(baselineWS.rows);
+            var latestSnapshot = new Snapshot(latestWS.rows);
+
+            var inputJson = {
+                snapshot1: baselineSnapshot.summarize(),
+                snapshot2: latestSnapshot.summarize()
+            };
+
+            $(".summary-group").replaceWith(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
         });
     };
 

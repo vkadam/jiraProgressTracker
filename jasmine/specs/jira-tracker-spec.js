@@ -332,7 +332,7 @@ define(["jquery", "js/jira-tracker", "gsloader", "js/base64",
                 var addRowCall = JiraTracker.activeRelease.worksheets[0].addRows,
                     expectRows = [
                         ["jira-user-id", "jira-basic-authorization", "jira-jql"],
-                        ["SomeJiraUserId", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==", "SomeJiraJQL"]
+                                          ["SomeJiraUserId", "U29tZUppcmFVc2VySWQ6U29tZUppcmFQYXNzd29yZA==", "SomeJiraJQL"]
                     ];
                 expect(JiraTracker.activeRelease.worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);

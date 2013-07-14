@@ -17,4 +17,5 @@ require(["jquery", "js/jira-tracker"], function($, JiraTracker) {
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
     $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));
     $(".create-snapshot").click($.proxy(JiraTracker.createSnapshot, JiraTracker));
+    $(".compare-snapshot").click($.proxy(JiraTracker.compareSnapshot, JiraTracker));
 });
