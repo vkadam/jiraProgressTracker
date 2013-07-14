@@ -25,8 +25,8 @@ define(["jquery", "js-logger"], function($, Logger) {
                 name: "Done.Points",
                 val: points
             }];
-        }
-    };
+        };
+    }
 
     function TotalSummarizer() {
         var count = 0,
@@ -45,11 +45,10 @@ define(["jquery", "js-logger"], function($, Logger) {
                 name: "Total.Points",
                 val: points
             }];
-        }
+        };
     }
 
     Snapshot.prototype.summarize = function() {
-        var summary = [];
 
         var totalSummarizer = new TotalSummarizer();
         var doneSummarizer = new DoneSummarizer();

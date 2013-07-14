@@ -1,6 +1,6 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
-        "js/jira-form-validators", "js/snapshot-comparator", "jquery/validate"
+        "js/jira-form-validators", "js/snapshot-comparator", "js/handlebars-helpers", "jquery/validate"
 ], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue, JiraValidators, Snapshot) {
 
     /*global chrome:false*/
