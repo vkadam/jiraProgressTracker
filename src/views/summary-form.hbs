@@ -1,20 +1,18 @@
-<div class="summary-group">
 <table class="table .table-striped">
 	<thead>
 	    <tr>
-	      <th>Matric</th>
-	      <th>Baseline</th>
-	      <th>Current</th>
+	     	<th>Matric</th>
+	      	<th>Baseline</th>
+	      	<th>Current</th>
 	    </tr>
-		</thead>
+	</thead>
   <tbody>
     {{#each snapshot1}}
-	    <tr>
-	      <td>{{name}}</td>
-	      <td>{{val}}</td>
-	      <td>{{snapshot ../snapshot2 @index}}</td>
-	    </tr>
+    <tr>
+     	<td>{{@key}}</td>
+     	<td>{{.}}</td>
+		<td>{{get ../snapshot2 @key}}</td>
+    </tr>
     {{/each}}
   </tbody>
 </table>
-</div>

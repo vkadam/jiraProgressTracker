@@ -1,6 +1,6 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
-        "js/jira-form-validators", "js/snapshot-comparator", "js/handlebars-helpers", "jquery/validate"
+        "js/jira-form-validators", "js/comparator/snapshot", "js/handlebars-helpers", "jquery/validate"
 ], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue, JiraValidators, Snapshot) {
 
     /*global chrome:false*/
@@ -207,16 +207,16 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         var latestWS = _this.activeRelease.worksheets[_this.activeRelease.worksheets.length - 1];
         $.when(baselineWS.fetch(), latestWS.fetch())
             .done(function() {
-            var baselineSnapshot = new Snapshot(baselineWS.rows);
-            var latestSnapshot = new Snapshot(latestWS.rows);
+                var baselineSnapshot = new Snapshot(baselineWS.rows);
+                var latestSnapshot = new Snapshot(latestWS.rows);
 
-            var inputJson = {
-                snapshot1: baselineSnapshot.summarize(),
-                snapshot2: latestSnapshot.summarize()
-            };
+                var inputJson = {
+                    snapshot1: baselineSnapshot.summarize(),
+                    snapshot2: latestSnapshot.summarize()
+                };
 
-            $(".summary-group").replaceWith(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
-        });
+                $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
+            });
     };
 
     JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
