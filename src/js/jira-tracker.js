@@ -207,16 +207,16 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         var latestWS = _this.activeRelease.worksheets[_this.activeRelease.worksheets.length - 1];
         $.when(baselineWS.fetch(), latestWS.fetch())
             .done(function() {
-                var baselineSnapshot = new Snapshot(baselineWS.rows);
-                var latestSnapshot = new Snapshot(latestWS.rows);
+            var baselineSnapshot = new Snapshot(baselineWS.rows);
+            var latestSnapshot = new Snapshot(latestWS.rows);
 
-                var inputJson = {
-                    snapshot1: baselineSnapshot.summarize(),
-                    snapshot2: latestSnapshot.summarize()
-                };
+            var inputJson = {
+                snapshot1: baselineSnapshot.summarize(),
+                snapshot2: latestSnapshot.summarize()
+            };
 
-                $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
-            });
+            $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
+        });
     };
 
     JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
@@ -271,8 +271,10 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         if (setupSheet && setupSheet.rows.length > 0) {
             $("#jiraUserId").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_USER_ID]);
             $("#jiraPassword").val("It5AS3cr3t").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH, setupSheet.rows[0][JIRA_SETUP_WORKSHEET_BASIC_AUTH]);
-            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]).prop("disabled", true);
-            $("#releaseTitle").prop("disabled", true);
+            /*   $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]).prop("disabled", true);
+            $("#releaseTitle").prop("disabled", true);*/
+            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]); //.prop("disabled", true);
+            //$("#releaseTitle").prop("disabled", true);
         }
         $("#releaseId").val(this.activeRelease.id);
         $("#releaseTitle").val(this.activeRelease.title);

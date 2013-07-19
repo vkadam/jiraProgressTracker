@@ -6,22 +6,42 @@ define(["jquery", "js-logger", "js/comparator/summarizer"], function($, Logger, 
     };
 
     Snapshot.prototype.summarize = function() {
-        var totalSummarizer = new Summarizer({
+        var summarizers = [];
+        Logger.debug("summarize function...");
+        summarizers.push(new Summarizer({
             name: "Total"
-        });
-        var doneSummarizer = new Summarizer({
+        }));
+
+        summarizers.push( new Summarizer({
             name: "Done",
             filter: function() {
                 return this.status === "Closed" || this.status === "Resolved";
             }
-        });
+        })
+        );
+
+       summarizers.push( new Summarizer({
+            name: "WIP",
+            filter: function() {
+                return this.status === "In Progress" || this.status === "Complete" || this.status === "Verified" || this.status === "QA Active" || this.status === "Ready for QA";
+            }
+        })
+       );
 
         $.each(this.issues, function(idx, issue) {
-            totalSummarizer.process(issue);
-            doneSummarizer.process(issue);
-        });
 
-        return $.extend(totalSummarizer.getSummary(), doneSummarizer.getSummary());
+            $.each(summarizers, function(index, summarizer) {
+                summarizer.process(issue);
+            });
+        });
+        
+        var results = {};
+        $.each(summarizers, function(idx, summarizer) {
+            results = $.extend(results, summarizer.getSummary());
+        });
+        
+        return results;
+      
     };
 
     return Snapshot;
