@@ -1,4 +1,5 @@
 define(["jquery", "js-logger", "js/jira-tracker"], function($, Logger, JiraTracker) {
+    /*global chrome:false*/
     /**
      * Creates an instance of Background
      *

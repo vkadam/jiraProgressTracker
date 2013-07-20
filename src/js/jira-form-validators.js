@@ -19,7 +19,10 @@ define(["jquery"], function($) {
             highlight: heighlighter,
             unhighlight: unheighlighter
         };
-        this.validatorMap[typeName] = $.extend(defaultValidator, validatorDef);
+        $.each(validatorDef, function(key, value) {
+            $.extend(value, defaultValidator);
+        });
+        this.validatorMap[typeName] = validatorDef;
     };
     Validators.prototype.get = function(typeName) {
         return this.validatorMap[typeName];
@@ -28,47 +31,56 @@ define(["jquery"], function($) {
     var jiraValidator = new Validators();
 
     jiraValidator.add("LOAD_RELEASE", {
+        "form#jira-tracker": {
+            rules: {
+                "releaseId": "required"
+            },
+            messages: {
+                "releaseId": "Release id is required"
+            }
+        }
+    });
+
+    jiraValidator.add("JIRA_SETTINGS", {
         rules: {
-            "releaseId": "required"
+            "jiraUserId": "required",
+            "jiraPassword": "required"
         },
         messages: {
-            "releaseId": "Release id is required"
+            "jiraUserId": "Jira user name is required",
+            "jiraPassword": "Jira password is required"
         }
     });
 
     jiraValidator.add("CREATE_BASELINE", {
-        rules: {
-            "releaseTitle": "required",
-            "jiraUserId": "required",
-            "jiraPassword": "required",
-            "jiraJQL": "required",
-            "snapshotTitle": "required"
-        },
-        messages: {
-            "releaseTitle": "Release title is required",
-            "jiraUserId": "Jira user name is required",
-            "jiraPassword": "Jira password is required",
-            "jiraJQL": "Jira JQL is required",
-            "snapshotTitle": "Snapshot title is required"
+        "form#jira-tracker": {
+            rules: {
+                "releaseTitle": "required",
+                "jiraJQL": "required",
+                "snapshotTitle": "required"
+            },
+            messages: {
+                "releaseTitle": "Release title is required",
+                "jiraJQL": "Jira JQL is required",
+                "snapshotTitle": "Snapshot title is required"
+            }
         }
     });
 
     jiraValidator.add("CREATE_SNAPSHOT", {
-        rules: {
-            "releaseId": "required",
-            "jiraUserId": "required",
-            "jiraPassword": "required",
-            "jiraJQL": "required",
-            "jiraMaxResults": "required",
-            "snapshotTitle": "required"
-        },
-        messages: {
-            "releaseId": "Release is not loaded",
-            "jiraUserId": "Jira user name is required",
-            "jiraPassword": "Jira password is required",
-            "jiraJQL": "Jira JQL is required",
-            "jiraMaxResults": "Value of max result from is required",
-            "snapshotTitle": "Snapshot title is required"
+        "form#jira-tracker": {
+            rules: {
+                "releaseId": "required",
+                "jiraJQL": "required",
+                "jiraMaxResults": "required",
+                "snapshotTitle": "required"
+            },
+            messages: {
+                "releaseId": "Release is not loaded",
+                "jiraJQL": "Jira JQL is required",
+                "jiraMaxResults": "Value of max result from is required",
+                "snapshotTitle": "Snapshot title is required"
+            }
         }
     });
     return jiraValidator;

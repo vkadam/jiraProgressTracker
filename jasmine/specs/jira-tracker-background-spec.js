@@ -1,4 +1,4 @@
-define(["js/jira-tracker", "js/jira-tracker-background", "jasmine-helper"], function(JiraTracker, Background, Deferred) {
+define(["js/jira-tracker", "js/jira-tracker-background", "jasmine-helper", "chrome"], function(JiraTracker, Background, Deferred, chrome) {
     describe("JiraTracker Background", function() {
         describe("on init", function() {
             beforeEach(function() {

@@ -1,16 +1,10 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
-        "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
-        "js/jira-form-validators", "js/comparator/snapshot", "js/handlebars-helpers", "jquery/validate"
-], function($, _, Logger, JiraTrackerTemplates, GSLoader, Base64, moment, JiraIssue, JiraValidators, Snapshot) {
-
-    /*global chrome:false*/
-    /**
-     * User data
-     * @define {Object}
-     */
-    var UserData = {
-        releaseId: ""
-    };
+    "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
+    "js/jira-form-validators", "js/comparator/snapshot", "js/models/jira-storage",
+    "js/handlebars-helpers", "jquery/validate"
+], function($, _, Logger, JiraTrackerTemplates,
+    GSLoader, Base64, moment, JiraIssue,
+    JiraValidators, Snapshot, Storage) {
 
     /**
      * Creates an instance of JiraTracker.
@@ -20,34 +14,71 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      */
     var JiraTracker = function() {
         this.activeRelease = null;
+        this.storage = new Storage();
         Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get("jiraTracker");
     };
 
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
-        JIRA_SETUP_WORKSHEET_USER_ID = "jira-user-id",
-        JIRA_SETUP_WORKSHEET_BASIC_AUTH = "jira-basic-authorization",
         BASELINE_SNAPSHOT = 1,
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
 
     /**
-     *
+     * Validates the form with specified validator name
+     * @constructor
+     * @param {String} Validator name
+     * @returns {jQuery.Deferred}
      */
-    JiraTracker.prototype.validate = function(requestType) {
-        var $form = $(".jira-tracker"),
-            oldValidator = $.data($form[0], "validator");
+    JiraTracker.prototype.validate = function(validatorName) {
+        var validatorDef = JiraValidators.get(validatorName),
+            validatorForms = [],
+            validator = {
+                valid: function() {
+                    var isValid = true;
+                    $.each(validatorForms, function(idx, formObj) {
+                        if (isValid) {
+                            isValid = formObj.form();
+                        }
+                    });
+                    return isValid;
+                },
+                errorMap: function() {
+                    var resultErrors = {};
+                    $.each(validatorForms, function(idx, formObj) {
+                        formObj.form();
+                        $.extend(resultErrors, formObj.errorMap);
+                    });
+                    return resultErrors;
+                }
+            };
 
-        if (oldValidator && oldValidator.reset) {
-            $.each(oldValidator.errors(), function(idx, ele) {
-                oldValidator.settings.unhighlight.call(oldValidator, ele, oldValidator.settings.errorClass, oldValidator.settings.validClass);
-            });
-            oldValidator.reset();
+        $.each(validatorDef, function(formSelector, validationDef) {
+            var $form = $(formSelector),
+                oldValidator = $form.data("validator");
+
+            if (oldValidator && oldValidator.reset) {
+                $.each(oldValidator.errors(), function(idx, ele) {
+                    oldValidator.settings.unhighlight.call(oldValidator, ele, oldValidator.settings.errorClass, oldValidator.settings.validClass);
+                });
+                oldValidator.reset();
+            }
+            $form.data("validator", null);
+            validatorForms.push($form.validate(validationDef));
+        });
+
+        var deferred = $.Deferred();
+        if (validator.valid()) {
+            this.logger.debug("Validation of", validatorName, "successed.");
+            deferred.notifyWith(this);
+        } else {
+            var errorMessage = "Validation of " + validatorName + " failed.";
+            this.logger.error(errorMessage);
+            deferred.rejectWith(this, [{
+                message: errorMessage,
+                errors: validator.errorMap()
+            }]);
         }
-
-        $.data($form[0], "validator", null);
-        var validator = $form.validate(JiraValidators.get(requestType));
-        validator.form();
-        return validator;
+        return deferred;
     };
 
     /**
@@ -55,10 +86,10 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @this {JiraTracker}
      * @return {Object} The deferred request object if release id is available in cache
      */
-    JiraTracker.prototype.init = function(evt) {
+    JiraTracker.prototype.init = function(options) {
+        $.extend(this, options);
         this.injectUI()
-            .bindEvents()
-            .loadReleaseFromStorage(evt);
+            .loadReleaseFromStorage();
 
         // /*
         // * Authorize and load gsloader.drive.load/gapi.client.load("drive", "v2", this.onLoad);
@@ -87,7 +118,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @return {JiraTracker} Instance of JiraTracker
      */
     JiraTracker.prototype.injectUI = function() {
-        $(".container").prepend(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
+        //        .append(JiraTrackerTemplates["src/views/jira-credentials.hbs"]())
+        $(".container").append(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
         return this;
     };
 
@@ -106,67 +138,22 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         _this.logger.debug("Getting last saved state from sync storage");
 
-        chrome.storage.sync.get("JiraTracker", function(data) {
-            $.extend(UserData, data["JiraTracker"]);
-            if (UserData.releaseId && UserData.releaseId.length > 0) {
-                _this.logger.debug("Last loaded release was", UserData.releaseId, "loading is again...");
-                _this.loadRelease(evt, UserData.releaseId).done(function(sSheet) {
+        this.storage.get("releaseId").done(function(releaseId) {
+            if (!_.isEmpty(releaseId)) {
+                _this.logger.debug("Last loaded release was", releaseId, "loading is again...");
+                _this.loadRelease(evt, releaseId).done(function(sSheet) {
                     _this.logger.debug("Release loaded from last saved state...", sSheet);
                     deferred.resolveWith(_this, [sSheet]);
                 }).fail(function(errorMessage, sSheet) {
-                    deferred.rejectWith(_this, [errorMessage, sSheet]);
+                    deferred.rejectWith(_this, [{
+                        message: errorMessage,
+                        spreadsheet: sSheet
+                    }]);
                 });
             }
         });
         return lrfsReq;
     };
-
-    /**
-     * Bind different types of events to form elements.
-     */
-    JiraTracker.prototype.bindEvents = function() {
-        $("form.jira-tracker input#jiraUserId, form.jira-tracker input#jiraPassword").on("change", function() {
-            $("form.jira-tracker input#jiraPassword").removeData(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
-        });
-        return this;
-    };
-
-    /**
-     * Validates the form with specified validator name
-     * and on success invoke callback with validator request object.
-     * @constructor
-     * @param {String} Validator name
-     * @param {Function} Callback function which will be invoked if form is valid
-     * @returns {jQuery.Deferred} Returns validator request i.e. instance of jquery deferred, with errors
-     */
-
-    function validateAndProceed(validatorName, successCallBack, errorCallBack) {
-        var deferred = $.Deferred(),
-            lrReq = {};
-        successCallBack = successCallBack || $.noop,
-        errorCallBack = errorCallBack || $.noop;
-        // Attach deferred method to return object 
-        deferred.promise(lrReq);
-
-        // Validate input 
-        var validator = this.validate(validatorName);
-
-        // Attach validator errors to return object 
-        $.extend(lrReq, {
-            errors: validator.errorMap
-        });
-
-        // If input is valid then only call successCallBack 
-        if (validator.valid()) {
-            this.logger.debug("Validation of", validatorName, "successed.");
-            successCallBack.apply(this, [deferred]);
-        } else {
-            var errorMessage = "Validation of " + validatorName + " failed";
-            this.logger.debug(errorMessage);
-            errorCallBack.apply(this, [errorMessage, deferred]);
-        }
-        return lrReq;
-    }
 
     /**
      * Loads release by specified release id or value of releaseId element.
@@ -176,28 +163,32 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      */
     JiraTracker.prototype.loadRelease = function(env, releaseId) {
         // If release id is passed set it to element. 
+        var _this = this;
         if (releaseId) {
             $("#releaseId").val(releaseId);
         }
         releaseId = $("#releaseId").val();
         this.logger.debug("Loading release with id", releaseId);
 
-        function validationSuccess(deferred) {
+        var deferred = this.validate("LOAD_RELEASE");
+
+        function validationSuccess() {
             // Add callback to update active release value
             GSLoader.loadSpreadsheet({
-                context: this,
                 id: releaseId,
                 wanted: ["Setup"]
-            }).then(this.onReleaseChange).then(function(sSheet) {
-                deferred.resolveWith(this, [sSheet]);
+            }).then($.proxy(_this, "onReleaseChange")).then(function(sSheet) {
+                deferred.resolveWith(_this, [sSheet]);
             }, function(errorMessage, sSheet) {
-                deferred.rejectWith(this, [errorMessage, sSheet]);
+                deferred.rejectWith(_this, [{
+                    message: errorMessage,
+                    spreadsheet: sSheet
+                }]);
             });
         }
 
-        return validateAndProceed.call(this, "LOAD_RELEASE", validationSuccess, function(errorMessage, deferred) {
-            deferred.rejectWith(this, [errorMessage]);
-        });
+        deferred.progress(validationSuccess);
+        return deferred.promise();
     };
 
     JiraTracker.prototype.compareSnapshot = function() {
@@ -226,21 +217,22 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         }
         baselineTitle = $("#releaseTitle").val();
 
-        function validationSuccess(deferred) {
+        var deferred = this.validate("CREATE_BASELINE");
+
+        function validationSuccess() {
             // Create new spreadsheet using GSLoader
             _this.logger.debug("Creating spreadsheet with title =", baselineTitle);
             GSLoader.createSpreadsheet({
-                context: _this,
                 title: baselineTitle
                 /* Add callback to update active release value */
-            }).then(_this.onReleaseChange).then(function() {
+            }).then($.proxy(_this, "onReleaseChange")).then(function() {
                 // Rename Sheet 1 worksheet to Setup
                 return _this.activeRelease.worksheets[0].rename("Setup");
             }).then(function() {
-                var titles = [JIRA_SETUP_WORKSHEET_USER_ID, JIRA_SETUP_WORKSHEET_BASIC_AUTH, JIRA_SETUP_WORKSHEET_JQL],
-                    base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val()),
-                    values = [$("#jiraUserId").val(), base64Encode, $("#jiraJQL").val()],
-                    releaseSettings = [titles, values];
+                var releaseSettings = [
+                    [JIRA_SETUP_WORKSHEET_JQL],
+                    [$("#jiraJQL").val()]
+                ];
                 // Adds release details into setup worksheet
                 _this.logger.debug("Saving release settings into setup worksheet");
                 return _this.activeRelease.worksheets[0].addRows(releaseSettings);
@@ -252,13 +244,14 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 // Once Baseline is created successfully, execute callbacks
                 deferred.resolveWith(_this, [_this.activeRelease]);
             }, function(errorMessage) {
-                deferred.rejectWith(_this, [errorMessage]);
+                deferred.rejectWith(_this, [{
+                    message: errorMessage
+                }]);
             });
         }
 
-        return validateAndProceed.call(_this, "CREATE_BASELINE", validationSuccess, function(errorMessage, deferred) {
-            deferred.rejectWith(this, [errorMessage]);
-        });
+        deferred.progress(validationSuccess);
+        return deferred.promise();
     };
 
     /*
@@ -269,18 +262,12 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         this.activeRelease = releaseSheet;
         var setupSheet = this.activeRelease.getWorksheet(JIRA_SETUP_WORKSHEET_TITLE);
         if (setupSheet && setupSheet.rows.length > 0) {
-            $("#jiraUserId").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_USER_ID]);
-            $("#jiraPassword").val("It5AS3cr3t").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH, setupSheet.rows[0][JIRA_SETUP_WORKSHEET_BASIC_AUTH]);
-            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]).prop("disabled", true);
-            $("#releaseTitle").prop("disabled", true);
+            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]); //.prop("disabled", true);
+            // $("#releaseTitle").prop("disabled", true);
         }
         $("#releaseId").val(this.activeRelease.id);
         $("#releaseTitle").val(this.activeRelease.title);
-        chrome.storage.sync.set({
-            "JiraTracker": {
-                releaseId: this.activeRelease.id
-            }
-        });
+        this.storage.set("releaseId", this.activeRelease.id);
         return this.activeRelease;
     };
 
@@ -343,12 +330,9 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         }
         snapshotTitle = $("#snapshotTitle").val();
 
-        function validationSuccess(deferred) {
-            var base64Encode = $("#jiraPassword").data(JIRA_SETUP_WORKSHEET_BASIC_AUTH);
-            if (_.isUndefined(base64Encode)) {
-                base64Encode = Base64.encode($("#jiraUserId").val() + ":" + $("#jiraPassword").val());
-            }
+        var deferred = $.Deferred();
 
+        function validationSuccess(base64Encode) {
             _this.logger.debug("Getting jira issues");
             $.ajax({
                 url: "http://jira.cengage.com/rest/api/2/search",
@@ -360,7 +344,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     "Authorization": "Basic " + base64Encode
                 }
             }).then(function(data /*, textStatus, jqXHR*/ ) {
-                var deferred = $.Deferred();
+                var defObj = $.Deferred();
                 try {
                     if (typeof(data) === "string") {
                         data = JSON.parse(data);
@@ -374,11 +358,11 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     });
 
                     _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
-                    deferred.resolve(jiraIssues);
+                    defObj.resolve(jiraIssues);
                 } catch (e) {
-                    deferred.reject({}, "Exception while parsing jira issue response");
+                    defObj.reject({}, "Exception while parsing jira issue response");
                 }
-                return deferred.promise();
+                return defObj.promise();
             }).then(function(jiraIssues) {
                 var headersTitles = [];
                 $.each(JiraIssue.fields, function(key) {
@@ -394,16 +378,30 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 });
             }).then(function(wSheet) {
                 _this.logger.debug("Snapshot", wSheet.title, "created successfully");
-                deferred.resolveWith(this, [wSheet]);
+                deferred.resolveWith(_this, [wSheet]);
             }, function(jqXHR, textStatus) {
-                deferred.rejectWith(this, [textStatus || jqXHR]);
+                deferred.rejectWith(_this, [{
+                    message: textStatus || jqXHR
+                }]);
                 _this.logger.error(textStatus || jqXHR);
             });
         }
 
-        return validateAndProceed.call(this, "CREATE_SNAPSHOT", validationSuccess, function(errorMessage, deferred) {
-            deferred.rejectWith(this, [errorMessage]);
-        });
+        function formValidationDone(valObject) {
+            _this.storage.get("Jira-Credentials").always(function(base64Key) {
+                if (base64Key) {
+                    validationSuccess(base64Key);
+                } else {
+                    $.extend(valObject.errors, {
+                        "jira-authentication": "Jira authentication is required"
+                    });
+                    deferred.rejectWith(_this, [valObject]);
+                }
+            });
+        }
+
+        this.validate("CREATE_SNAPSHOT").then($.noop, formValidationDone, formValidationDone);
+        return deferred.promise();
     };
     return new JiraTracker();
 });

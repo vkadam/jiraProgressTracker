@@ -51,7 +51,9 @@ module.exports = function(grunt) {
                                 "jasmine-fixtures": "../jasmine/lib/jasmine-fixtures/jasmine-fixture",
                                 "jasmine-jquery": "../jasmine/lib/jasmine-jquery/jasmine-jquery",
                                 "jquery-fixture": "../jasmine/lib/jquery-fixture/jquerymx-3.2.custom",
-                                "jasmine-helper": "../jasmine/lib/jasmine-helper"
+                                "jasmine-helper": "../jasmine/lib/jasmine-helper",
+                                "google-api-client": "lib/gsloader/jasmine/lib/google-api-client",
+                                "chrome": "../jasmine/lib/chrome"
                             },
                             shim: {
                                 "jasmine-fixtures": {
@@ -64,7 +66,7 @@ module.exports = function(grunt) {
                                     deps: ["jquery"]
                                 }
                             },
-                            deps: ["jquery", "jasmine-fixtures", "jasmine-jquery", "jquery-fixture", "../jasmine/lib/chrome"]
+                            deps: ["jquery", "jasmine-fixtures", "jasmine-jquery", "jquery-fixture"]
                         }
                     }
                 }
@@ -102,15 +104,16 @@ module.exports = function(grunt) {
                     define: false,
                     jasmine: false,
                     describe: false,
+                    xdescribe: false,
                     it: false,
+                    xit: false,
                     spyOn: false,
                     expect: false,
                     waitsFor: false,
                     runs: false,
                     beforeEach: false,
                     afterEach: false,
-                    affix: false,
-                    chrome: true
+                    affix: false
                 }
             }
         },
