@@ -35,11 +35,14 @@ function program1(depth0,data,depth1) {
     + "</td>\n		<td>";
   options = {hash:{},data:data};
   buffer += escapeExpression(((stack1 = helpers.get || depth1.get),stack1 ? stack1.call(depth0, depth1.snapshot2, ((stack1 = data),stack1 == null || stack1 === false ? stack1 : stack1.key), options) : helperMissing.call(depth0, "get", depth1.snapshot2, ((stack1 = data),stack1 == null || stack1 === false ? stack1 : stack1.key), options)))
+    + "</td>\n		<td>";
+  options = {hash:{},data:data};
+  buffer += escapeExpression(((stack1 = helpers.subtract || depth1.subtract),stack1 ? stack1.call(depth0, depth1.snapshot1, depth1.snapshot2, ((stack1 = data),stack1 == null || stack1 === false ? stack1 : stack1.key), options) : helperMissing.call(depth0, "subtract", depth1.snapshot1, depth1.snapshot2, ((stack1 = data),stack1 == null || stack1 === false ? stack1 : stack1.key), options)))
     + "</td>\n    </tr>\n    ";
   return buffer;
   }
 
-  buffer += "<table class=\"table .table-striped\">\n	<thead>\n	    <tr>\n	     	<th>Matric</th>\n	      	<th>Baseline</th>\n	      	<th>Current</th>\n	    </tr>\n	</thead>\n  <tbody>\n    ";
+  buffer += "<table class=\"table .table-striped\">\n	<thead>\n	    <tr>\n	     	<th>Matric</th>\n	      	<th>Baseline</th>\n	      	<th>Current</th>\n	      	<th>Change +/-</th>\n	    </tr>\n	</thead>\n  <tbody>\n    ";
   stack1 = helpers.each.call(depth0, depth0.snapshot1, {hash:{},inverse:self.noop,fn:self.programWithDepth(1, program1, data, depth0),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
   buffer += "\n  </tbody>\n</table>";

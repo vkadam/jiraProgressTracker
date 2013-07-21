@@ -4,6 +4,7 @@
 	     	<th>Matric</th>
 	      	<th>Baseline</th>
 	      	<th>Current</th>
+	      	<th>Change +/-</th>
 	    </tr>
 	</thead>
   <tbody>
@@ -12,6 +13,7 @@
      	<td>{{@key}}</td>
      	<td>{{.}}</td>
 		<td>{{get ../snapshot2 @key}}</td>
+		<td>{{subtract ../snapshot1 ../snapshot2 @key }}</td>
     </tr>
     {{/each}}
   </tbody>
