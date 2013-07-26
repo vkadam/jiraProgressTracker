@@ -50,23 +50,21 @@ define(["jquery", "js-logger", "js/base64",
         });
 
         describe("JiraSetting.bindEvents", function() {
-            var saveSettingButton;
+            var $saveSetting, $userid, $password;
+
             beforeEach(function() {
                 // constructor calls bindEvents
                 jiraSetting.storage.set("Jira-UserName", "Userid");
                 jiraSetting.storage.set("Jira-Credentials", "jiraBase64Key");
                 jiraSetting.populate();
                 spyOn(Validator, "get").andCallThrough();
-                saveSettingButton = $("button.save-settings");
+
+                $userid = $("#jiraUserId");
+                $password = $("#jiraPassword");
+                $saveSetting = $("button.save-settings");
             });
 
             describe("userid-change", function() {
-                var $userid, $password;
-
-                beforeEach(function() {
-                    $userid = $("#jiraUserId");
-                    $password = $("#jiraPassword");
-                });
 
                 it("sets JiraSetting.isDirty flag true only when userid value is changed", function() {
                     expect(jiraSetting.isDirty).toBeFalsy();
@@ -88,13 +86,31 @@ define(["jquery", "js-logger", "js/base64",
                 });
             });
 
+            describe("show dialog", function() {
+                it("call JiraSetting.populate on show of dialog", function() {
+                    spyOn(jiraSetting, "populate");
+                    settingsModal.modal("show");
+                    expect(jiraSetting.populate).toHaveBeenCalled();
+                });
+            });
+
+            describe("submit form by pressing enter key", function() {
+                it("call JiraSetting.saveButton.click on enter key press", function() {
+                    spyOnEvent($saveSetting, "click");
+                    var evtobj = jQuery.Event("keypress");
+                    evtobj.keyCode = 13
+                    $userid.trigger(evtobj);
+                    expect("click").toHaveBeenTriggeredOn($saveSetting);
+                });
+            });
+
             describe("save-settings", function() {
                 beforeEach(function() {
                     spyOn(jiraSetting.storage, "set").andCallThrough();
                 });
 
                 it("validates the jira credential form", function() {
-                    saveSettingButton.click();
+                    $saveSetting.click();
                     expect(Validator.get).toHaveBeenCalledWith("JIRA_SETTINGS");
                 });
 
@@ -102,7 +118,7 @@ define(["jquery", "js-logger", "js/base64",
                     var JiraValidator = Validator.get("JIRA_SETTINGS");
                     spyOn(JiraValidator, "validate").andCallThrough();
 
-                    saveSettingButton.click();
+                    $saveSetting.click();
                     expect(JiraValidator.validate).toHaveBeenCalledWith({
                         returnPromise: true
                     });
@@ -125,7 +141,7 @@ define(["jquery", "js-logger", "js/base64",
                             userIdCtrl.change();
                         }
 
-                        saveSettingButton.click();
+                        $saveSetting.click();
                         waitsFor(function() {
                             return deferred.promiseObj.state() !== "pending";
                         });
@@ -148,6 +164,14 @@ define(["jquery", "js-logger", "js/base64",
                             expect(jiraSetting.storage.set).not.toHaveBeenCalled();
                         });
                     });
+
+                    it("hides setting dialog", function() {
+                        expect(settingsModal).toBeVisible();
+                        spyOn($.fn, "modal");
+                        validateAndSaveSetting(false, function() {
+                            expect($.fn.modal).toHaveBeenCalledWith("hide");
+                        });
+                    });
                 });
             });
 
@@ -159,7 +183,7 @@ define(["jquery", "js-logger", "js/base64",
                 });
 
                 it("on hide modal call validator.reset api", function() {
-                    saveSettingButton.trigger("hide");
+                    $saveSetting.trigger("hide");
                     expect(JiraValidator.reset).toHaveBeenCalled();
                 });
             });

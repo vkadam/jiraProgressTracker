@@ -29,6 +29,12 @@ define(["jquery", "js-logger", "js/jira-validator", "dist/jira-tracker-templates
      */
     JiraSettings.prototype.bindEvents = function() {
         var _this = this;
+        settingsForm.on("keypress", function(evt) {
+            if (evt.keyCode === 13) {
+                $("button.save-settings").click();
+            }
+        });
+
         settingsModal.on("click", "button.save-settings", function() {
             Validator.get("JIRA_SETTINGS").validate({
                 returnPromise: true
@@ -42,7 +48,10 @@ define(["jquery", "js-logger", "js/jira-validator", "dist/jira-tracker-templates
                     _this.storage.set("Jira-UserName", userName);
                     _this.populate();
                 }
+                settingsModal.modal("hide");
             });
+        }).on("show", function() { /* Attach setting modal show event */
+            _this.populate();
         }).on("hide", function() { /* Attach setting modal hide event */
             Validator.get("JIRA_SETTINGS").reset();
         }).on("change", "#jiraUserId", function() { /* Attach userId change event */
