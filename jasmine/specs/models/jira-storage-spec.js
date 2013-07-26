@@ -29,6 +29,23 @@ define(["js/models/jira-storage", "chrome"], function(Storage, chrome) {
                     expect(callBack).toHaveBeenCalledWith("Value");
                 });
             });
+
+            it("calls callback function with correct value if multiple keys are passed", function() {
+                var callBack = jasmine.createSpy("storageGetCallback");
+
+                storage.set("Key", "Value");
+                storage.set("Key1", "Value1");
+
+                var getPromise = storage.get("Key", "Key1").done(callBack);
+
+                waitsFor(function() {
+                    return getPromise.state() === "resolved";
+                }, 200);
+
+                runs(function() {
+                    expect(callBack).toHaveBeenCalledWith("Value", "Value1");
+                });
+            });
         });
 
         describe("set method", function() {

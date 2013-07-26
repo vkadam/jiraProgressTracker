@@ -1,16 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<title>Jira Progress Tracker</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <title>Jira Progress Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
 </head>
+
 <body>
-	<div class="navbar">
-		<div class="navbar-inner"></div>
-	</div>
-	<div class="container">
-	</div>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <a href="#jira-settings" role="button" class="btn pull-right" data-toggle="modal"><i class="icon-cog"></i></a>
+        </div>
+    </div>
+    <div class="container"></div>
+    <div id="jira-settings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="jira-settingsLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="jira-settingsLabel">Settings</h3>
+        </div>
+        <div class="modal-body">
+            <form id="jira-settings-form" class="form-horizontal">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-primary save-settings">Save</button>
+        </div>
+    </div>
 </body>
 <script type="text/javascript" data-main="require-config.js" src="lib/require-2.1.6.js"></script>
+
 </html>

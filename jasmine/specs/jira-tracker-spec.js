@@ -1,6 +1,6 @@
-define(["jquery", "js/jira-tracker", "gsloader", "js/base64",
+define(["jquery", "js/jira-tracker", "gsloader",
     "js/moment-zone", "jasmine-helper", "js-logger", "js/models/jira-storage"
-], function($, JiraTracker, GSLoader, Base64, moment, Deferred, Logger, Storage) {
+], function($, JiraTracker, GSLoader, moment, Deferred, Logger, Storage) {
     describe("JiraTracker", function() {
         var spyOnAjax;
         beforeEach(function() {
@@ -518,7 +518,9 @@ define(["jquery", "js/jira-tracker", "gsloader", "js/base64",
                 });
             });
 
-            it("does jira authentication validation and calls JiraSetting.show method", function() {
+            it("does jira authentication validation and does not make jira ajax call", function() {
+                populateValues();
+                JiraTracker.storage.set("Jira-Credentials", null);
                 var errorObject,
                     createReq = JiraTracker.createSnapshot().fail(function(valObject) {
                         errorObject = valObject;
@@ -531,6 +533,26 @@ define(["jquery", "js/jira-tracker", "gsloader", "js/base64",
                 runs(function() {
                     expect(errorObject).toBeDefined();
                     expect(errorObject.errors["jira-authentication"]).toBe("Jira authentication is required");
+                    expect(spyOnAjax).not.toHaveBeenCalled();
+                    expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
+                });
+            });
+
+            it("does not make jira ajax call if jira authentication is available but form validation fails", function() {
+                populateValues();
+                $("#releaseId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
+                var errorObject,
+                    createReq = JiraTracker.createSnapshot().fail(function(valObject) {
+                        errorObject = valObject;
+                    });
+
+                waitsFor(function() {
+                    return (createReq.state() !== "pending");
+                }, "JiraTracker.createBaseline should fail", 200);
+
+                runs(function() {
+                    expect(errorObject).toBeDefined();
+                    expect(spyOnAjax).not.toHaveBeenCalled();
                     expect(spyOnCreateWorksheet).not.toHaveBeenCalled();
                 });
             });

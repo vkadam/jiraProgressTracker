@@ -2,7 +2,7 @@ requirejs.config({
     "baseUrl": "",
     "paths": {
         "jquery": "lib/jquery-2.0.0",
-        "jquery/validate": "lib/jquery.validate-1.10.0.min",
+        "jquery/validate": "lib/jquery.validate",
         "underscore": "lib/underscore-1.4.2.min",
         "bootstrap": "lib/bootstrap/js/bootstrap.min",
         "js-logger": "lib/js-logger/src/logger.min",
@@ -13,6 +13,8 @@ requirejs.config({
     },
     "shim": {
         "jquery/validate": ["jquery"],
+        "js/jira-validator": ["jquery/validate"],
+        "js/jira-settings": ["bootstrap"],
         "gsloader": ["jquery"],
         "google-api-client": {
             "exports": "gapi"

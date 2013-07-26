@@ -12,12 +12,18 @@ window.googleDriveClientLoaded = function() {
     GSLoaderAuth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoaderDrive.load, GSLoaderDrive);
 };
 
-require(["jquery", "js/jira-tracker", "js/models/jira-chrome-storage"], function($, JiraTracker, ChromeStorage) {
+require(["jquery", "js/jira-tracker", "js/models/jira-chrome-storage",
+    "js/jira-settings"
+], function($, JiraTracker, ChromeStorage, JiraSettings) {
     /* TODO: move storage as setter method or constructor parameter
      * once JiraTracker singleton instace is removed and
      * Background.js communicate via messaging rather than using singleton object */
+    var chromeStorage = new ChromeStorage("JiraTracker");
     JiraTracker.init({
-        storage: new ChromeStorage("JiraTracker")
+        storage: chromeStorage
+    });
+    new JiraSettings({
+        storage: chromeStorage
     });
     $(".load-release").click($.proxy(JiraTracker.loadRelease, JiraTracker));
     $(".create-release").click($.proxy(JiraTracker.createBaseline, JiraTracker));

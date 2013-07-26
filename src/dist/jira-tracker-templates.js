@@ -8,7 +8,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<form id=\"jira-credentials\" class=\"form-horizontal\">\n	<div class=\"control-group\">\n		<label class=\"control-label\" for=\"jiraUserId\">Jira User Id</label>\n		<div class=\"controls\">\n			<input type=\"text\" id=\"jiraUserId\" name=\"jiraUserId\" placeholder=\"Jira User Id\" />\n		</div>\n	</div>\n	<div class=\"control-group\">\n		<label class=\"control-label\" for=\"jiraPassword\">Password</label>\n		<div class=\"controls\">\n			<input type=\"password\" id=\"jiraPassword\" name=\"jiraPassword\" placeholder=\"Password\" />\n		</div>\n	</div>\n</form>";
+  return "<div class=\"control-group\">\n	<label class=\"control-label\" for=\"jiraUserId\">Jira User Id</label>\n	<div class=\"controls\">\n		<input type=\"text\" id=\"jiraUserId\" name=\"jiraUserId\" placeholder=\"Jira User Id\"/>\n	</div>\n</div>\n<div class=\"control-group\">\n	<label class=\"control-label\" for=\"jiraPassword\">Password</label>\n	<div class=\"controls\">\n		<input type=\"password\" id=\"jiraPassword\" name=\"jiraPassword\" placeholder=\"Password\"/>\n	</div>\n</div>\n";
   });
 
 this["JiraTrackerTemplates"]["src/views/jira-tracker-form.hbs"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {

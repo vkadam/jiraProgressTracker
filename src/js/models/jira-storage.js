@@ -1,13 +1,23 @@
-define(["jquery"], function($) {
+define(["jquery", "underscore"], function($, _) {
 
     function Storage() {
         this.data = {};
     }
 
     Storage.prototype = {
-        get: function(key) {
-            var deferred = new $.Deferred();
-            deferred.resolve(this.data[key]);
+        get: function() {
+            var deferred = new $.Deferred(),
+                _this = this,
+                values = [];
+            $.each(arguments, function(idx, key) {
+                values.push(_this.data[key]);
+            });
+            // if array contains any value after removing all undefined
+            if (_.without(values, undefined).length > 0) {
+                deferred.resolve.apply(deferred, values);
+            } else {
+                deferred.reject();
+            }
             return deferred.promise();
         },
         set: function(key, value) {

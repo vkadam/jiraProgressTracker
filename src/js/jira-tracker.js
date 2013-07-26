@@ -1,10 +1,10 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
-    "gsloader", "js/base64", "js/moment-zone", "js/models/jira-issue",
-    "js/jira-form-validators", "js/comparator/snapshot", "js/models/jira-storage",
-    "js/handlebars-helpers", "jquery/validate"
+    "gsloader", "js/moment-zone", "js/models/jira-issue",
+    "js/jira-validator", "js/comparator/snapshot", "js/models/jira-storage",
+    "js/handlebars-helpers"
 ], function($, _, Logger, JiraTrackerTemplates,
-    GSLoader, Base64, moment, JiraIssue,
-    JiraValidators, Snapshot, Storage) {
+    GSLoader, moment, JiraIssue,
+    Validator, Snapshot, Storage) {
 
     /**
      * Creates an instance of JiraTracker.
@@ -22,64 +22,6 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
         BASELINE_SNAPSHOT = 1,
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
-
-    /**
-     * Validates the form with specified validator name
-     * @constructor
-     * @param {String} Validator name
-     * @returns {jQuery.Deferred}
-     */
-    JiraTracker.prototype.validate = function(validatorName) {
-        var validatorDef = JiraValidators.get(validatorName),
-            validatorForms = [],
-            validator = {
-                valid: function() {
-                    var isValid = true;
-                    $.each(validatorForms, function(idx, formObj) {
-                        if (isValid) {
-                            isValid = formObj.form();
-                        }
-                    });
-                    return isValid;
-                },
-                errorMap: function() {
-                    var resultErrors = {};
-                    $.each(validatorForms, function(idx, formObj) {
-                        formObj.form();
-                        $.extend(resultErrors, formObj.errorMap);
-                    });
-                    return resultErrors;
-                }
-            };
-
-        $.each(validatorDef, function(formSelector, validationDef) {
-            var $form = $(formSelector),
-                oldValidator = $form.data("validator");
-
-            if (oldValidator && oldValidator.reset) {
-                $.each(oldValidator.errors(), function(idx, ele) {
-                    oldValidator.settings.unhighlight.call(oldValidator, ele, oldValidator.settings.errorClass, oldValidator.settings.validClass);
-                });
-                oldValidator.reset();
-            }
-            $form.data("validator", null);
-            validatorForms.push($form.validate(validationDef));
-        });
-
-        var deferred = $.Deferred();
-        if (validator.valid()) {
-            this.logger.debug("Validation of", validatorName, "successed.");
-            deferred.notifyWith(this);
-        } else {
-            var errorMessage = "Validation of " + validatorName + " failed.";
-            this.logger.error(errorMessage);
-            deferred.rejectWith(this, [{
-                message: errorMessage,
-                errors: validator.errorMap()
-            }]);
-        }
-        return deferred;
-    };
 
     /**
      * Initialization
@@ -170,7 +112,9 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         releaseId = $("#releaseId").val();
         this.logger.debug("Loading release with id", releaseId);
 
-        var deferred = this.validate("LOAD_RELEASE");
+        var deferred = Validator.get("LOAD_RELEASE").validate({
+            context: this
+        });
 
         function validationSuccess() {
             // Add callback to update active release value
@@ -217,7 +161,9 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         }
         baselineTitle = $("#releaseTitle").val();
 
-        var deferred = this.validate("CREATE_BASELINE");
+        var deferred = Validator.get("CREATE_BASELINE").validate({
+            context: this
+        });
 
         function validationSuccess() {
             // Create new spreadsheet using GSLoader
@@ -389,9 +335,11 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         function formValidationDone(valObject) {
             _this.storage.get("Jira-Credentials").always(function(base64Key) {
-                if (base64Key) {
+                if (base64Key && valObject === undefined) {
                     validationSuccess(base64Key);
                 } else {
+                    valObject = valObject || {};
+                    valObject.errors = valObject.errors || {};
                     $.extend(valObject.errors, {
                         "jira-authentication": "Jira authentication is required"
                     });
@@ -400,7 +348,10 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             });
         }
 
-        this.validate("CREATE_SNAPSHOT").then($.noop, formValidationDone, formValidationDone);
+        Validator.get("CREATE_SNAPSHOT").validate({
+            context: this
+        }).then($.noop, formValidationDone, formValidationDone);
+
         return deferred.promise();
     };
     return new JiraTracker();

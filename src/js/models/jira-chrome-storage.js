@@ -7,15 +7,23 @@ define(["jquery", "underscore", "js/models/jira-storage"], function($, _, Storag
 
     ChromeStorage.prototype = Object.create(Storage.prototype);
 
-    ChromeStorage.prototype.get = function(key) {
+    ChromeStorage.prototype.get = function() {
         var _this = this,
-            deferred = new $.Deferred();
+            deferred = new $.Deferred(),
+            keys = arguments;
         chrome.storage.sync.get(this.cacheName, function(data) {
-            if (data[_this.cacheName] && !_.isUndefined(data[_this.cacheName][key])) {
-                deferred.resolve(data[_this.cacheName][key]);
-            } else {
-                deferred.reject();
+            if (data[_this.cacheName]) {
+                var values = [];
+                $.each(keys, function(idx, key) {
+                    values.push(data[_this.cacheName][key]);
+                });
+                // if array contains any value after removing all undefined
+                if (_.without(values, undefined).length > 0) {
+                    deferred.resolve.apply(deferred, values);
+                    return;
+                }
             }
+            deferred.reject();
         });
         return deferred.promise();
     };

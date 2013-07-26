@@ -29,43 +29,56 @@ define(["js/models/jira-chrome-storage", "chrome"], function(ChromeStorage, chro
                     "Key": {
                         "foo": "bar"
                     }
-                },
-                    callBack = jasmine.createSpy("storage.get.successCallBack");
+                };
 
-                chrome.storage.sync.set({
-                    "CacheName": data
-                });
-
-                var getPromise = chromeStorage.get("Key").done(callBack);
-
-                waitsFor(function() {
-                    return getPromise.state() !== "pending";
-                }, 200);
-
-                runs(function() {
+                callStoageGetAndAssert(data, ["Key"], function(callBack) {
                     expect(callBack).toHaveBeenCalledWith({
                         "foo": "bar"
                     });
                 });
             });
 
+            it("calls success callback function with correct values if multiple keys requested", function() {
+                var data = {
+                    "Key": {
+                        "foo": "bar"
+                    },
+                    "Key1": "Key1-Value"
+                };
+
+                callStoageGetAndAssert(data, ["Key", "Key1"], function(callBack) {
+                    expect(callBack).toHaveBeenCalledWith({
+                        "foo": "bar"
+                    }, "Key1-Value");
+                });
+            });
+
             it("calls error callback function in case value not found", function() {
-                var callBack = jasmine.createSpy("storage.get.errorCallBack");
+                callStoageGetAndAssert({}, ["Key"], function(successCallBack, errorCallBack) {
+                    expect(successCallBack).not.toHaveBeenCalled();
+                    expect(errorCallBack).toHaveBeenCalled();
+                });
+            });
+
+            function callStoageGetAndAssert(data, keys, assertion) {
+                var successCallBack = jasmine.createSpy("storage.get.successCallBack"),
+                    errorCallBack = jasmine.createSpy("storage.get.errorCallBack");
 
                 chrome.storage.sync.set({
-                    "CacheName": {}
+                    "CacheName": data
                 });
 
-                var getPromise = chromeStorage.get("Key").fail(callBack);
+                var getPromise = chromeStorage.get.apply(chromeStorage, keys)
+                    .done(successCallBack).fail(errorCallBack);
 
                 waitsFor(function() {
                     return getPromise.state() !== "pending";
                 }, 200);
 
                 runs(function() {
-                    expect(callBack).toHaveBeenCalled();
+                    assertion(successCallBack, errorCallBack);
                 });
-            });
+            }
         });
 
         describe("set method", function() {
