@@ -4,28 +4,34 @@
 <head>
     <title>Jira Progress Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="lib/bootstrap/css/bootstrap-glyphicons.css" rel="stylesheet" media="screen">
+    <link href="css/jira-tracker.css" rel="stylesheet" media="screen">
 </head>
 
 <body>
     <div class="navbar">
-        <div class="navbar-inner">
-            <a href="#jira-settings" role="button" class="btn pull-right" data-toggle="modal"><i class="icon-cog"></i></a>
+        <div class="container">
+            <a href="#jira-settings" class="navbar-btn pull-right" data-toggle="modal"><i class="glyphicon glyphicon-cog"></i></a>
         </div>
     </div>
-    <div class="container"></div>
-    <div id="jira-settings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="jira-settingsLabel" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="jira-settingsLabel">Settings</h3>
-        </div>
-        <div class="modal-body">
-            <form id="jira-settings-form" class="form-horizontal">
-                <button class="btn invisible" type="submit">Submit Form</button>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary save-settings">Save</button>
+    <div id="jira-container" class="container"></div>
+    <div id="jira-settings" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">    
+            <div class="modal-content">    
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Settings</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="jira-settings-form" class="form-horizontal">
+                        <button class="btn btn-submit-form" tabindex="-1" type="submit">Submit Form</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary save-settings">Save</button>
+                </div>
+            </div>
         </div>
     </div>
 </body>

@@ -8,12 +8,12 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 async: false
             });
             spyOnAjax = spyOn($, "ajax");
-            affix(".container");
+            affix("#jira-container");
         });
 
         afterEach(function() {
             JiraTracker.storage = new Storage();
-            $(".container").empty();
+            $("#jira-container").empty();
         });
 
         describe("populate filters", function() {
@@ -196,7 +196,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
         function doControlValidation(valObject, controlName, msg) {
             expect(valObject.errors[controlName]).toBe(msg);
-            expect($("#" + controlName).parents(".control-group")).toHaveClass("error");
+            expect($("#" + controlName).parents(".form-group")).toHaveClass("has-error");
         }
 
         describe("Load release", function() {
@@ -295,11 +295,11 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     },
                     "settings": {
                         "unhighlight": function(ele, errorClass) {
-                            $(ele).parents(".control-group").removeClass(errorClass);
+                            $(ele).parents(".form-group").removeClass(errorClass);
                         }
                     }
                 });
-                $("#releaseTitle").parents(".control-group").addClass("error");
+                $("#releaseTitle").parents(".form-group").addClass("has-error");
 
                 loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
 
@@ -307,7 +307,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 expect(validatorObj.some).not.toBeDefined();
                 expect(resetSpy).toHaveBeenCalled();
                 expect(validatorObj instanceof $.validator).toBeTruthy();
-                expect($("#releaseTitle").parents(".control-group")).not.toHaveClass("error");
+                expect($("#releaseTitle").parents(".form-group")).not.toHaveClass("has-error");
             });
         });
 

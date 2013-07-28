@@ -16,6 +16,7 @@ requirejs.config({
         "js/jira-validator": ["jquery/validate"],
         "js/jira-settings": ["bootstrap"],
         "gsloader": ["jquery"],
+        "bootstrap": ["jquery"],
         "google-api-client": {
             "exports": "gapi"
         },

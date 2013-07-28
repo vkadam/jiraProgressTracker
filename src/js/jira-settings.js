@@ -59,9 +59,9 @@ define(["jquery", "js-logger", "js/jira-validator", "dist/jira-tracker-templates
                 }
                 settingsModal.modal("hide");
             });
-        }).on("show", function() { /* Attach setting modal show event */
+        }).on("show.bs.modal", function() { /* Attach setting modal show event */
             _this.populate();
-        }).on("hide", function() { /* Attach setting modal hide event */
+        }).on("hide.bs.modal", function() { /* Attach setting modal hide event */
             Validator.get("JIRA_SETTINGS").reset();
         });
         return this;

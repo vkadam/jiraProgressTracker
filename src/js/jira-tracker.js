@@ -102,7 +102,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      */
     JiraTracker.prototype.injectUI = function() {
         //        .append(JiraTrackerTemplates["src/views/jira-credentials.hbs"]())
-        $(".container").append(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
+        $("#jira-container").append(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
         return this;
     };
 

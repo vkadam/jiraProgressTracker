@@ -4,12 +4,12 @@ define(["jquery", "js-logger"], function($, Logger) {
      */
     var validatorMap = {};
 
-    function heighlighter(element, errorClass) {
-        $(element).parents(".control-group").addClass(errorClass);
+    function heighlighter(element /*, errorClass*/ ) {
+        $(element).parents(".form-group").addClass("has-error");
     }
 
-    function unheighlighter(element, errorClass) {
-        $(element).parents(".control-group").removeClass(errorClass);
+    function unheighlighter(element /*, errorClass*/ ) {
+        $(element).parents(".form-group").removeClass("has-error");
     }
 
     function Validator(name, formSelector, definition) {
@@ -132,7 +132,8 @@ define(["jquery", "js-logger"], function($, Logger) {
     $.each(FormValidators, function addValidationDef(validatorName, validatorDef) {
         var defaultValidator = {
             highlight: heighlighter,
-            unhighlight: unheighlighter
+            unhighlight: unheighlighter,
+            errorClass: "text-danger"
         };
         $.extend(validatorDef.definition, defaultValidator);
         validatorMap[validatorName] = new Validator(validatorName, validatorDef.formSelector, validatorDef.definition);
