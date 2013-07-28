@@ -66,7 +66,10 @@ module.exports = function(grunt) {
                                     deps: ["jquery"]
                                 }
                             },
-                            deps: ["jquery", "jasmine-fixtures", "jasmine-jquery", "jquery-fixture"]
+                            deps: ["js-logger", "jquery", "jasmine-fixtures", "jasmine-jquery", "jquery-fixture"],
+                            callback: function(Logger) {
+                                Logger.setLevel(Logger.OFF);
+                            }
                         }
                     }
                 }
@@ -113,6 +116,7 @@ module.exports = function(grunt) {
                     runs: false,
                     beforeEach: false,
                     afterEach: false,
+                    spyOnEvent: false,
                     affix: false
                 }
             }

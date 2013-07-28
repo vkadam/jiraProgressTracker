@@ -1,7 +1,6 @@
 define(["jquery", "js-logger", "js/comparator/summarizer"], function($, Logger, Summarizer) {
     var Snapshot = function(issues) {
         this.issues = issues || [];
-        Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get("Snapshot");
     };
 

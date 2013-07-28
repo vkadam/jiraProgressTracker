@@ -2,7 +2,7 @@ requirejs.config({
     "baseUrl": "",
     "paths": {
         "jquery": "lib/jquery-2.0.0",
-        "jquery/validate": "lib/jquery.validate",
+        "jquery/validate": "lib/jquery.validate.min",
         "underscore": "lib/underscore-1.4.2.min",
         "bootstrap": "lib/bootstrap/js/bootstrap.min",
         "js-logger": "lib/js-logger/src/logger.min",
@@ -21,6 +21,12 @@ requirejs.config({
         },
         "underscore": {
             "exports": "_"
+        },
+        "main": {
+            "deps": ["js-logger"],
+            "init": function(Logger) {
+                Logger.useDefaults();
+            }
         }
     }
 });

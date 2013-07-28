@@ -1,10 +1,10 @@
 define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     "gsloader", "js/moment-zone", "js/models/jira-issue",
     "js/jira-validator", "js/comparator/snapshot", "js/models/jira-storage",
-    "js/handlebars-helpers"
+    "js/models/filter", "js/handlebars-helpers"
 ], function($, _, Logger, JiraTrackerTemplates,
     GSLoader, moment, JiraIssue,
-    Validator, Snapshot, Storage) {
+    Validator, Snapshot, Storage, Filter) {
 
     /**
      * Creates an instance of JiraTracker.
@@ -12,16 +12,57 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @constructor
      * @this {JiraTracker}
      */
-    var JiraTracker = function() {
-        this.activeRelease = null;
+
+    var currentFilter = null;
+    var JiraTracker = function(id) {
+        /* Spreadsheet id which stores all filter list */
+        this.id = id;
+        this.filters = [];
         this.storage = new Storage();
-        Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get("jiraTracker");
     };
 
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
         BASELINE_SNAPSHOT = 1,
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
+
+    JiraTracker.prototype.getCurrentFilter = function() {
+        return currentFilter;
+    };
+
+    /**
+     * Fetch spreadsheet for JiraTracker.id and populates filters array
+     * @this {JiraTracker}
+     */
+    JiraTracker.prototype.fetchFilters = function() {
+        var _this = this,
+            deferred = $.Deferred();
+        _this.filters = [];
+
+        function errorCallBack(errorMessage, sSheet) {
+            deferred.rejectWith(_this, [{
+                "message": errorMessage,
+                "spreadsheet": sSheet
+            }]);
+        }
+
+        GSLoader.loadSpreadsheet({
+            id: this.id,
+            wanted: ["Filters"]
+        }).done(function(sSheet) {
+            var wSheet = sSheet.getWorksheet("Filters");
+            if (wSheet) {
+                $.each(wSheet.rows, function(idx, row) {
+                    _this.filters.push(new Filter(row));
+                });
+                deferred.resolveWith(_this, [_this.filters]);
+            } else {
+                errorCallBack("Filters worksheet not available", sSheet);
+            }
+        }).fail(errorCallBack);
+
+        return deferred.promise();
+    };
 
     /**
      * Initialization
@@ -30,8 +71,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      */
     JiraTracker.prototype.init = function(options) {
         $.extend(this, options);
-        this.injectUI()
-            .loadReleaseFromStorage();
+        this.fetchFilters();
+        this.injectUI().loadReleaseFromStorage();
 
         // /*
         // * Authorize and load gsloader.drive.load/gapi.client.load("drive", "v2", this.onLoad);
@@ -70,7 +111,6 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @this {JiraTracker}
      * @return {Object} The deferred request object if release id is available in cache
      */
-
     JiraTracker.prototype.loadReleaseFromStorage = function(evt) {
         var _this = this,
             deferred = $.Deferred(),
@@ -136,10 +176,9 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     };
 
     JiraTracker.prototype.compareSnapshot = function() {
-
         var _this = this;
-        var baselineWS = _this.activeRelease.worksheets[BASELINE_SNAPSHOT];
-        var latestWS = _this.activeRelease.worksheets[_this.activeRelease.worksheets.length - 1];
+        var baselineWS = _this.getCurrentFilter().worksheets[BASELINE_SNAPSHOT];
+        var latestWS = _this.getCurrentFilter().worksheets[_this.getCurrentFilter().worksheets.length - 1];
         $.when(baselineWS.fetch(), latestWS.fetch())
             .done(function() {
                 var baselineSnapshot = new Snapshot(baselineWS.rows);
@@ -173,7 +212,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 /* Add callback to update active release value */
             }).then($.proxy(_this, "onReleaseChange")).then(function() {
                 // Rename Sheet 1 worksheet to Setup
-                return _this.activeRelease.worksheets[0].rename("Setup");
+                return _this.getCurrentFilter().worksheets[0].rename("Setup");
             }).then(function() {
                 var releaseSettings = [
                     [JIRA_SETUP_WORKSHEET_JQL],
@@ -181,14 +220,14 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 ];
                 // Adds release details into setup worksheet
                 _this.logger.debug("Saving release settings into setup worksheet");
-                return _this.activeRelease.worksheets[0].addRows(releaseSettings);
+                return _this.getCurrentFilter().worksheets[0].addRows(releaseSettings);
             }).then(function() {
                 _this.logger.debug("Release settings saved successfully");
                 // Once Spreadsheet is created successfully, create a baseline snapshot
                 return _this.createSnapshot(evt, "Baseline");
             }).then(function() {
                 // Once Baseline is created successfully, execute callbacks
-                deferred.resolveWith(_this, [_this.activeRelease]);
+                deferred.resolveWith(_this, [_this.getCurrentFilter()]);
             }, function(errorMessage) {
                 deferred.rejectWith(_this, [{
                     message: errorMessage
@@ -205,16 +244,16 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @param {Object} Spreasheet object which needs to be make active
      */
     JiraTracker.prototype.onReleaseChange = function(releaseSheet) {
-        this.activeRelease = releaseSheet;
-        var setupSheet = this.activeRelease.getWorksheet(JIRA_SETUP_WORKSHEET_TITLE);
+        currentFilter = releaseSheet;
+        var setupSheet = this.getCurrentFilter().getWorksheet(JIRA_SETUP_WORKSHEET_TITLE);
         if (setupSheet && setupSheet.rows.length > 0) {
             $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]); //.prop("disabled", true);
             // $("#releaseTitle").prop("disabled", true);
         }
-        $("#releaseId").val(this.activeRelease.id);
-        $("#releaseTitle").val(this.activeRelease.title);
-        this.storage.set("releaseId", this.activeRelease.id);
-        return this.activeRelease;
+        $("#releaseId").val(this.getCurrentFilter().id);
+        $("#releaseTitle").val(this.getCurrentFilter().title);
+        this.storage.set("releaseId", this.getCurrentFilter().id);
+        return this.getCurrentFilter();
     };
 
     /**
@@ -251,10 +290,10 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         }
         todaysDate = todaysDate.format("MM-DD-YYYY");
 
-        if (_this.activeRelease) {
+        if (_this.getCurrentFilter()) {
             /* If Snapshot is not available for a date so can be generated */
             result = todaysDate;
-            $.each(_this.activeRelease.worksheets, function(idx, wSheet) {
+            $.each(_this.getCurrentFilter().worksheets, function(idx, wSheet) {
                 /* return is a break of $.each. Return false if snapshot is found for date */
                 if (moment(todaysDate, "MM-DD-YYYY").isSame(moment(wSheet.title, "MM-DD-YYYY"))) {
                     _this.logger.debug("Snapshot for", todaysDate, "is available, NO need to create one");
@@ -315,7 +354,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     headersTitles.push(key);
                 });
 
-                return _this.activeRelease.createWorksheet({
+                return _this.getCurrentFilter().createWorksheet({
                     title: snapshotTitle,
                     headers: headersTitles,
                     rowData: jiraIssues,
@@ -354,5 +393,5 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         return deferred.promise();
     };
-    return new JiraTracker();
+    return new JiraTracker("0AlpsUVqaDZHSdHdJc2R2emQ4MncwLW8zS2Fsa0NRaFE");
 });

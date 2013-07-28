@@ -5,7 +5,6 @@ define(["jquery", "js-logger", "js/jira-validator", "dist/jira-tracker-templates
         settingsForm;
 
     function JiraSettings(options) {
-        Logger.useDefaults(Logger.DEBUG);
         this.storage = new Storage();
         $.extend(this, options);
         this.logger = Logger.get("jiraTrackerSettings");
@@ -29,9 +28,19 @@ define(["jquery", "js-logger", "js/jira-validator", "dist/jira-tracker-templates
      */
     JiraSettings.prototype.bindEvents = function() {
         var _this = this;
-        settingsForm.on("keypress", function(evt) {
-            if (evt.keyCode === 13) {
-                $("button.save-settings").click();
+        settingsForm.on("submit", function() { /* Attach userId change event */
+            $("button.save-settings").click();
+            return false;
+        }).on("change", "#jiraUserId", function() { /* Attach userId change event */
+            var $this = $(this);
+            if ($this.data("prev-value") !== $this.val()) {
+                _this.isDirty = true;
+                $("#jiraPassword").val("");
+            }
+        }).on("change", "#jiraPassword", function() { /* Attach password change event */
+            var $this = $(this);
+            if ("It5AS3cr3t" !== $this.val()) {
+                _this.isDirty = true;
             }
         });
 
@@ -54,14 +63,7 @@ define(["jquery", "js-logger", "js/jira-validator", "dist/jira-tracker-templates
             _this.populate();
         }).on("hide", function() { /* Attach setting modal hide event */
             Validator.get("JIRA_SETTINGS").reset();
-        }).on("change", "#jiraUserId", function() { /* Attach userId change event */
-            var $this = $(this);
-            if ($this.data("prev-value") !== $this.val()) {
-                _this.isDirty = true;
-                $("#jiraPassword").val("");
-            }
         });
-
         return this;
     };
     return JiraSettings;

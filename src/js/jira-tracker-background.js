@@ -7,7 +7,6 @@ define(["jquery", "js-logger", "js/jira-tracker"], function($, Logger, JiraTrack
      * @this {Background}
      */
     var Background = function() {
-        Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get("Background");
         this.inProgress = false;
     };

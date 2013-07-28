@@ -16,7 +16,6 @@ define(["jquery", "js-logger"], function($, Logger) {
         this.name = name;
         this.formSelector = formSelector;
         this.definition = definition;
-        Logger.useDefaults(Logger.DEBUG);
         this.logger = Logger.get(name);
     }
 
