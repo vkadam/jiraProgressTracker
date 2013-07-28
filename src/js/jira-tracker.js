@@ -23,7 +23,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     };
 
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
-        BASELINE_SNAPSHOT = 1,
+        BASELINE_SNAPSHOT = "Baseline",
         JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
 
     JiraTracker.prototype.getCurrentFilter = function() {
@@ -175,22 +175,68 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         return deferred.promise();
     };
 
+    JiraTracker.prototype.getWorksheet = function(title) {
+        var _this = this;
+        var matchingWorksheet;
+        var worksheets = _this.getCurrentFilter().worksheets;
+        $.each(worksheets, function(idx, worksheet) {
+            if (worksheet.title === title) {
+                matchingWorksheet = worksheet;
+                return false;
+            }
+
+        });
+        return matchingWorksheet;
+    };
+
+    JiraTracker.prototype.findEndOfWeekSheet = function(dt) {
+
+        var _this = this;
+        var i = 0;
+        var sheet;
+        while (i < 7) {
+            sheet = _this.getWorksheet((dt.clone().subtract("day", i).format("MM-DD-YYYY")));
+            if (sheet) {
+                break;
+            }
+            i = i + 1;
+        }
+        return sheet;
+    };
+
     JiraTracker.prototype.compareSnapshot = function() {
         var _this = this;
-        var baselineWS = _this.getCurrentFilter().worksheets[BASELINE_SNAPSHOT];
+        var today = moment();
+        var filterSS = _this.getCurrentFilter();
+        var baselineWS = filterSS.getWorksheet(BASELINE_SNAPSHOT); //TODO Baseline snapshot should capture the date
         var latestWS = _this.getCurrentFilter().worksheets[_this.getCurrentFilter().worksheets.length - 1];
-        $.when(baselineWS.fetch(), latestWS.fetch())
+        var weekb4lastWS = _this.findEndOfWeekSheet(today.clone().startOf("week").subtract("day", 7));
+        var lastWeekWS = _this.findEndOfWeekSheet(today.startOf("week"));
+
+        $.when((baselineWS ? baselineWS.fetch() : $.Deferred().resolve()), (latestWS ? latestWS.fetch() : $.Deferred().resolve()), (weekb4lastWS ? weekb4lastWS.fetch() : $.Deferred().resolve()), (lastWeekWS ? lastWeekWS.fetch() : $.Deferred().resolve()))
             .done(function() {
-            var baselineSnapshot = new Snapshot(baselineWS.rows);
-            var latestSnapshot = new Snapshot(latestWS.rows);
 
             var inputJson = {
-                snapshot1: baselineSnapshot.summarize(),
-                snapshot2: latestSnapshot.summarize()
+                baseline: _this.getSnapshotSummary(baselineWS),
+                lastWeekSnapshot: _this.getSnapshotSummary(lastWeekWS),
+                weekb4lastSnapshot: _this.getSnapshotSummary(weekb4lastWS),
+                latest: _this.getSnapshotSummary(latestWS)
             };
 
             $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
         });
+    };
+
+    JiraTracker.prototype.getSnapshotSummary = function(sheet) {
+        if (!sheet) {
+            return [];
+        }
+        var snapshot = new Snapshot(sheet.rows);
+        return {
+            date: sheet.title,
+            data: snapshot.summarize()
+        };
+
     };
 
     JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
@@ -216,7 +262,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             }).then(function() {
                 var releaseSettings = [
                     [JIRA_SETUP_WORKSHEET_JQL],
-                      [$("#jiraJQL").val()]
+                                                                    [$("#jiraJQL").val()]
                 ];
                 // Adds release details into setup worksheet
                 _this.logger.debug("Saving release settings into setup worksheet");

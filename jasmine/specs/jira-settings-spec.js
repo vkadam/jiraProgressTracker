@@ -125,7 +125,7 @@ define(["jquery", "js-logger", "js/base64",
                 describe("update storage", function() {
                     var base64Encode, userIdCtrl, passwordCtrl;
 
-                    function validateAndSaveSetting(triggerUserChangeEvent, triggerPasswordChangeEvent, callback) {
+                    function validateAndSaveSetting(triggerChangeEvent, callback) {
                         var JiraValidator = Validator.get("JIRA_SETTINGS"),
                             deferred = new Deferred();
 
@@ -135,11 +135,8 @@ define(["jquery", "js-logger", "js/base64",
                         passwordCtrl = $("#jiraPassword");
                         userIdCtrl.val("JiraUserName");
                         passwordCtrl.val("JiraAccountPassword");
-                        if (triggerUserChangeEvent) {
+                        if (triggerChangeEvent) {
                             userIdCtrl.change();
-                        }
-                        if (triggerPasswordChangeEvent) {
-                            passwordCtrl.change();
                         }
 
                         $saveSetting.click();
@@ -152,7 +149,7 @@ define(["jquery", "js-logger", "js/base64",
                     }
 
                     it("stores userName and base64Key into storage and change isDirty flag when validatation is done", function() {
-                        validateAndSaveSetting(true, true, function() {
+                        validateAndSaveSetting(true, function() {
                             expect(jiraSetting.storage.set).toHaveBeenCalledWith("Jira-Credentials", base64Encode);
                             expect(jiraSetting.storage.set).toHaveBeenCalledWith("Jira-UserName", "JiraUserName");
                             expect(jiraSetting.isDirty).toBeFalsy();
@@ -160,28 +157,16 @@ define(["jquery", "js-logger", "js/base64",
                         });
                     });
 
-                    it("doesn't update storage if username or password not changed", function() {
-                        validateAndSaveSetting(false, false, function() {
+                    it("doesn't update userName and base64Key into storage is form is not dirty", function() {
+                        validateAndSaveSetting(false, function() {
                             expect(jiraSetting.storage.set).not.toHaveBeenCalled();
-                        });
-                    });
-
-                    it("doesn't update storage if username is changed", function() {
-                        validateAndSaveSetting(true, false, function() {
-                            expect(jiraSetting.storage.set).toHaveBeenCalled();
-                        });
-                    });
-
-                    it("doesn't update storage if password is changed", function() {
-                        validateAndSaveSetting(false, true, function() {
-                            expect(jiraSetting.storage.set).toHaveBeenCalled();
                         });
                     });
 
                     it("hides setting dialog", function() {
                         expect(settingsModal).toBeVisible();
                         spyOn($.fn, "modal");
-                        validateAndSaveSetting(false, false, function() {
+                        validateAndSaveSetting(false, function() {
                             expect($.fn.modal).toHaveBeenCalledWith("hide");
                         });
                     });

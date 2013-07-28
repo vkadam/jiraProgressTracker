@@ -431,7 +431,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 var addRowCall = JiraTracker.getCurrentFilter().worksheets[0].addRows,
                     expectRows = [
                         ["jira-jql"],
-                          ["SomeJiraJQL"]
+                                                                        ["SomeJiraJQL"]
                     ];
                 expect(JiraTracker.getCurrentFilter().worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);
@@ -796,6 +796,40 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 worksheet2.title = "Snapshot 08-17-2012";
                 currentFilter.worksheets.push(worksheet2);
                 expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+            });
+        });
+
+        describe("findEndOfWeekSheet", function() {
+            //17-23 March 2013
+            var currentFilter,
+                worksheet1 = {
+                    id: "ws1",
+                    title: "08-15-2012"
+                },
+                worksheet2 = {
+                    id: "ws2",
+                    title: "Changes as per test"
+                };
+
+            beforeEach(function() {
+                currentFilter = {
+                    id: "mySpreadSheetId",
+                    title: "Release Sheet Title",
+                    worksheets: [worksheet1]
+                };
+
+                spyOn(JiraTracker, "getCurrentFilter");
+                spyOn(JiraTracker, "loadReleaseFromStorage");
+            });
+
+            it("returns the sheet for the passed date if it exists", function() {
+                JiraTracker.getCurrentFilter.andReturn(currentFilter);
+                var title = "03-23-2013";
+                worksheet2.title = title;
+                currentFilter.worksheets.push(worksheet2);
+                Logger.debug("Testing: ", moment(title));
+                var returnedTitle = JiraTracker.findEndOfWeekSheet(moment(title)).title;
+                expect(returnedTitle).toBe(title);
             });
         });
     });
