@@ -41,8 +41,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         function errorCallBack(errorMessage, sSheet) {
             deferred.rejectWith(_this, [{
-                "message": errorMessage,
-                "spreadsheet": sSheet
+                    "message": errorMessage,
+                    "spreadsheet": sSheet
             }]);
         }
 
@@ -128,8 +128,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     deferred.resolveWith(_this, [sSheet]);
                 }).fail(function(errorMessage, sSheet) {
                     deferred.rejectWith(_this, [{
-                        message: errorMessage,
-                        spreadsheet: sSheet
+                            message: errorMessage,
+                            spreadsheet: sSheet
                     }]);
                 });
             }
@@ -165,8 +165,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 deferred.resolveWith(_this, [sSheet]);
             }, function(errorMessage, sSheet) {
                 deferred.rejectWith(_this, [{
-                    message: errorMessage,
-                    spreadsheet: sSheet
+                        message: errorMessage,
+                        spreadsheet: sSheet
                 }]);
             });
         }
@@ -181,16 +181,16 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         var latestWS = _this.getCurrentFilter().worksheets[_this.getCurrentFilter().worksheets.length - 1];
         $.when(baselineWS.fetch(), latestWS.fetch())
             .done(function() {
-                var baselineSnapshot = new Snapshot(baselineWS.rows);
-                var latestSnapshot = new Snapshot(latestWS.rows);
+            var baselineSnapshot = new Snapshot(baselineWS.rows);
+            var latestSnapshot = new Snapshot(latestWS.rows);
 
-                var inputJson = {
-                    snapshot1: baselineSnapshot.summarize(),
-                    snapshot2: latestSnapshot.summarize()
-                };
+            var inputJson = {
+                snapshot1: baselineSnapshot.summarize(),
+                snapshot2: latestSnapshot.summarize()
+            };
 
-                $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
-            });
+            $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
+        });
     };
 
     JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
@@ -216,7 +216,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             }).then(function() {
                 var releaseSettings = [
                     [JIRA_SETUP_WORKSHEET_JQL],
-                    [$("#jiraJQL").val()]
+                      [$("#jiraJQL").val()]
                 ];
                 // Adds release details into setup worksheet
                 _this.logger.debug("Saving release settings into setup worksheet");
@@ -230,7 +230,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 deferred.resolveWith(_this, [_this.getCurrentFilter()]);
             }, function(errorMessage) {
                 deferred.rejectWith(_this, [{
-                    message: errorMessage
+                        message: errorMessage
                 }]);
             });
         }
@@ -366,7 +366,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 deferred.resolveWith(_this, [wSheet]);
             }, function(jqXHR, textStatus) {
                 deferred.rejectWith(_this, [{
-                    message: textStatus || jqXHR
+                        message: textStatus || jqXHR
                 }]);
                 _this.logger.error(textStatus || jqXHR);
             });

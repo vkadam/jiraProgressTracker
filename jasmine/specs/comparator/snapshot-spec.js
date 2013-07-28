@@ -1,32 +1,32 @@
 define(["js/comparator/snapshot"], function(Snapshot) {
     describe("comparator/snapshot.js", function() {
         var issues = [{
-            points: 1,
-            status: "Closed"
+                points: 1,
+                status: "Closed"
         }, {
-            points: "3",
-            status: "Ready"
+                points: "3",
+                status: "Ready"
         }, {
-            points: 2,
-            status: "Open"
+                points: 2,
+                status: "Open"
         }, {
-            points: "1.3",
-            status: "Resolved"
+                points: "1.3",
+                status: "Resolved"
         }, {
-            points: 2,
-            status: "In Progress"
+                points: 2,
+                status: "In Progress"
         }, {
-            points: 2,
-            status: "Verified"
+                points: 2,
+                status: "Verified"
         }, {
-            points: 2,
-            status: "Complete"
+                points: 2,
+                status: "Complete"
         }, {
-            points: 2,
-            status: "QA Active"
+                points: 2,
+                status: "QA Active"
         }, {
-            points: 2,
-            status: "Ready for QA"
+                points: 2,
+                status: "Ready for QA"
             }];
 
         it("Snapshot.summarize method returns summary of total issues", function() {

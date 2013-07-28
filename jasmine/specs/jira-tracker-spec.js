@@ -21,20 +21,20 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 filterMasterWorksheet = {
                     title: "Filters",
                     rows: [{
-                        "filtername": "Filter Name 1",
-                        "spreadsheetid": "spreadsheetid1",
-                        "jql": "jira jql 1",
-                        "active": "N"
+                            "filtername": "Filter Name 1",
+                            "spreadsheetid": "spreadsheetid1",
+                            "jql": "jira jql 1",
+                            "active": "N"
                     }, {
-                        "filtername": "Filter Name 2",
-                        "spreadsheetid": "spreadsheetid2",
-                        "jql": "jira jql 2",
-                        "active": "N"
+                            "filtername": "Filter Name 2",
+                            "spreadsheetid": "spreadsheetid2",
+                            "jql": "jira jql 2",
+                            "active": "N"
                     }, {
-                        "filtername": "Filter Name 3",
-                        "spreadsheetid": "spreadsheetid3",
-                        "jql": "jira jql 3",
-                        "active": "Y"
+                            "filtername": "Filter Name 3",
+                            "spreadsheetid": "spreadsheetid3",
+                            "jql": "jira jql 3",
+                            "active": "Y"
                     }]
                 },
                 getWorksheetSpy = jasmine.createSpy("Spreadsheet.getWorksheet").andReturn(filterMasterWorksheet),
@@ -319,7 +319,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     return {
                         title: "Setup",
                         rows: [{
-                            "jira-jql": "SomeJiraJQL"
+                                "jira-jql": "SomeJiraJQL"
                         }]
                     };
                 }
@@ -431,7 +431,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 var addRowCall = JiraTracker.getCurrentFilter().worksheets[0].addRows,
                     expectRows = [
                         ["jira-jql"],
-                        ["SomeJiraJQL"]
+                          ["SomeJiraJQL"]
                     ];
                 expect(JiraTracker.getCurrentFilter().worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);
