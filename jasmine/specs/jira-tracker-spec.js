@@ -431,7 +431,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 var addRowCall = JiraTracker.getCurrentFilter().worksheets[0].addRows,
                     expectRows = [
                         ["jira-jql"],
-                                                                        ["SomeJiraJQL"]
+                                                                                         ["SomeJiraJQL"]
                     ];
                 expect(JiraTracker.getCurrentFilter().worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);
@@ -804,11 +804,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
             var currentFilter,
                 worksheet1 = {
                     id: "ws1",
-                    title: "08-15-2012"
-                },
-                worksheet2 = {
-                    id: "ws2",
-                    title: "Changes as per test"
+                    title: "03-15-2013"
                 };
 
             beforeEach(function() {
@@ -818,18 +814,63 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     worksheets: [worksheet1]
                 };
 
-                spyOn(JiraTracker, "getCurrentFilter");
-                spyOn(JiraTracker, "loadReleaseFromStorage");
             });
 
             it("returns the sheet for the passed date if it exists", function() {
-                JiraTracker.getCurrentFilter.andReturn(currentFilter);
-                var title = "03-23-2013";
-                worksheet2.title = title;
-                currentFilter.worksheets.push(worksheet2);
-                Logger.debug("Testing: ", moment(title));
-                var returnedTitle = JiraTracker.findEndOfWeekSheet(moment(title)).title;
-                expect(returnedTitle).toBe(title);
+                //   spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+                var title = "03-15-2012";
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: title
+                });
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+
+                expect(JiraTracker.findEndOfWeekSheet(moment(title)).title).toBe(title);
+            });
+
+            it("returns a previous sheet for the passed date sheet not exists", function() {
+                var title = "03-21-2013";
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "03-18-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: title
+                });
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+
+                expect(JiraTracker.findEndOfWeekSheet(moment("03-23-2013")).title).toBe(title);
+            });
+
+            it("returns null if no sheet from the past 7 days exists", function() {
+                var title = "03-16-2013";
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "03-29-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: title
+                });
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+
+                expect(JiraTracker.findEndOfWeekSheet(moment("03-23-2013"))).toBeNull();
+            });
+
+            it("the earlest returns sheet is from 7 days earlier than passed date", function() {
+                var title = "03-17-2013";
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "03-29-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: title
+                });
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+
+                expect(JiraTracker.findEndOfWeekSheet(moment("03-23-2013")).title).toBe(title);
             });
         });
     });

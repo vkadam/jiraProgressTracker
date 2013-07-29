@@ -33,21 +33,21 @@ define(["js/comparator/snapshot"], function(Snapshot) {
             var snapshot = new Snapshot(issues),
                 result = snapshot.summarize();
             expect(result["Total Count"]).toBe(9);
-            expect(result["Total Points"]).toBe(17.3);
+            expect(result["Total Points"]).toBe("17.30");
         });
 
         it("Snapshot.summarize method returns summary of done issues", function() {
             var snapshot = new Snapshot(issues),
                 result = snapshot.summarize();
             expect(result["Done Count"]).toBe(2);
-            expect(result["Done Points"]).toBe(2.3);
+            expect(result["Done Points"]).toBe("2.30");
         });
 
         it("Snapshot.summarize method returns summary of wip issues", function() {
             var snapshot = new Snapshot(issues),
                 result = snapshot.summarize();
             expect(result["WIP Count"]).toBe(5);
-            expect(result["WIP Points"]).toBe(10);
+            expect(result["WIP Points"]).toBe("10.00");
         });
 
     });

@@ -18,7 +18,7 @@ define(["jquery"], function($) {
         this.getSummary = function() {
             var result = {};
             result[[options.name, "Count"].join(" ")] = count;
-            result[[options.name, "Points"].join(" ")] = points;
+            result[[options.name, "Points"].join(" ")] = points.toFixed(2);
             return result;
         };
         return this;

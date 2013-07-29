@@ -178,7 +178,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     JiraTracker.prototype.getWorksheet = function(title) {
         var _this = this;
         var matchingWorksheet;
-        var worksheets = _this.getCurrentFilter().worksheets;
+        var currentFilter = _this.getCurrentFilter();
+        var worksheets = currentFilter.worksheets;
         $.each(worksheets, function(idx, worksheet) {
             if (worksheet.title === title) {
                 matchingWorksheet = worksheet;
@@ -193,15 +194,15 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         var _this = this;
         var i = 0;
-        var sheet;
+        //var sheet = null;
         while (i < 7) {
-            sheet = _this.getWorksheet((dt.clone().subtract("day", i).format("MM-DD-YYYY")));
+            var sheet = _this.getWorksheet((dt.clone().subtract("day", i).format("MM-DD-YYYY")));
             if (sheet) {
-                break;
+                return sheet;
             }
             i = i + 1;
         }
-        return sheet;
+        return null;
     };
 
     JiraTracker.prototype.compareSnapshot = function() {
@@ -262,7 +263,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             }).then(function() {
                 var releaseSettings = [
                     [JIRA_SETUP_WORKSHEET_JQL],
-                                                                    [$("#jiraJQL").val()]
+                                                                                     [$("#jiraJQL").val()]
                 ];
                 // Adds release details into setup worksheet
                 _this.logger.debug("Saving release settings into setup worksheet");
