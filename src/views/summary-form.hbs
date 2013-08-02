@@ -5,7 +5,7 @@
 	      	<th>Baseline</th>
 	       	<th>Current</th>
 	     	<th>Last Week Data</br>{{ lastWeekSnapshot.date }} </th>
-	      	<th>This Week Data </th> 
+	      	<th>This Week Data</br>{{ latest.date }} </th> 
 	      	<th>Project to Date Data</th> 
 	    </tr>
 	</thead>
@@ -17,12 +17,15 @@
 		<td>{{get ../latest.data @key}}</td>
 		{{#if ../lastWeekSnapshot}}
 			<td>{{subtract ../../weekb4lastSnapshot.data ../../lastWeekSnapshot.data @key }} </td>
-			<td>{{subtract ../../lastWeekSnapshot.data ../../latest.data @key }} </td>
+			{{#if ../../latest}}
+				<td>{{subtract ../../../lastWeekSnapshot.data ../../../latest.data @key }} </td>
+			{{else}}
+				<td> No data available </td>
+			{{/if}}
 		{{else}}
 		<td> No data available </td>
-		<td> No data available </td>
 		{{/if}}
-		<td>{{subtract ../baseline.data ../latest.data @key }}</td>
+			<td>:)</td>
     </tr>
     {{/each}}
   </tbody>

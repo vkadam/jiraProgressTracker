@@ -47,8 +47,8 @@ define(["jquery", "js-logger"], function($, Logger) {
             var errorMessage = "Validation of " + this.name + " failed.";
             this.logger.error(errorMessage);
             deferred.rejectWith(options.context, [{
-                    message: errorMessage,
-                    errors: validator.errorMap
+                message: errorMessage,
+                errors: validator.errorMap
             }]);
         }
         return options.returnPromise ? deferred.promise() : deferred;

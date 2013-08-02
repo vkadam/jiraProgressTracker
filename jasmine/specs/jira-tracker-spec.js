@@ -21,20 +21,20 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 filterMasterWorksheet = {
                     title: "Filters",
                     rows: [{
-                            "filtername": "Filter Name 1",
-                            "spreadsheetid": "spreadsheetid1",
-                            "jql": "jira jql 1",
-                            "active": "N"
+                        "filtername": "Filter Name 1",
+                        "spreadsheetid": "spreadsheetid1",
+                        "jql": "jira jql 1",
+                        "active": "N"
                     }, {
-                            "filtername": "Filter Name 2",
-                            "spreadsheetid": "spreadsheetid2",
-                            "jql": "jira jql 2",
-                            "active": "N"
+                        "filtername": "Filter Name 2",
+                        "spreadsheetid": "spreadsheetid2",
+                        "jql": "jira jql 2",
+                        "active": "N"
                     }, {
-                            "filtername": "Filter Name 3",
-                            "spreadsheetid": "spreadsheetid3",
-                            "jql": "jira jql 3",
-                            "active": "Y"
+                        "filtername": "Filter Name 3",
+                        "spreadsheetid": "spreadsheetid3",
+                        "jql": "jira jql 3",
+                        "active": "Y"
                     }]
                 },
                 getWorksheetSpy = jasmine.createSpy("Spreadsheet.getWorksheet").andReturn(filterMasterWorksheet),
@@ -319,7 +319,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     return {
                         title: "Setup",
                         rows: [{
-                                "jira-jql": "SomeJiraJQL"
+                            "jira-jql": "SomeJiraJQL"
                         }]
                     };
                 }
@@ -431,7 +431,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 var addRowCall = JiraTracker.getCurrentFilter().worksheets[0].addRows,
                     expectRows = [
                         ["jira-jql"],
-                                                                                         ["SomeJiraJQL"]
+                                                                                                  ["SomeJiraJQL"]
                     ];
                 expect(JiraTracker.getCurrentFilter().worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);
@@ -824,8 +824,8 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     title: title
                 });
                 spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
-
-                expect(JiraTracker.findEndOfWeekSheet(moment(title)).title).toBe(title);
+                var sheetDate = moment().year(2012).month(2).date(15);
+                expect(JiraTracker.findEndOfWeekSheet(moment(sheetDate)).title).toBe(title);
             });
 
             it("returns a previous sheet for the passed date sheet not exists", function() {
@@ -839,8 +839,8 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     title: title
                 });
                 spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
-
-                expect(JiraTracker.findEndOfWeekSheet(moment("03-23-2013")).title).toBe(title);
+                var sheetDate = moment().year(2013).month(2).date(23);
+                expect(JiraTracker.findEndOfWeekSheet(moment(sheetDate)).title).toBe(title);
             });
 
             it("returns null if no sheet from the past 7 days exists", function() {
@@ -854,8 +854,8 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     title: title
                 });
                 spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
-
-                expect(JiraTracker.findEndOfWeekSheet(moment("03-23-2013"))).toBeNull();
+                var sheetDate = moment().year(2013).month(2).date(23);
+                expect(JiraTracker.findEndOfWeekSheet(moment(sheetDate))).toBeNull();
             });
 
             it("the earlest returns sheet is from 7 days earlier than passed date", function() {
@@ -869,8 +869,74 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     title: title
                 });
                 spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+                var sheetDate = moment().year(2013).month(2).date(23);
+                expect(JiraTracker.findEndOfWeekSheet(moment(sheetDate)).title).toBe(title);
+            });
+        });
 
-                expect(JiraTracker.findEndOfWeekSheet(moment("03-23-2013")).title).toBe(title);
+        describe("findMostRecentSheetFromCurrentWeek", function() {
+
+            var currentFilter,
+                worksheet1 = {
+                    id: "ws1",
+                    title: "03-15-2013"
+                };
+
+            beforeEach(function() {
+                currentFilter = {
+                    id: "mySpreadSheetId",
+                    title: "Release Sheet Title",
+                    worksheets: [worksheet1]
+                };
+
+            });
+
+            it("should returns today sheet if it exists", function() {
+
+                spyOn(JiraTracker, "getToday").andReturn(moment().year(2013).month(7).date(7));
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "08-07-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: "08-06-2013"
+                });
+
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+                expect(JiraTracker.findMostRecentSheetFromCurrentWeek().title).toBe("08-07-2013");
+            });
+
+            it("should returns the most recent available sheet if todays  sheet does not exists", function() {
+
+                spyOn(JiraTracker, "getToday").andReturn(moment().year(2013).month(7).date(7));
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "08-05-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: "08-03-2013"
+                });
+
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+                expect(JiraTracker.findMostRecentSheetFromCurrentWeek().title).toBe("08-05-2013");
+            });
+
+            it("should returns the most recent available sheet if todays  sheet does not exists", function() {
+
+                spyOn(JiraTracker, "getToday").andReturn(moment().year(2013).month(7).date(7));
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "08-04-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: "08-03-2013"
+                });
+
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+                expect(JiraTracker.findMostRecentSheetFromCurrentWeek()).toBeNull();
             });
         });
     });

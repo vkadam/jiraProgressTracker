@@ -1,5 +1,8 @@
 define(['handlebars'], function(Handlebars) {
     Handlebars.registerHelper("get", function(context, key) {
+        if (!context) {
+            return null;
+        }
         return context[key];
     });
 

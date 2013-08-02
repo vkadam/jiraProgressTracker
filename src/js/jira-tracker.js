@@ -20,11 +20,13 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         this.filters = [];
         this.storage = new Storage();
         this.logger = Logger.get("jiraTracker");
+        //this.DATE_FORMAT = DATE_FORMAT;
     };
 
     var JIRA_SETUP_WORKSHEET_TITLE = "Setup",
         BASELINE_SNAPSHOT = "Baseline",
-        JIRA_SETUP_WORKSHEET_JQL = "jira-jql";
+        JIRA_SETUP_WORKSHEET_JQL = "jira-jql",
+        DATE_FORMAT = "MM-DD-YYYY";
 
     JiraTracker.prototype.getCurrentFilter = function() {
         return currentFilter;
@@ -41,8 +43,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
         function errorCallBack(errorMessage, sSheet) {
             deferred.rejectWith(_this, [{
-                    "message": errorMessage,
-                    "spreadsheet": sSheet
+                "message": errorMessage,
+                "spreadsheet": sSheet
             }]);
         }
 
@@ -128,8 +130,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     deferred.resolveWith(_this, [sSheet]);
                 }).fail(function(errorMessage, sSheet) {
                     deferred.rejectWith(_this, [{
-                            message: errorMessage,
-                            spreadsheet: sSheet
+                        message: errorMessage,
+                        spreadsheet: sSheet
                     }]);
                 });
             }
@@ -165,8 +167,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 deferred.resolveWith(_this, [sSheet]);
             }, function(errorMessage, sSheet) {
                 deferred.rejectWith(_this, [{
-                        message: errorMessage,
-                        spreadsheet: sSheet
+                    message: errorMessage,
+                    spreadsheet: sSheet
                 }]);
             });
         }
@@ -190,13 +192,13 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         return matchingWorksheet;
     };
 
-    JiraTracker.prototype.findEndOfWeekSheet = function(dt) {
-
+    JiraTracker.prototype.findMostRecentSheetFromCurrentWeek = function() {
         var _this = this;
+        var today = _this.getToday();
+        var daysDiff = today.diff(today.clone().startOf("week"), "days");
         var i = 0;
-        //var sheet = null;
-        while (i < 7) {
-            var sheet = _this.getWorksheet((dt.clone().subtract("day", i).format("MM-DD-YYYY")));
+        while (i < daysDiff) {
+            var sheet = _this.getWorksheet((today.clone().subtract("day", i).format(DATE_FORMAT)));
             if (sheet) {
                 return sheet;
             }
@@ -205,27 +207,46 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         return null;
     };
 
+    JiraTracker.prototype.findEndOfWeekSheet = function(dt) {
+
+        var _this = this;
+        var i = 0;
+        while (i < 7) {
+            var sheet = _this.getWorksheet((dt.clone().subtract("day", i).format(DATE_FORMAT)));
+            if (sheet) {
+                return sheet;
+            }
+            i = i + 1;
+        }
+        return null;
+    };
+
+    JiraTracker.prototype.getToday = function() {
+        return moment();
+    };
+
     JiraTracker.prototype.compareSnapshot = function() {
         var _this = this;
-        var today = moment();
+        var today = _this.getToday();
         var filterSS = _this.getCurrentFilter();
         var baselineWS = filterSS.getWorksheet(BASELINE_SNAPSHOT); //TODO Baseline snapshot should capture the date
-        var latestWS = _this.getCurrentFilter().worksheets[_this.getCurrentFilter().worksheets.length - 1];
+        //  var latestWS = _this.getCurrentFilter().worksheets[_this.getCurrentFilter().worksheets.length - 1];
+        var latestWS = _this.findMostRecentSheetFromCurrentWeek();
         var weekb4lastWS = _this.findEndOfWeekSheet(today.clone().startOf("week").subtract("day", 7));
-        var lastWeekWS = _this.findEndOfWeekSheet(today.startOf("week"));
+        var lastWeekWS = _this.findEndOfWeekSheet(today.clone().startOf("week"));
 
         $.when((baselineWS ? baselineWS.fetch() : $.Deferred().resolve()), (latestWS ? latestWS.fetch() : $.Deferred().resolve()), (weekb4lastWS ? weekb4lastWS.fetch() : $.Deferred().resolve()), (lastWeekWS ? lastWeekWS.fetch() : $.Deferred().resolve()))
             .done(function() {
 
-            var inputJson = {
-                baseline: _this.getSnapshotSummary(baselineWS),
-                lastWeekSnapshot: _this.getSnapshotSummary(lastWeekWS),
-                weekb4lastSnapshot: _this.getSnapshotSummary(weekb4lastWS),
-                latest: _this.getSnapshotSummary(latestWS)
-            };
+                var inputJson = {
+                    baseline: _this.getSnapshotSummary(baselineWS),
+                    lastWeekSnapshot: _this.getSnapshotSummary(lastWeekWS),
+                    weekb4lastSnapshot: _this.getSnapshotSummary(weekb4lastWS),
+                    latest: _this.getSnapshotSummary(latestWS)
+                };
 
-            $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
-        });
+                $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
+            });
     };
 
     JiraTracker.prototype.getSnapshotSummary = function(sheet) {
@@ -262,8 +283,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 return _this.getCurrentFilter().worksheets[0].rename("Setup");
             }).then(function() {
                 var releaseSettings = [
-                    [JIRA_SETUP_WORKSHEET_JQL],
-                                                                                     [$("#jiraJQL").val()]
+                    [JIRA_SETUP_WORKSHEET_JQL], [$("#jiraJQL").val()]
                 ];
                 // Adds release details into setup worksheet
                 _this.logger.debug("Saving release settings into setup worksheet");
@@ -277,7 +297,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 deferred.resolveWith(_this, [_this.getCurrentFilter()]);
             }, function(errorMessage) {
                 deferred.rejectWith(_this, [{
-                        message: errorMessage
+                    message: errorMessage
                 }]);
             });
         }
@@ -321,7 +341,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     JiraTracker.prototype.canSnapshotBeGenerated = function() {
         var _this = this,
             result = false,
-            todaysDate = _this.getJiraServerTime(), //.format("MM-DD-YYYY");
+            todaysDate = _this.getJiraServerTime(), //.format(DATE_FORMAT);
             workStartTime = todaysDate.clone().startOf('hour').hour(8),
             workEndTime = todaysDate.clone().startOf('hour').hour(17);
 
@@ -335,14 +355,14 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         } else if (todaysDate.isAfter(workStartTime) && todaysDate.isBefore(workEndTime)) {
             return result;
         }
-        todaysDate = todaysDate.format("MM-DD-YYYY");
+        todaysDate = todaysDate.format(DATE_FORMAT);
 
         if (_this.getCurrentFilter()) {
             /* If Snapshot is not available for a date so can be generated */
             result = todaysDate;
             $.each(_this.getCurrentFilter().worksheets, function(idx, wSheet) {
                 /* return is a break of $.each. Return false if snapshot is found for date */
-                if (moment(todaysDate, "MM-DD-YYYY").isSame(moment(wSheet.title, "MM-DD-YYYY"))) {
+                if (moment(todaysDate, DATE_FORMAT).isSame(moment(wSheet.title, DATE_FORMAT))) {
                     _this.logger.debug("Snapshot for", todaysDate, "is available, NO need to create one");
                     result = false;
                     return;
@@ -413,7 +433,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 deferred.resolveWith(_this, [wSheet]);
             }, function(jqXHR, textStatus) {
                 deferred.rejectWith(_this, [{
-                        message: textStatus || jqXHR
+                    message: textStatus || jqXHR
                 }]);
                 _this.logger.error(textStatus || jqXHR);
             });
