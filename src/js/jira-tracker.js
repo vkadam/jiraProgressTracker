@@ -13,6 +13,12 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @this {JiraTracker}
      */
 
+    if (typeof String.prototype.startsWith !== 'function') {
+        String.prototype.startsWith = function(str) {
+            return this.slice(0, str.length) === str;
+        };
+    }
+
     var currentFilter = null;
     var JiraTracker = function(id) {
         /* Spreadsheet id which stores all filter list */
@@ -207,6 +213,18 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         return null;
     };
 
+    JiraTracker.prototype.findBaselineSheet = function() {
+
+        var i;
+        var worksheets = this.getCurrentFilter().worksheets;
+        for (i in worksheets) {
+            if (worksheets[i].title.startsWith(BASELINE_SNAPSHOT)) {
+                return worksheets[i];
+            }
+        }
+        return null;
+    };
+
     JiraTracker.prototype.findEndOfWeekSheet = function(dt) {
 
         var _this = this;
@@ -228,9 +246,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     JiraTracker.prototype.compareSnapshot = function() {
         var _this = this;
         var today = _this.getToday();
-        var filterSS = _this.getCurrentFilter();
-        var baselineWS = filterSS.getWorksheet(BASELINE_SNAPSHOT); //TODO Baseline snapshot should capture the date
-        //  var latestWS = _this.getCurrentFilter().worksheets[_this.getCurrentFilter().worksheets.length - 1];
+        var baselineWS = _this.findBaselineSheet();
         var latestWS = _this.findMostRecentSheetFromCurrentWeek();
         var weekb4lastWS = _this.findEndOfWeekSheet(today.clone().startOf("week").subtract("day", 7));
         var lastWeekWS = _this.findEndOfWeekSheet(today.clone().startOf("week"));
@@ -249,16 +265,32 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             });
     };
 
+    JiraTracker.prototype.getSheetDate = function(title) {
+
+        if (!title) {
+            return null;
+        }
+
+        return title.slice(-DATE_FORMAT.length);
+    };
+
     JiraTracker.prototype.getSnapshotSummary = function(sheet) {
         if (!sheet) {
             return [];
         }
         var snapshot = new Snapshot(sheet.rows);
+
         return {
-            date: sheet.title,
+            date: this.getSheetDate(sheet.title),
             data: snapshot.summarize()
         };
 
+    };
+
+    JiraTracker.prototype.getBaselineTitle = function() {
+
+        var today = this.getToday();
+        return BASELINE_SNAPSHOT + " - " + today.format(DATE_FORMAT);
     };
 
     JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
@@ -291,7 +323,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             }).then(function() {
                 _this.logger.debug("Release settings saved successfully");
                 // Once Spreadsheet is created successfully, create a baseline snapshot
-                return _this.createSnapshot(evt, "Baseline");
+                return _this.createSnapshot(evt, _this.getBaselineTitle());
             }).then(function() {
                 // Once Baseline is created successfully, execute callbacks
                 deferred.resolveWith(_this, [_this.getCurrentFilter()]);

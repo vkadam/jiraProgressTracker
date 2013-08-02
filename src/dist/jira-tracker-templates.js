@@ -93,7 +93,11 @@ function program7(depth0,data) {
   return "\n		<td> No data available </td>\n		";
   }
 
-  buffer += "<table class=\"table .table-striped\">\n	<thead>\n	    <tr>\n	     	<th>Matric</th>\n	      	<th>Baseline</th>\n	       	<th>Current</th>\n	     	<th>Last Week Data</br>"
+  buffer += "<table class=\"table .table-striped\">\n	<thead>\n	    <tr>\n	     	<th>Matric</th>\n	      	<th>Baseline Totals </br>"
+    + escapeExpression(((stack1 = ((stack1 = depth0.baseline),stack1 == null || stack1 === false ? stack1 : stack1.date)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
+    + "</th>\n	       	<th>Current Totals </br>"
+    + escapeExpression(((stack1 = ((stack1 = depth0.latest),stack1 == null || stack1 === false ? stack1 : stack1.date)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
+    + "</th>\n	     	<th>Last Week Data</br>"
     + escapeExpression(((stack1 = ((stack1 = depth0.lastWeekSnapshot),stack1 == null || stack1 === false ? stack1 : stack1.date)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
     + " </th>\n	      	<th>This Week Data</br>"
     + escapeExpression(((stack1 = ((stack1 = depth0.latest),stack1 == null || stack1 === false ? stack1 : stack1.date)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))

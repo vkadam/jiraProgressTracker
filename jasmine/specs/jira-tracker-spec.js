@@ -1,5 +1,5 @@
 define(["jquery", "js/jira-tracker", "gsloader",
-    "js/moment-zone", "jasmine-helper", "js-logger", "js/models/jira-storage"
+    "js/moment-zone", "jasmine-helper", "js-logger", "js/models/jira-storage", "js/comparator/Snapshot"
 ], function($, JiraTracker, GSLoader, moment, Deferred, Logger, Storage) {
     describe("JiraTracker", function() {
         var spyOnAjax;
@@ -937,6 +937,94 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
                 spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
                 expect(JiraTracker.findMostRecentSheetFromCurrentWeek()).toBeNull();
+            });
+        });
+        describe("getBaselineTitle", function() {
+            it("returns name appended with current date", function() {
+                spyOn(JiraTracker, "getToday").andReturn(moment().year(2013).month(7).date(7));
+
+                expect(JiraTracker.getBaselineTitle()).toBe("Baseline - 08-07-2013");
+            });
+        });
+
+        describe("getSnapshotSummary", function() {
+
+            it("returns an object with title and data array", function() {
+                // var snapshot = new Snapshot([{
+                //     Points: 5,
+                //     status: "Ready"
+                // }]);
+
+                jasmine.createSpy("Snapshot.summarize").andReturn([{
+                    "Total Done": 9
+                }, {
+                    "Total WIP": 8
+                }]);
+                //snapshot.summarize();
+                expect(JiraTracker.getSnapshotSummary({
+                    id: "ws2",
+                    title: "08-04-2013"
+                }).date).toBe("08-04-2013");
+
+            });
+        });
+
+        describe("findBaselineSheet", function() {
+
+            var currentFilter,
+                worksheet1 = {
+                    id: "ws1",
+                    title: "03-15-2013"
+                };
+
+            beforeEach(function() {
+                currentFilter = {
+                    id: "mySpreadSheetId",
+                    title: "Release Sheet Title",
+                    worksheets: [worksheet1]
+                };
+            });
+
+            it("returns baseline sheet if it exists regardless of sheet order", function() {
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "08-04-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: "Baseline - 08-03-2013"
+                });
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+
+                expect(JiraTracker.findBaselineSheet().title).toBe("Baseline - 08-03-2013");
+
+            });
+
+            it("returns null if no baseline sheet exists", function() {
+                currentFilter.worksheets.push({
+                    id: "ws2",
+                    title: "08-04-2013"
+                });
+                currentFilter.worksheets.push({
+                    id: "ws3",
+                    title: "BXXXline - 08-03-2013"
+                });
+                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+
+                expect(JiraTracker.findBaselineSheet()).toBeNull();
+
+            });
+        });
+        describe("getSheetDate", function() {
+
+            it("returns parsed date from title if it is a baseline sheet", function() {
+
+                expect(JiraTracker.getSheetDate("Baseline - 07-23-2012")).toBe("07-23-2012");
+            });
+
+            it("returns date title for  for non-baseline sheets", function() {
+
+                expect(JiraTracker.getSheetDate("07-23-2012")).toBe("07-23-2012");
             });
         });
     });
