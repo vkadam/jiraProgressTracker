@@ -41,5 +41,5 @@ define(['jquery', 'gsloader', 'js/models/filter'], function($, GSLoader, Filter)
         get: function(filterGroupId, force) {
             return !force && filterGroups[filterGroupId] || (filterGroups[filterGroupId] = loadFilterGroupSpreadsheet(filterGroupId));
         }
-    }
+    };
 });

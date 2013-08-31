@@ -1,8 +1,6 @@
-define(['jquery', 'js-logger', 'js/app'], function($, Logger, App) {
+define(['jquery', 'js/app'], function($, App) {
 
     function SnapshotForm($scope, $element) {
-        var logger = Logger.get('SnapshotForm');
-
         $scope.maxResults = 999;
         $scope.snapshotTitle = '';
 
@@ -21,6 +19,6 @@ define(['jquery', 'js-logger', 'js/app'], function($, Logger, App) {
             }
         });
     }
-    
+
     App.controller('SnapshotFormController', SnapshotForm);
 });

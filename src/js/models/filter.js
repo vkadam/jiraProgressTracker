@@ -118,8 +118,7 @@ define(['jquery', 'js-logger', 'gsloader',
     function getJiraServerTime() {
         /* Cengage jira server is in EST */
         return moment().toZone(-4);
-    };
-
+    }
 
     /**
      * Return false if snapshot can not be generated. Else return date as snapshot title

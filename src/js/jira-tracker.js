@@ -1,9 +1,9 @@
 define(['jquery', 'underscore', 'js-logger',
     'gsloader', 'js/moment-zone', 'js/models/jira-issue',
     'js/jira-validator', 'js/comparator/snapshot', 'js/models/jira-storage',
-    'js/handlebars-helpers'
+    'js/models/filter', 'js/handlebars-helpers'
 ], function($, _, Logger, GSLoader, moment, JiraIssue,
-    Validator, Snapshot, Storage) {
+    Validator, Snapshot, Filter, Storage) {
 
     /**
      * Creates an instance of JiraTracker.
@@ -111,8 +111,8 @@ define(['jquery', 'underscore', 'js-logger',
      * @return {JiraTracker} Instance of JiraTracker
      */
     JiraTracker.prototype.injectUI = function() {
-        //        .append(JiraTrackerTemplates['src/views/jira-credentials.html']())
-        $('#jira-container').append(JiraTrackerTemplates['src/views/jira-tracker-form.html'](this));
+        //.append(JiraTrackerTemplates['src/views/jira-credentials.html']())
+        // $('#jira-container').append(JiraTrackerTemplates['src/views/jira-tracker-form.html'](this));
         return this;
     };
 
@@ -256,14 +256,14 @@ define(['jquery', 'underscore', 'js-logger',
         $.when((baselineWS ? baselineWS.fetch() : $.Deferred().resolve()), (latestWS ? latestWS.fetch() : $.Deferred().resolve()), (weekb4lastWS ? weekb4lastWS.fetch() : $.Deferred().resolve()), (lastWeekWS ? lastWeekWS.fetch() : $.Deferred().resolve()))
             .done(function() {
 
-                var inputJson = {
+                /*var inputJson = {
                     baseline: _this.getSnapshotSummary(baselineWS),
                     lastWeekSnapshot: _this.getSnapshotSummary(lastWeekWS),
                     weekb4lastSnapshot: _this.getSnapshotSummary(weekb4lastWS),
                     latest: _this.getSnapshotSummary(latestWS)
                 };
 
-                $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));
+                $(".summary-group").html(JiraTrackerTemplates["src/views/summary-form.hbs"](inputJson));*/
             });
     };
 
@@ -316,7 +316,8 @@ define(['jquery', 'underscore', 'js-logger',
                 return _this.getCurrentFilter().worksheets[0].rename('Setup');
             }).then(function() {
                 var releaseSettings = [
-                    [JIRA_SETUP_WORKSHEET_JQL], [$("#jiraJQL").val()]
+                    [JIRA_SETUP_WORKSHEET_JQL],
+                    [$("#jiraJQL").val()]
                 ];
                 // Adds release details into setup worksheet
                 _this.logger.debug('Saving release settings into setup worksheet');

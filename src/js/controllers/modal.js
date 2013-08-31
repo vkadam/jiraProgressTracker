@@ -10,7 +10,7 @@ define(['jquery', 'js/app'], function($, App) {
 
         $scope.submit = function() {
             $scope.$broadcast('modalSubmitClick');
-        }
+        };
 
         $scope.opts = {
             backdropFade: true,
@@ -18,4 +18,4 @@ define(['jquery', 'js/app'], function($, App) {
         };
     }
     App.controller('ModalController', ModalController);
-})
+});

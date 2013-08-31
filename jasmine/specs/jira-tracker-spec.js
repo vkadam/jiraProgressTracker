@@ -1,12 +1,12 @@
 define(["jquery", "js/jira-tracker", "gsloader",
     "js/moment-zone", "jasmine-helper", "js-logger", "js/models/jira-storage", "js/comparator/Snapshot"
-], function($, JiraTracker, GSLoader, moment, Deferred, Logger, Storage) {
+], function($, JiraTracker, GSLoader, moment, Deferred) {
     describe("JiraTracker", function() {
         var spyOnAjax, jiraTracker;
         beforeEach(function() {
             $.ajaxSetup({
                 async: false
-            });\
+            });
             spyOnAjax = spyOn($, "ajax");
             affix("#jira-container");
             jiraTracker = new JiraTracker();
@@ -17,31 +17,31 @@ define(["jquery", "js/jira-tracker", "gsloader",
         });
 
         describe("populate filters", function() {
-            var spreadsheetId = "my-fliter-masters-spreadsheet-id",
-                filterMasterWorksheet = {
-                    title: "Filters",
-                    rows: [{
-                        "filtername": "Filter Name 1",
-                        "spreadsheetid": "spreadsheetid1",
-                        "jql": "jira jql 1",
-                        "active": "N"
-                    }, {
-                        "filtername": "Filter Name 2",
-                        "spreadsheetid": "spreadsheetid2",
-                        "jql": "jira jql 2",
-                        "active": "N"
-                    }, {
-                        "filtername": "Filter Name 3",
-                        "spreadsheetid": "spreadsheetid3",
-                        "jql": "jira jql 3",
-                        "active": "Y"
-                    }]
-                },
-                getWorksheetSpy = jasmine.createSpy("Spreadsheet.getWorksheet").andReturn(filterMasterWorksheet),
+            /*var filterMasterWorksheet = {
+                title: "Filters",
+                rows: [{
+                    "filtername": "Filter Name 1",
+                    "spreadsheetid": "spreadsheetid1",
+                    "jql": "jira jql 1",
+                    "active": "N"
+                }, {
+                    "filtername": "Filter Name 2",
+                    "spreadsheetid": "spreadsheetid2",
+                    "jql": "jira jql 2",
+                    "active": "N"
+                }, {
+                    "filtername": "Filter Name 3",
+                    "spreadsheetid": "spreadsheetid3",
+                    "jql": "jira jql 3",
+                    "active": "Y"
+                }]
+            };
+            getWorksheetSpy = jasmine.createSpy("Spreadsheet.getWorksheet").andReturn(filterMasterWorksheet);
+            spreadsheetId = "my-fliter-masters-spreadsheet-id",
                 filterSpreadsheet = {
                     id: spreadsheetId,
                     getWorksheet: getWorksheetSpy
-                };
+                };*/
 
             beforeEach(function() {
                 spyOn(jiraTracker, "loadReleaseFromStorage");
@@ -348,7 +348,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 var addRowCall = jiraTracker.getCurrentFilter().worksheets[0].addRows,
                     expectRows = [
                         ["jira-jql"],
-                                                                                                  ["SomeJiraJQL"]
+                        ["SomeJiraJQL"]
                     ];
                 expect(jiraTracker.getCurrentFilter().worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);
@@ -762,7 +762,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
             });
 
             it("returns null if no sheet from the past 7 days exists", function() {
-                var date = moment().year(2013).month(2).date(23);
+                // var date = moment().year(2013).month(2).date(23);
                 currentFilter.worksheets.push({
                     id: "ws2",
                     title: "03-29-2013"

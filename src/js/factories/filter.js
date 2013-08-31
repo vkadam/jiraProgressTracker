@@ -1,4 +1,4 @@
-define(['js/factories/filter-group'], function(FilterGroupFactory) {
+define(['jquery', 'js/factories/filter-group'], function($, FilterGroupFactory) {
     'use strict';
     var cachedFilters = {};
 

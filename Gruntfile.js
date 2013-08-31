@@ -2,10 +2,6 @@
 module.exports = function(grunt) {
     'use strict';
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
-        meta: {
-            banner: '/* <%= pkg.title || pkg.name %> - v<%= pkg.version %>\n<%= pkg.homepage ? '* ' + pkg.homepage + '\\n' : '' %>* Copyright (c) <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */\n'
-        },
         jsbeautifier: {
             files: ['<%= jshint.files %>', 'src/css/**/*.css', 'src/**/*.html', '!src/lib/**/*'],
             options: {

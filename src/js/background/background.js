@@ -41,8 +41,8 @@ define(['jquery', 'js-logger', 'js/factories/filter-group'], function($, Logger,
                             checkAndCreateSnapshot(filter);
                         }
                     }
-                })
+                });
             });
-    };
+    }
     return background;
 });
