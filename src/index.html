@@ -1,40 +1,23 @@
-g<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <title>Jira Progress Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
-    <link href="lib/bootstrap/css/bootstrap-glyphicons.css" rel="stylesheet" media="screen">
+    <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="css/jira-tracker.css" rel="stylesheet" media="screen">
 </head>
 
-<body>
-    <div class="navbar">
-        <div class="container">
-            <a href="#jira-settings" class="navbar-btn pull-right" data-toggle="modal"><i class="glyphicon glyphicon-cog"></i></a>
+<body data-ng-csp="">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="pull-right" data-ng-controller="ModalController">
+            <button type="button" class="btn btn-link btn-lg glyphicon glyphicon-cog" data-ng-click="open()"></button>
+            <ng-include data-src="'views/settings.html'"></ng-include>
         </div>
-    </div>
-    <div id="jira-container" class="container"></div>
-    <div id="jira-settings" class="modal fade" tabindex="-1">
-        <div class="modal-dialog">    
-            <div class="modal-content">    
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Settings</h4>
-                </div>
-                <div class="modal-body">
-                    <form id="jira-settings-form" class="form-horizontal">
-                        <button class="btn btn-submit-form" tabindex="-1" type="submit">Submit Form</button>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary save-settings">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    </nav>
+    <div id="jira-container" class="container" data-ng-view=""></div>
 </body>
-<script type="text/javascript" data-main="require-config.js" src="lib/require-2.1.6.min.js"></script>
+<script type="text/javascript" data-main="require-config" src="lib/requirejs/require.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
 
 </html>

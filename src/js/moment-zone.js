@@ -4,12 +4,12 @@
  * NOTE: This doesn't support day light saving yet.
  * Need to use moment-timezone when its production ready
  */
-define(["moment"], function(moment) {
+define(['moment'], function(moment) {
     moment.fn.toZone = function(zoneOffsetHrs) {
         var localDateObj = this.clone();
         localDateObj.add(localDateObj.zone() * 60000);
         var zM = moment(localDateObj.valueOf() + (3600000 * zoneOffsetHrs));
-        // console.log("The local for zone" + offset + " is " + zM.format("dddd, MMMM Do YYYY, h:mm:ss a"));
+        // console.log('The local for zone' + offset + ' is ' + zM.format('dddd, MMMM Do YYYY, h:mm:ss a'));
         // return value is the time in specified zoneOffsetHrs
         return zM;
     };

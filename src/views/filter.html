@@ -1,0 +1,45 @@
+<tabset>
+    <tab data-heading="Details">
+        <form name="filterForm" class="form-horizontal media">
+            <div class="form-group">
+                <label class="control-label col-lg-3 col-lg-3" for="filterName">Filter Name</label>
+                <div class="col-lg-7">
+                    <input class="form-control" type="hidden" id="filterId" name="filterId" data-ng-model="filter.id" />
+                    <input class="form-control" type="text" id="filterName" name="filterName" placeholder="Filter Title" data-ng-model="filter.name" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-lg-3" for="jiraJQL">Jira JQL</label>
+                <div class="col-lg-7">
+                    <textarea class="form-control" id="jiraJQL" name="jiraJQL" placeholder="Jira JQL" rows="2" data-ng-model="filter.jql"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-lg-9 pull-right">
+                    <button type="button" class="btn btn-primary">Save</button>
+                    <span data-ng-controller="ModalController">
+                        <button type="button" class="btn" data-ng-click="open()">Create Snapshot</button>
+                        <ng-include data-src="'views/snapshot.html'"></ng-include>
+                    </span>
+                    <button type="button" class="btn">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </tab>
+    <tab data-heading="Snapshots" data-disabled="!filter.snapshots || filter.snapshots.length===0">
+        <table class="table media">
+            <thead data-ng-show="filter.snapshots">
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-ng-repeat="snapshot in filter.snapshots">
+                    <td>{{snapshot.id}}</td>
+                    <td>{{snapshot.title}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </tab>
+</tabset>

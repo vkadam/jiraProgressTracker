@@ -1,28 +1,18 @@
 /*global module:false*/
 module.exports = function(grunt) {
-    "use strict";
+    'use strict';
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         meta: {
-            banner: "/* <%= pkg.title || pkg.name %> - v<%= pkg.version %>\n<%= pkg.homepage ? '* ' + pkg.homepage + '\\n' : '' %>* Copyright (c) <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */\n"
-        },
-        clean: ["src/dist/"],
-        uglify: {
-            options: {
-                banner: "<%= meta.banner %>"
-            },
-            dist: {
-                files: {
-                    "src/dist/jira-tracker-templates.min.js": ["src/dist/jira-tracker-templates.js"]
-                }
-            }
+            banner: '/* <%= pkg.title || pkg.name %> - v<%= pkg.version %>\n<%= pkg.homepage ? '* ' + pkg.homepage + '\\n' : '' %>* Copyright (c) <%= pkg.author.name %>; Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */\n'
         },
         jsbeautifier: {
-            files: "<%= jshint.files %>",
+            files: ['<%= jshint.files %>', 'src/css/**/*.css', 'src/**/*.html', '!src/lib/**/*'],
             options: {
-                "preserve_newlines": true,
-                "max_preserve_newlines": 2,
-                "keep_array_indentation": true
+                'js': {
+                    preserveNewlines: true,
+                    maxPreserveNewlines: 2
+                }
             }
         },
         connect: {
@@ -34,39 +24,39 @@ module.exports = function(grunt) {
         },
         open: {
             jasmine: {
-                url: "<%= jasmine.all.options.host %>_SpecRunner.html"
+                url: '<%= jasmine.all.options.host %>_SpecRunner.html'
             }
         },
         jasmine: {
             all: {
                 options: {
-                    specs: ["jasmine/specs/**/*spec.js"],
-                    host: "http://127.0.0.1:<%= connect.jasmine.options.port %>/",
-                    template: require("grunt-template-jasmine-requirejs"),
+                    specs: ['jasmine/specs/**/*spec.js'],
+                    host: 'http://127.0.0.1:<%= connect.jasmine.options.port %>/',
+                    template: require('grunt-template-jasmine-requirejs'),
                     templateOptions: {
-                        requireConfigFile: "src/require-config.js",
+                        requireConfigFile: 'src/require-config.js',
                         requireConfig: {
-                            baseUrl: "src",
+                            baseUrl: 'src',
                             paths: {
-                                "jasmine-fixtures": "../jasmine/lib/jasmine-fixtures/jasmine-fixture",
-                                "jasmine-jquery": "../jasmine/lib/jasmine-jquery/jasmine-jquery",
-                                "jquery-fixture": "../jasmine/lib/jquery-fixture/jquerymx-3.2.custom",
-                                "jasmine-helper": "../jasmine/lib/jasmine-helper",
-                                "google-api-client": "lib/gsloader/jasmine/lib/google-api-client",
-                                "chrome": "../jasmine/lib/chrome"
+                                'jasmine-fixtures': '../jasmine/lib/jasmine-fixtures/jasmine-fixture',
+                                'jasmine-jquery': '../jasmine/lib/jasmine-jquery/jasmine-jquery',
+                                'jquery-fixture': '../jasmine/lib/jquery-fixture/jquerymx-3.2.custom',
+                                'jasmine-helper': '../jasmine/lib/jasmine-helper',
+                                'google-api-client': 'lib/gsloader/jasmine/lib/google-api-client',
+                                'chrome': '../jasmine/lib/chrome'
                             },
                             shim: {
-                                "jasmine-fixtures": {
-                                    deps: ["jquery"]
+                                'jasmine-fixtures': {
+                                    deps: ['jquery']
                                 },
-                                "jasmine-jquery": {
-                                    deps: ["jquery"]
+                                'jasmine-jquery': {
+                                    deps: ['jquery']
                                 },
-                                "jquery-fixture": {
-                                    deps: ["jquery"]
+                                'jquery-fixture': {
+                                    deps: ['jquery']
                                 }
                             },
-                            deps: ["js-logger", "jquery", "jasmine-fixtures", "jasmine-jquery", "jquery-fixture"],
+                            deps: ['js-logger', 'jquery', 'jasmine-fixtures', 'jasmine-jquery', 'jquery-fixture'],
                             callback: function(Logger) {
                                 Logger.setLevel(Logger.OFF);
                             }
@@ -75,17 +65,8 @@ module.exports = function(grunt) {
                 }
             }
         },
-        watch: {
-            options: {
-                files: ["src/views/**/*.hbs"],
-                tasks: ["dist"],
-                interrupt: true,
-                debounceDelay: 5,
-                interval: 5
-            }
-        },
         jshint: {
-            files: ["package.json", "Gruntfile.js", "src/*.js", "src/js/**/*.js", "jasmine/specs/**/*spec.js", "jasmine/lib/*.js"],
+            files: ['package.json', 'Gruntfile.js', 'src/*.js', 'src/js/**/*.js', 'jasmine/specs/**/*spec.js', 'jasmine/lib/*.js'],
             options: {
                 curly: true,
                 eqeqeq: true,
@@ -121,14 +102,13 @@ module.exports = function(grunt) {
                 }
             }
         },
-        handlebars: {
-            compile: {
+        shell: {
+            npm: {
+                command: 'npm install',
                 options: {
-                    namespace: "JiraTrackerTemplates",
-                    amd: true
-                },
-                files: {
-                    "src/dist/jira-tracker-templates.js": ["src/views/*.hbs"]
+                    failOnError: true,
+                    stdout: true,
+                    stderr: true
                 }
             }
         }
@@ -139,16 +119,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks("grunt-contrib-clean");
-    grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-open');
-    grunt.loadNpmTasks("grunt-jsbeautifier");
-    grunt.loadNpmTasks('grunt-contrib-handlebars');
+    grunt.loadNpmTasks('grunt-jsbeautifier');
+    grunt.loadNpmTasks('grunt-shell');
 
     /* Register tasks. */
-    grunt.registerTask("dist", ["handlebars", "uglify"]);
-    grunt.registerTask("default", ["jsbeautifier", "jshint", "dist", "connect", "jasmine"]);
-    grunt.registerTask("test", ["dist", "connect", "jasmine"]);
-    grunt.registerTask("jasmine-server", ["dist", "jasmine:all:build", "open:jasmine", "connect::keepalive"]);
-
+    grunt.registerTask('default', ['shell:npm', 'jsbeautifier', 'jshint', 'connect', 'jasmine']);
+    grunt.registerTask('test', ['connect', 'jasmine']);
+    grunt.registerTask('jasmine-server', ['jasmine:all:build', 'open:jasmine', 'connect::keepalive']);
 };

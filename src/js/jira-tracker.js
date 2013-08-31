@@ -1,10 +1,9 @@
-define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
-    "gsloader", "js/moment-zone", "js/models/jira-issue",
-    "js/jira-validator", "js/comparator/snapshot", "js/models/jira-storage",
-    "js/models/filter", "js/handlebars-helpers"
-], function($, _, Logger, JiraTrackerTemplates,
-    GSLoader, moment, JiraIssue,
-    Validator, Snapshot, Storage, Filter) {
+define(['jquery', 'underscore', 'js-logger',
+    'gsloader', 'js/moment-zone', 'js/models/jira-issue',
+    'js/jira-validator', 'js/comparator/snapshot', 'js/models/jira-storage',
+    'js/handlebars-helpers'
+], function($, _, Logger, GSLoader, moment, JiraIssue,
+    Validator, Snapshot, Storage) {
 
     /**
      * Creates an instance of JiraTracker.
@@ -78,26 +77,29 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @return {Object} The deferred request object if release id is available in cache
      */
     JiraTracker.prototype.init = function(options) {
+        // var _this = this;
         $.extend(this, options);
-        this.fetchFilters();
+        // this.loadReleaseFromStorage();
+        // this.fetchFilters().done(function() {
         this.injectUI().loadReleaseFromStorage();
+        // });
 
         // /*
-        // * Authorize and load gsloader.drive.load/gapi.client.load("drive", "v2", this.onLoad);
+        // * Authorize and load gsloader.drive.load/gapi.client.load('drive', 'v2', this.onLoad);
         // * TODO: Decouple it to authorize and the load rather than client loading to authorize
         // */
-        // var GSLoaderAuth = require("js/plugins/gsloader-auth"),
-        // GSLoaderDrive = require("js/plugins/gsloader-drive");
+        // var GSLoaderAuth = require('js/plugins/gsloader-auth'),
+        // GSLoaderDrive = require('js/plugins/gsloader-drive');
 
-        // GSLoaderAuth.setClientId("1074663392007.apps.googleusercontent.com").onLoad(GSLoaderDrive.load, GSLoaderDrive);
+        // GSLoaderAuth.setClientId('1074663392007.apps.googleusercontent.com').onLoad(GSLoaderDrive.load, GSLoaderDrive);
 
         /*chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 console.log(sender.tab ?
-                    "from a background script:" + sender.tab.url :
-                    "from the extension");
-                if (request.greeting == "hello") {
+                    'from a background script:' + sender.tab.url :
+                    'from the extension');
+                if (request.greeting == 'hello') {
                     sendResponse({
-                        farewell: "goodbye"
+                        farewell: 'goodbye'
                     });
                 };
             });*/
@@ -109,8 +111,8 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
      * @return {JiraTracker} Instance of JiraTracker
      */
     JiraTracker.prototype.injectUI = function() {
-        //        .append(JiraTrackerTemplates["src/views/jira-credentials.hbs"]())
-        $("#jira-container").append(JiraTrackerTemplates["src/views/jira-tracker-form.hbs"]());
+        //        .append(JiraTrackerTemplates['src/views/jira-credentials.html']())
+        $('#jira-container').append(JiraTrackerTemplates['src/views/jira-tracker-form.html'](this));
         return this;
     };
 
@@ -126,13 +128,13 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         // Attach deferred method to return object 
         deferred.promise(lrfsReq);
 
-        _this.logger.debug("Getting last saved state from sync storage");
+        _this.logger.debug('Getting last saved state from sync storage');
 
-        this.storage.get("releaseId").done(function(releaseId) {
-            if (!_.isEmpty(releaseId)) {
-                _this.logger.debug("Last loaded release was", releaseId, "loading is again...");
-                _this.loadRelease(evt, releaseId).done(function(sSheet) {
-                    _this.logger.debug("Release loaded from last saved state...", sSheet);
+        this.storage.get('filterId').done(function(filterId) {
+            if (!_.isEmpty(filterId)) {
+                _this.logger.debug('Last loaded release was', filterId, 'loading is again...');
+                _this.loadRelease(evt, filterId).done(function(sSheet) {
+                    _this.logger.debug('Release loaded from last saved state...', sSheet);
                     deferred.resolveWith(_this, [sSheet]);
                 }).fail(function(errorMessage, sSheet) {
                     deferred.rejectWith(_this, [{
@@ -146,30 +148,30 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     };
 
     /**
-     * Loads release by specified release id or value of releaseId element.
+     * Loads release by specified release id or value of filterId element.
      * @this {JiraTracker}
-     * @param {String=} Optional release id. If not passed value of releaseId element will be used
+     * @param {String=} Optional release id. If not passed value of filterId element will be used
      * @return {Object} The deferred request object
      */
-    JiraTracker.prototype.loadRelease = function(env, releaseId) {
+    JiraTracker.prototype.loadRelease = function(env, filterId) {
         // If release id is passed set it to element. 
         var _this = this;
-        if (releaseId) {
-            $("#releaseId").val(releaseId);
+        if (filterId) {
+            $('#filterId').val(filterId);
         }
-        releaseId = $("#releaseId").val();
-        this.logger.debug("Loading release with id", releaseId);
+        filterId = $('#filterId').val();
+        this.logger.debug('Loading release with id', filterId);
 
-        var deferred = Validator.get("LOAD_RELEASE").validate({
+        var deferred = Validator.get('LOAD_RELEASE').validate({
             context: this
         });
 
         function validationSuccess() {
             // Add callback to update active release value
             GSLoader.loadSpreadsheet({
-                id: releaseId,
-                wanted: ["Setup"]
-            }).then($.proxy(_this, "onReleaseChange")).then(function(sSheet) {
+                id: filterId,
+                wanted: ['Setup']
+            }).then($.proxy(_this, 'onReleaseChange')).then(function(sSheet) {
                 deferred.resolveWith(_this, [sSheet]);
             }, function(errorMessage, sSheet) {
                 deferred.rejectWith(_this, [{
@@ -284,7 +286,6 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
             date: this.getSheetDate(sheet.title),
             data: snapshot.summarize()
         };
-
     };
 
     JiraTracker.prototype.getBaselineTitle = function() {
@@ -295,33 +296,33 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
 
     JiraTracker.prototype.createBaseline = function(evt, baselineTitle) {
         var _this = this;
-        if (baselineTitle) {
-            $("#releaseTitle").val(baselineTitle);
+        /*if (baselineTitle) {
+            $('#releaseTitle').val(baselineTitle);
         }
-        baselineTitle = $("#releaseTitle").val();
+        baselineTitle = $('#releaseTitle').val();*/
 
-        var deferred = Validator.get("CREATE_BASELINE").validate({
+        var deferred = Validator.get('CREATE_BASELINE').validate({
             context: this
         });
 
         function validationSuccess() {
             // Create new spreadsheet using GSLoader
-            _this.logger.debug("Creating spreadsheet with title =", baselineTitle);
+            _this.logger.debug('Creating spreadsheet with title =', baselineTitle);
             GSLoader.createSpreadsheet({
                 title: baselineTitle
                 /* Add callback to update active release value */
-            }).then($.proxy(_this, "onReleaseChange")).then(function() {
+            }).then($.proxy(_this, 'onReleaseChange')).then(function() {
                 // Rename Sheet 1 worksheet to Setup
-                return _this.getCurrentFilter().worksheets[0].rename("Setup");
+                return _this.getCurrentFilter().worksheets[0].rename('Setup');
             }).then(function() {
                 var releaseSettings = [
                     [JIRA_SETUP_WORKSHEET_JQL], [$("#jiraJQL").val()]
                 ];
                 // Adds release details into setup worksheet
-                _this.logger.debug("Saving release settings into setup worksheet");
+                _this.logger.debug('Saving release settings into setup worksheet');
                 return _this.getCurrentFilter().worksheets[0].addRows(releaseSettings);
             }).then(function() {
-                _this.logger.debug("Release settings saved successfully");
+                _this.logger.debug('Release settings saved successfully');
                 // Once Spreadsheet is created successfully, create a baseline snapshot
                 return _this.createSnapshot(evt, _this.getBaselineTitle());
             }).then(function() {
@@ -346,12 +347,12 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         currentFilter = releaseSheet;
         var setupSheet = this.getCurrentFilter().getWorksheet(JIRA_SETUP_WORKSHEET_TITLE);
         if (setupSheet && setupSheet.rows.length > 0) {
-            $("#jiraJQL").val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]); //.prop("disabled", true);
-            // $("#releaseTitle").prop("disabled", true);
+            $('#jiraJQL').val(setupSheet.rows[0][JIRA_SETUP_WORKSHEET_JQL]); //.prop('disabled', true);
+            // $('#releaseTitle').prop('disabled', true);
         }
-        $("#releaseId").val(this.getCurrentFilter().id);
-        $("#releaseTitle").val(this.getCurrentFilter().title);
-        this.storage.set("releaseId", this.getCurrentFilter().id);
+        $('#filterId').val(this.getCurrentFilter().id);
+        $('.filter-title').text(this.getCurrentFilter().title);
+        this.storage.set('filterId', this.getCurrentFilter().id);
         return this.getCurrentFilter();
     };
 
@@ -401,7 +402,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                 }
             });
         } else {
-            _this.logger.debug("No release is loaded, loading last used one");
+            _this.logger.debug('No release is loaded, loading last used one');
             _this.loadReleaseFromStorage();
         }
         return result;
@@ -410,27 +411,27 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
     JiraTracker.prototype.createSnapshot = function(evt, snapshotTitle) {
         var _this = this;
         if (snapshotTitle) {
-            $("#snapshotTitle").val(snapshotTitle);
+            $('#snapshotTitle').val(snapshotTitle);
         }
-        snapshotTitle = $("#snapshotTitle").val();
+        snapshotTitle = $('#snapshotTitle').val();
 
         var deferred = $.Deferred();
 
         function validationSuccess(base64Encode) {
-            _this.logger.debug("Getting jira issues");
+            _this.logger.debug('Getting jira issues');
             $.ajax({
-                url: "http://jira.cengage.com/rest/api/2/search",
+                url: 'http://jira.cengage.com/rest/api/2/search',
                 data: {
-                    maxResults: $("#jiraMaxResults").val(),
-                    jql: $("#jiraJQL").val()
+                    maxResults: $('#jiraMaxResults').val(),
+                    jql: $('#jiraJQL').val()
                 },
                 headers: {
-                    "Authorization": "Basic " + base64Encode
+                    'Authorization': 'Basic ' + base64Encode
                 }
             }).then(function(data /*, textStatus, jqXHR*/ ) {
                 var defObj = $.Deferred();
                 try {
-                    if (typeof(data) === "string") {
+                    if (typeof(data) === 'string') {
                         data = JSON.parse(data);
                     }
 
@@ -441,10 +442,10 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                         jiraIssues.push(jiraIssue.toArray());
                     });
 
-                    _this.logger.debug("Received jira issues, creating snapshot out of it. Total issue found", data.issues.length);
+                    _this.logger.debug('Received jira issues, creating snapshot out of it. Total issue found', data.issues.length);
                     defObj.resolve(jiraIssues);
                 } catch (e) {
-                    defObj.reject({}, "Exception while parsing jira issue response");
+                    defObj.reject({}, 'Exception while parsing jira issue response');
                 }
                 return defObj.promise();
             }).then(function(jiraIssues) {
@@ -461,7 +462,7 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
                     cols: headersTitles.length
                 });
             }).then(function(wSheet) {
-                _this.logger.debug("Snapshot", wSheet.title, "created successfully");
+                _this.logger.debug('Snapshot', wSheet.title, 'created successfully');
                 deferred.resolveWith(_this, [wSheet]);
             }, function(jqXHR, textStatus) {
                 deferred.rejectWith(_this, [{
@@ -472,25 +473,25 @@ define(["jquery", "underscore", "js-logger", "dist/jira-tracker-templates",
         }
 
         function formValidationDone(valObject) {
-            _this.storage.get("Jira-Credentials").always(function(base64Key) {
+            _this.storage.get('Jira-Credentials').always(function(base64Key) {
                 if (base64Key && valObject === undefined) {
                     validationSuccess(base64Key);
                 } else {
                     valObject = valObject || {};
                     valObject.errors = valObject.errors || {};
                     $.extend(valObject.errors, {
-                        "jira-authentication": "Jira authentication is required"
+                        'jira-authentication': 'Jira authentication is required'
                     });
                     deferred.rejectWith(_this, [valObject]);
                 }
             });
         }
 
-        Validator.get("CREATE_SNAPSHOT").validate({
+        Validator.get('CREATE_SNAPSHOT').validate({
             context: this
         }).then($.noop, formValidationDone, formValidationDone);
 
         return deferred.promise();
     };
-    return new JiraTracker("0AlpsUVqaDZHSdHdJc2R2emQ4MncwLW8zS2Fsa0NRaFE");
+    return JiraTracker;
 });

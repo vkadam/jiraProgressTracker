@@ -8,11 +8,11 @@ define(function() {
     var Base64 = {
 
         // private property
-        _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+        _keyStr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 
         // public method for encoding
         encode: function(input) {
-            var output = "";
+            var output = '';
             var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
             var i = 0;
 
@@ -44,12 +44,12 @@ define(function() {
 
         // public method for decoding
         decode: function(input) {
-            var output = "";
+            var output = '';
             var chr1, chr2, chr3;
             var enc1, enc2, enc3, enc4;
             var i = 0;
 
-            input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+            input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
 
             while (i < input.length) {
 
@@ -81,8 +81,8 @@ define(function() {
 
         // private method for UTF-8 encoding
         utf8Encode: function(string) {
-            string = string.replace(/\r\n/g, "\n");
-            var utftext = "";
+            string = string.replace(/\r\n/g, '\n');
+            var utftext = '';
 
             for (var n = 0; n < string.length; n++) {
 
@@ -106,7 +106,7 @@ define(function() {
 
         // private method for UTF-8 decoding
         utf8Decode: function(utftext) {
-            var string = "";
+            var string = '';
             var i = 0,
                 c = 0,
                 c1 = 0,

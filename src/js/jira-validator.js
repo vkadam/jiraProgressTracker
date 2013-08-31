@@ -1,15 +1,15 @@
-define(["jquery", "js-logger"], function($, Logger) {
+define(['jquery', 'js-logger'], function($, Logger) {
     /**
      * Static instance of all vaditator definition
      */
     var validatorMap = {};
 
     function heighlighter(element /*, errorClass*/ ) {
-        $(element).parents(".form-group").addClass("has-error");
+        $(element).parents('.form-group').addClass('has-error');
     }
 
     function unheighlighter(element /*, errorClass*/ ) {
-        $(element).parents(".form-group").removeClass("has-error");
+        $(element).parents('.form-group').removeClass('has-error');
     }
 
     function Validator(name, formSelector, definition) {
@@ -37,14 +37,14 @@ define(["jquery", "js-logger"], function($, Logger) {
 
         var deferred = $.Deferred();
         if (validator.form()) {
-            this.logger.debug("Validation of", this.name, "successed.");
+            this.logger.debug('Validation of', this.name, 'successed.');
             if (options.returnPromise) {
                 deferred.resolveWith(options.context);
             } else {
                 deferred.notifyWith(options.context);
             }
         } else {
-            var errorMessage = "Validation of " + this.name + " failed.";
+            var errorMessage = 'Validation of ' + this.name + ' failed.';
             this.logger.error(errorMessage);
             deferred.rejectWith(options.context, [{
                 message: errorMessage,
@@ -56,7 +56,7 @@ define(["jquery", "js-logger"], function($, Logger) {
 
     Validator.prototype.reset = function(removeOldValidator) {
         var $form = $(this.formSelector),
-            validator = $form.data("validator");
+            validator = $form.data('validator');
 
         if (validator) {
             $.each(validator.errors(), function(idx, ele) {
@@ -65,65 +65,66 @@ define(["jquery", "js-logger"], function($, Logger) {
             });
             validator.reset();
             if (removeOldValidator) {
-                $form.data("validator", null);
+                $form.data('validator', null);
             }
         }
     };
 
     var FormValidators = {
-        "LOAD_RELEASE": {
-            "formSelector": "form#jira-tracker",
-            "definition": {
+        'LOAD_RELEASE': {
+            'formSelector': 'form#jira-tracker',
+            'definition': {
+                ignore: '',
                 rules: {
-                    "releaseId": "required"
+                    'filterId': 'required'
                 },
                 messages: {
-                    "releaseId": "Release id is required"
+                    'filterId': 'Release id is required'
                 }
             }
         },
-        "JIRA_SETTINGS": {
-            "formSelector": "form#jira-settings-form",
-            "definition": {
+        /*'JIRA_SETTINGS': {
+            'formSelector': 'form#jira-settings-form',
+            'definition': {
                 rules: {
-                    "jiraUserId": "required",
-                    "jiraPassword": "required"
+                    'jiraUserId': 'required',
+                    'jiraPassword': 'required'
                 },
                 messages: {
-                    "jiraUserId": "Jira user name is required",
-                    "jiraPassword": "Jira password is required"
+                    'jiraUserId': 'Jira user name is required',
+                    'jiraPassword': 'Jira password is required'
+                }
+            }
+        },*/
+        'CREATE_BASELINE': {
+            'formSelector': 'form#jira-tracker',
+            'definition': {
+                rules: {
+                    'releaseTitle': 'required',
+                    'jiraJQL': 'required',
+                    'snapshotTitle': 'required'
+                },
+                messages: {
+                    'releaseTitle': 'Release title is required',
+                    'jiraJQL': 'Jira JQL is required',
+                    'snapshotTitle': 'Snapshot title is required'
                 }
             }
         },
-        "CREATE_BASELINE": {
-            "formSelector": "form#jira-tracker",
-            "definition": {
+        'CREATE_SNAPSHOT': {
+            'formSelector': 'form#jira-tracker',
+            'definition': {
                 rules: {
-                    "releaseTitle": "required",
-                    "jiraJQL": "required",
-                    "snapshotTitle": "required"
+                    'filterId': 'required',
+                    'jiraJQL': 'required',
+                    'jiraMaxResults': 'required',
+                    'snapshotTitle': 'required'
                 },
                 messages: {
-                    "releaseTitle": "Release title is required",
-                    "jiraJQL": "Jira JQL is required",
-                    "snapshotTitle": "Snapshot title is required"
-                }
-            }
-        },
-        "CREATE_SNAPSHOT": {
-            "formSelector": "form#jira-tracker",
-            "definition": {
-                rules: {
-                    "releaseId": "required",
-                    "jiraJQL": "required",
-                    "jiraMaxResults": "required",
-                    "snapshotTitle": "required"
-                },
-                messages: {
-                    "releaseId": "Release is not loaded",
-                    "jiraJQL": "Jira JQL is required",
-                    "jiraMaxResults": "Value of max result from is required",
-                    "snapshotTitle": "Snapshot title is required"
+                    'filterId': 'Release is not loaded',
+                    'jiraJQL': 'Jira JQL is required',
+                    'jiraMaxResults': 'Value of max result from is required',
+                    'snapshotTitle': 'Snapshot title is required'
                 }
             }
         }
@@ -133,7 +134,7 @@ define(["jquery", "js-logger"], function($, Logger) {
         var defaultValidator = {
             highlight: heighlighter,
             unhighlight: unheighlighter,
-            errorClass: "text-danger"
+            errorClass: 'text-danger'
         };
         $.extend(validatorDef.definition, defaultValidator);
         validatorMap[validatorName] = new Validator(validatorName, validatorDef.formSelector, validatorDef.definition);

@@ -27,7 +27,7 @@ define(["js/comparator/snapshot"], function(Snapshot) {
         }, {
             points: 2,
             status: "Ready for QA"
-            }];
+        }];
 
         it("Snapshot.summarize method returns summary of total issues", function() {
             var snapshot = new Snapshot(issues),

@@ -7,6 +7,3 @@
 [submodule "src/lib/moment"]
 	path = src/lib/moment
 	url = https://github.com/timrwood/moment.git
-[submodule "src/lib/handlebars"]
-	path = src/lib/handlebars
-	url = https://github.com/wycats/handlebars.js.git

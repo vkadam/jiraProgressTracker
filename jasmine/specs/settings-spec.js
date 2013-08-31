@@ -1,7 +1,7 @@
 define(["jquery", "js-logger", "js/base64",
-    "js/jira-validator", "js/jira-settings", "jasmine-helper"
+    "js/jira-validator", "js/settings", "jasmine-helper"
 ], function($, Logger, Base64, Validator, JiraSetting, Deferred) {
-    describe("jira-settings.js", function() {
+    xdescribe("jira-settings.js", function() {
         var settingsModal,
             settingsForm,
             jiraSetting;

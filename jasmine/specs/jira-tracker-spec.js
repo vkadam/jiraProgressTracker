@@ -2,17 +2,17 @@ define(["jquery", "js/jira-tracker", "gsloader",
     "js/moment-zone", "jasmine-helper", "js-logger", "js/models/jira-storage", "js/comparator/Snapshot"
 ], function($, JiraTracker, GSLoader, moment, Deferred, Logger, Storage) {
     describe("JiraTracker", function() {
-        var spyOnAjax;
+        var spyOnAjax, jiraTracker;
         beforeEach(function() {
             $.ajaxSetup({
                 async: false
-            });
+            });\
             spyOnAjax = spyOn($, "ajax");
             affix("#jira-container");
+            jiraTracker = new JiraTracker();
         });
 
         afterEach(function() {
-            JiraTracker.storage = new Storage();
             $("#jira-container").empty();
         });
 
@@ -44,147 +44,64 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 };
 
             beforeEach(function() {
-                JiraTracker.id = spreadsheetId;
-                spyOn(GSLoader, "loadSpreadsheet").andCallFake(new Deferred({
-                    "result": filterSpreadsheet
-                }).callBack);
-            });
-
-            it("returns promise object", function() {
-                var promise = JiraTracker.fetchFilters();
-
-                expect(promise.fail).toBeDefined();
-                expect(promise.done).toBeDefined();
-                expect(promise.resolve).not.toBeDefined();
-            });
-
-            it("makes call to GSLoader.loadSpreadsheet with correct parameters", function() {
-                JiraTracker.fetchFilters();
-
-                expect(GSLoader.loadSpreadsheet).toHaveBeenCalledWith({
-                    id: spreadsheetId,
-                    wanted: ["Filters"]
-                });
-            });
-
-            function assertFilter(filter, name, id, jql, active) {
-                expect(filter.name).toBe(name);
-                expect(filter.id).toBe(id);
-                expect(filter.jql).toBe(jql);
-                expect(filter.isActive).toBe(active);
-            }
-
-            it("resolves returned promise object with correct list of Filters", function() {
-                var filters,
-                    promise = JiraTracker.fetchFilters().done(function(filts) {
-                        filters = filts;
-                    });
-
-                waitsFor(function() {
-                    return promise.state() !== "pending";
-                }, 200);
-
-                runs(function() {
-                    expect(filters).toBeDefined();
-                    expect(filters.length).toBe(3);
-                    assertFilter(filters[0], "Filter Name 1", "spreadsheetid1", "jira jql 1", false);
-                    assertFilter(filters[1], "Filter Name 2", "spreadsheetid2", "jira jql 2", false);
-                    assertFilter(filters[2], "Filter Name 3", "spreadsheetid3", "jira jql 3", true);
-                });
-            });
-
-            it("fails promise object if GSLoader.loadSpreadsheet fails", function() {
-                GSLoader.loadSpreadsheet.andCallFake(new Deferred({
-                    "status": 0,
-                    "result": "Error Message"
-                }).callBack);
-
-                var failCallBack = jasmine.createSpy("JiraTracker.fetchFilters"),
-                    promise = JiraTracker.fetchFilters().fail(failCallBack);
-
-                waitsFor(function() {
-                    return promise.state() !== "pending";
-                }, 200);
-
-                runs(function() {
-                    expect(failCallBack).toHaveBeenCalledWith({
-                        "message": "Error Message"
-                    });
-                });
-            });
-
-            it("fails promise object if worksheet with name \"Filters\" is not available", function() {
-                getWorksheetSpy.andReturn(null);
-
-                var failCallBack = jasmine.createSpy("JiraTracker.fetchFilters"),
-                    promise = JiraTracker.fetchFilters().fail(failCallBack);
-
-                waitsFor(function() {
-                    return promise.state() !== "pending";
-                }, 200);
-
-                runs(function() {
-                    expect(failCallBack).toHaveBeenCalledWith({
-                        "message": "Filters worksheet not available",
-                        "spreadsheet": filterSpreadsheet
-                    });
-                });
-            });
-        });
-
-        describe("on init", function() {
-            beforeEach(function() {
-                spyOn(JiraTracker, "loadReleaseFromStorage");
-                spyOn(JiraTracker, "fetchFilters");
+                spyOn(jiraTracker, "loadReleaseFromStorage");
+                // spyOn(jiraTracker, "fetchFilters");
             });
 
             it("loads release from storage", function() {
-                JiraTracker.init();
-                expect(JiraTracker.loadReleaseFromStorage).toHaveBeenCalled();
+                jiraTracker.init();
+                expect(jiraTracker.loadReleaseFromStorage).toHaveBeenCalled();
             });
 
-            it("fetches filters", function() {
-                JiraTracker.init();
-                expect(JiraTracker.fetchFilters).toHaveBeenCalled();
+            /*it("fetches filters", function() {
+                jiraTracker.init();
+                expect(jiraTracker.fetchFilters).toHaveBeenCalled();
+            });*/
+        });
+
+        describe("injectUI", function() {
+
+            it("create filter dropdown", function() {
+
             });
         });
 
-        describe("on loadReleaseFromStorage", function() {
+        describe("loadReleaseFromStorage", function() {
             beforeEach(function() {
-                spyOn(JiraTracker, "loadRelease");
-                spyOn(JiraTracker.storage, "get").andCallThrough();
-                JiraTracker.storage.set("releaseId", "spreadsheetIdFromCache");
+                spyOn(jiraTracker, "loadRelease");
+                spyOn(jiraTracker.storage, "get").andCallThrough();
+                jiraTracker.storage.set("filterId", "spreadsheetIdFromCache");
                 jasmine.Clock.useMock();
             });
 
             it("populates release id from user sync data and load release", function() {
-                JiraTracker.loadRelease.andCallFake(new Deferred().callBack);
-                JiraTracker.loadReleaseFromStorage();
+                jiraTracker.loadRelease.andCallFake(new Deferred().callBack);
+                jiraTracker.loadReleaseFromStorage();
                 jasmine.Clock.tick(101);
 
-                expect(JiraTracker.storage.get).toHaveBeenCalledWith("releaseId");
-                expect(JiraTracker.loadRelease).toHaveBeenCalled();
+                expect(jiraTracker.storage.get).toHaveBeenCalledWith("filterId");
+                expect(jiraTracker.loadRelease).toHaveBeenCalled();
             });
 
             it("returns deferred object", function() {
-                JiraTracker.loadRelease.andCallFake(new Deferred().callBack);
-                var loadStorageReq = JiraTracker.loadReleaseFromStorage();
+                jiraTracker.loadRelease.andCallFake(new Deferred().callBack);
+                var loadStorageReq = jiraTracker.loadReleaseFromStorage();
                 expect(loadStorageReq).toBeDefined();
                 expect(loadStorageReq.done).toBeDefined();
             });
 
             it("call error callback incase of loadRelease fails", function() {
-                JiraTracker.loadRelease.andCallFake(new Deferred({
+                jiraTracker.loadRelease.andCallFake(new Deferred({
                     "status": 0,
                     "result": "load release failed"
                 }).callBack);
 
-                var errorCallback = jasmine.createSpy("JiraTracker.loadReleaseFromStorage.errorCallback"),
-                    loadStorageReq = JiraTracker.loadReleaseFromStorage().fail(errorCallback);
+                var errorCallback = jasmine.createSpy("jiraTracker.loadReleaseFromStorage.errorCallback"),
+                    loadStorageReq = jiraTracker.loadReleaseFromStorage().fail(errorCallback);
                 jasmine.Clock.tick(101);
                 waitsFor(function() {
                     return (loadStorageReq.state() === "rejected");
-                }, "JiraTracker.loadReleaseFromStorage should fail", 200);
+                }, "jiraTracker.loadReleaseFromStorage should fail", 200);
 
                 runs(function() {
                     expect(errorCallback).toHaveBeenCalledWith({
@@ -199,11 +116,11 @@ define(["jquery", "js/jira-tracker", "gsloader",
             expect($("#" + controlName).parents(".form-group")).toHaveClass("has-error");
         }
 
-        describe("Load release", function() {
+        describe("loadRelease", function() {
             beforeEach(function() {
-                spyOn(JiraTracker, "onReleaseChange");
+                spyOn(jiraTracker, "onReleaseChange");
                 spyOn(GSLoader, "loadSpreadsheet");
-                JiraTracker.injectUI();
+                jiraTracker.injectUI();
             });
 
             function loadSpreadsheet(actualSpreadsheetId, expectedSpreadsheetId) {
@@ -213,7 +130,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 GSLoader.loadSpreadsheet.andCallFake(new Deferred({
                     "result": actualRelease
                 }).callBack);
-                var loadedReq = JiraTracker.loadRelease(null, actualSpreadsheetId);
+                var loadedReq = jiraTracker.loadRelease(null, actualSpreadsheetId);
 
                 waitsFor(function() {
                     return (loadedReq.state() === "resolved");
@@ -224,13 +141,13 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     expect(GSLoader.loadSpreadsheet.callCount).toBe(1);
                     expect(GSLoader.loadSpreadsheet.mostRecentCall.args[0].id).toBe(expectedSpreadsheetId);
                     expect(GSLoader.loadSpreadsheet.mostRecentCall.args[0].wanted).toEqual(["Setup"]);
-                    expect(JiraTracker.onReleaseChange).toHaveBeenCalledWith(actualRelease);
+                    expect(jiraTracker.onReleaseChange).toHaveBeenCalledWith(actualRelease);
                 });
             }
 
             it("does validation for spreadsheet id", function() {
                 var errorObject,
-                    loadReq = JiraTracker.loadRelease().fail(function(valObject) {
+                    loadReq = jiraTracker.loadRelease().fail(function(valObject) {
                         errorObject = valObject;
                     });
                 waitsFor(function() {
@@ -238,7 +155,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 });
                 runs(function() {
                     expect(errorObject).toBeDefined();
-                    doControlValidation(errorObject, "releaseId", "Release id is required");
+                    doControlValidation(errorObject, "filterId", "Release id is required");
                 });
 
                 expect(GSLoader.loadSpreadsheet).not.toHaveBeenCalled();
@@ -250,12 +167,12 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     "result": "GSLoader.loadSpreadsheet failed"
                 }).callBack);
 
-                var errorCallback = jasmine.createSpy("JiraTracker.loadRelease.errorCallback"),
-                    loadedReq = JiraTracker.loadRelease(null, spreadsheetId).fail(errorCallback);
+                var errorCallback = jasmine.createSpy("jiraTracker.loadRelease.errorCallback"),
+                    loadedReq = jiraTracker.loadRelease(null, spreadsheetId).fail(errorCallback);
 
                 waitsFor(function() {
                     return (loadedReq.state() === "rejected");
-                }, "JiraTracker.loadRelease should fail", 200);
+                }, "jiraTracker.loadRelease should fail", 200);
 
                 runs(function() {
                     if (errorObj) {
@@ -281,7 +198,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
             });
 
             it("from spreadsheet id input control make it active", function() {
-                $("#releaseId").val("Some Spreadsheet Id From Input Field");
+                $("#filterId").val("Some Spreadsheet Id From Input Field");
                 loadSpreadsheet(null, "Some Spreadsheet Id From Input Field");
             });
 
@@ -291,7 +208,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     "some": "object",
                     "reset": resetSpy,
                     "errors": function() {
-                        return $("#releaseTitle");
+                        return $(".filter-title");
                     },
                     "settings": {
                         "unhighlight": function(ele, errorClass) {
@@ -299,7 +216,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                         }
                     }
                 });
-                $("#releaseTitle").parents(".form-group").addClass("has-error");
+                $(".filter-title").parents(".form-group").addClass("has-error");
 
                 loadSpreadsheet("mySpreadSheetId", "mySpreadSheetId");
 
@@ -307,7 +224,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 expect(validatorObj.some).not.toBeDefined();
                 expect(resetSpy).toHaveBeenCalled();
                 expect(validatorObj instanceof $.validator).toBeTruthy();
-                expect($("#releaseTitle").parents(".form-group")).not.toHaveClass("has-error");
+                expect($(".filter-title").parents(".form-group")).not.toHaveClass("has-error");
             });
         });
 
@@ -326,51 +243,51 @@ define(["jquery", "js/jira-tracker", "gsloader",
             };
 
             beforeEach(function() {
-                JiraTracker.injectUI();
+                jiraTracker.injectUI();
                 jasmine.Clock.useMock();
             });
 
             it("onReleaseChange poluates fields, make spreadsheet active and returns currentFilter", function() {
 
-                expect(JiraTracker.getCurrentFilter()).toBeNull();
+                expect(jiraTracker.getCurrentFilter()).toBeNull();
 
-                var returnObj = JiraTracker.onReleaseChange(actualRelease);
+                var returnObj = jiraTracker.onReleaseChange(actualRelease);
 
-                expect(returnObj).toBe(JiraTracker.getCurrentFilter());
-                expect($("#releaseId")).toHaveValue("Some Spreadsheet Id");
-                expect($("#releaseTitle")).toHaveValue("Some Spreadsheet Title");
+                expect(returnObj).toBe(jiraTracker.getCurrentFilter());
+                expect($("#filterId")).toHaveValue("Some Spreadsheet Id");
+                expect($(".filter-title")).toHaveText("Some Spreadsheet Title");
                 expect($("#jiraJQL")).toHaveValue("SomeJiraJQL");
-                expect(JiraTracker.getCurrentFilter()).toBe(actualRelease);
+                expect(jiraTracker.getCurrentFilter()).toBe(actualRelease);
             });
 
-            xit("onReleaseChange disables releaseTitle and jiraJQL controls", function() {
+            xit("onReleaseChange disables filter-title and jiraJQL controls", function() {
 
-                JiraTracker.onReleaseChange(actualRelease);
+                jiraTracker.onReleaseChange(actualRelease);
 
-                expect($("#releaseTitle")).toBeDisabled();
+                expect($(".filter-title")).toBeDisabled();
                 expect($("#jiraJQL")).toBeDisabled();
             });
 
             it("onReleaseChange updates spreadsheet id in user storage", function() {
-                JiraTracker.onReleaseChange({
+                jiraTracker.onReleaseChange({
                     id: "mySpreadSheetId",
                     getWorksheet: jasmine.createSpy("spreadsheet.getWorksheet")
                 });
-                var releaseId;
-                JiraTracker.storage.get("releaseId").done(function(data) {
-                    releaseId = data;
+                var filterId;
+                jiraTracker.storage.get("filterId").done(function(data) {
+                    filterId = data;
                 });
                 jasmine.Clock.tick(101);
-                expect(releaseId).toBe("mySpreadSheetId");
+                expect(filterId).toBe("mySpreadSheetId");
             });
         });
 
-        describe("Create release", function() {
+        describe("createBaseline", function() {
             var newSpreadsheet;
             beforeEach(function() {
-                spyOn(JiraTracker, "onReleaseChange").andCallThrough();
-                spyOn(JiraTracker, "createSnapshot").andCallFake(new Deferred().callBack);
-                JiraTracker.injectUI();
+                spyOn(jiraTracker, "onReleaseChange").andCallThrough();
+                spyOn(jiraTracker, "createSnapshot").andCallFake(new Deferred().callBack);
+                jiraTracker.injectUI();
                 var worksheet = {
                     title: "Sheet 1",
                     rename: jasmine.createSpy("worksheet.rename").andCallFake(new Deferred().callBack),
@@ -391,7 +308,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             function createSpreadsheet(actualTitle, expectedTitle) {
                 newSpreadsheet.title = expectedTitle;
-                var createReq = JiraTracker.createBaseline({}, actualTitle);
+                var createReq = jiraTracker.createBaseline({}, actualTitle);
 
                 waitsFor(function() {
                     return (createReq.state() === "resolved");
@@ -401,7 +318,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     expect(GSLoader.createSpreadsheet).toHaveBeenCalled();
                     expect(GSLoader.createSpreadsheet.callCount).toBe(1);
                     expect(GSLoader.createSpreadsheet.mostRecentCall.args[0].title).toBe(expectedTitle);
-                    expect(JiraTracker.onReleaseChange).toHaveBeenCalled();
+                    expect(jiraTracker.onReleaseChange).toHaveBeenCalled();
                 });
             }
 
@@ -410,30 +327,30 @@ define(["jquery", "js/jira-tracker", "gsloader",
             });
 
             it("by spreadsheet title field and make it active", function() {
-                $("#releaseTitle").val("My Spreadsheet Title Input Field");
+                $(".filter-title").val("My Spreadsheet Title Input Field");
                 createSpreadsheet(null, "My Spreadsheet Title Input Field");
             });
 
             it("creates baseline worksheet/snapshot in newly created release spreadsheet", function() {
                 createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
-                expect(JiraTracker.createSnapshot).toHaveBeenCalled();
+                expect(jiraTracker.createSnapshot).toHaveBeenCalled();
             });
 
             it("calls worksheet.rename for worksheet with correct title", function() {
                 createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
 
-                expect(JiraTracker.getCurrentFilter().worksheets.length).toBe(1);
-                expect(JiraTracker.getCurrentFilter().worksheets[0].rename).toHaveBeenCalledWith("Setup");
+                expect(jiraTracker.getCurrentFilter().worksheets.length).toBe(1);
+                expect(jiraTracker.getCurrentFilter().worksheets[0].rename).toHaveBeenCalledWith("Setup");
             });
 
             it("adds release setting into setup worksheet", function() {
                 createSpreadsheet("My Spreadsheet Title", "My Spreadsheet Title");
-                var addRowCall = JiraTracker.getCurrentFilter().worksheets[0].addRows,
+                var addRowCall = jiraTracker.getCurrentFilter().worksheets[0].addRows,
                     expectRows = [
                         ["jira-jql"],
                                                                                                   ["SomeJiraJQL"]
                     ];
-                expect(JiraTracker.getCurrentFilter().worksheets.length).toBe(1);
+                expect(jiraTracker.getCurrentFilter().worksheets.length).toBe(1);
                 expect(addRowCall.callCount).toBe(1);
                 expect(addRowCall).toHaveBeenCalledWith(expectRows);
             });
@@ -442,13 +359,13 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 $("#jiraJQL,#snapshotTitle").val("");
 
                 var errorObject,
-                    createReq = JiraTracker.createBaseline().fail(function(valObject) {
+                    createReq = jiraTracker.createBaseline().fail(function(valObject) {
                         errorObject = valObject;
                     });
 
                 waitsFor(function() {
                     return (createReq.state() === "rejected");
-                }, "JiraTracker.createBaseline should fail", 200);
+                }, "jiraTracker.createBaseline should fail", 200);
 
                 runs(function() {
                     expect(errorObject).toBeDefined();
@@ -461,12 +378,12 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             describe("call error callback", function() {
                 function createBaselineAndCallErrorBack(errorMsg) {
-                    var errorCallback = jasmine.createSpy("JiraTracker.createBaseline.errorCallback"),
-                        loadedReq = JiraTracker.createBaseline({}, "Baseline title").fail(errorCallback);
+                    var errorCallback = jasmine.createSpy("jiraTracker.createBaseline.errorCallback"),
+                        loadedReq = jiraTracker.createBaseline({}, "Baseline title").fail(errorCallback);
 
                     waitsFor(function() {
                         return (loadedReq.state() === "rejected");
-                    }, "JiraTracker.createBaseline should fail", 200);
+                    }, "jiraTracker.createBaseline should fail", 200);
 
                     runs(function() {
                         expect(errorCallback).toHaveBeenCalledWith({
@@ -491,12 +408,12 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     createBaselineAndCallErrorBack("worksheet.rename failed");
                 });
 
-                it("in case of JiraTracker.createSnapshot failure", function() {
-                    JiraTracker.createSnapshot.andCallFake(new Deferred({
+                it("in case of jiraTracker.createSnapshot failure", function() {
+                    jiraTracker.createSnapshot.andCallFake(new Deferred({
                         "status": 0,
-                        "result": "JiraTracker.createSnapshot failed"
+                        "result": "jiraTracker.createSnapshot failed"
                     }).callBack);
-                    createBaselineAndCallErrorBack("JiraTracker.createSnapshot failed");
+                    createBaselineAndCallErrorBack("jiraTracker.createSnapshot failed");
                 });
 
                 it("in case of worksheet.addRows failure", function() {
@@ -527,21 +444,21 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 base64Key = "JiraCredentials base64Key";
 
             function populateValues() {
-                $("#releaseId").val(currentFilter.id);
+                $("#filterId").val(currentFilter.id);
                 $("#snapshotTitle").val(snapshotTitle);
                 $("#jiraJQL").val(jiraJQL);
                 $("#jiraMaxResults").val(jiraMaxResults);
-                JiraTracker.storage.set("Jira-Credentials", base64Key);
+                jiraTracker.storage.set("Jira-Credentials", base64Key);
             }
 
             beforeEach(function() {
-                spyOn(JiraTracker, "loadReleaseFromStorage");
-                spyOn(JiraTracker, "fetchFilters");
-                JiraTracker.init();
+                spyOn(jiraTracker, "loadReleaseFromStorage");
+                // spyOn(jiraTracker, "fetchFilters");
+                jiraTracker.init();
 
                 spyOnAjax.andCallThrough();
                 $.fixture("http://jira.cengage.com/rest/api/2/search", "jasmine/fixtures/jiraIssues.json");
-                spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
+                spyOn(jiraTracker, "getCurrentFilter").andReturn(currentFilter);
                 spyOnCreateWorksheet.reset();
                 spyOnCreateWorksheet.andCallFake(function(options) {
                     currentFilter.worksheets.push(worksheet);
@@ -556,7 +473,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
             });
 
             afterEach(function() {
-                $("#releaseId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
+                $("#filterId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
             });
 
             function createWorksheetAndAssert(_snapshotTitle) {
@@ -564,9 +481,9 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 var createReq;
                 if (_snapshotTitle) {
                     snapshotTitle = _snapshotTitle;
-                    createReq = JiraTracker.createSnapshot(null, snapshotTitle);
+                    createReq = jiraTracker.createSnapshot(null, snapshotTitle);
                 } else {
-                    createReq = JiraTracker.createSnapshot();
+                    createReq = jiraTracker.createSnapshot();
                 }
 
                 waitsFor(function() {
@@ -577,8 +494,8 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     expect(spyOnCreateWorksheet).toHaveBeenCalled();
                     expect(spyOnCreateWorksheet.callCount).toBe(1);
                     expect(spyOnCreateWorksheet.mostRecentCall.args[0].rowData.length).toBe(50);
-                    expect(JiraTracker.getCurrentFilter().worksheets[0]).toBe(worksheet);
-                    expect(JiraTracker.getCurrentFilter().worksheets[0].id).toBe("ws1");
+                    expect(jiraTracker.getCurrentFilter().worksheets[0]).toBe(worksheet);
+                    expect(jiraTracker.getCurrentFilter().worksheets[0].id).toBe("ws1");
                     expect($("#snapshotTitle")).toHaveValue(snapshotTitle);
                 });
             }
@@ -593,7 +510,7 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             it("makes jira call with correct data to get jira issues", function() {
                 populateValues();
-                var createReq = JiraTracker.createSnapshot();
+                var createReq = jiraTracker.createSnapshot();
 
                 waitsFor(function() {
                     return createReq.state() === "resolved";
@@ -611,19 +528,19 @@ define(["jquery", "js/jira-tracker", "gsloader",
             });
 
             it("does form control validation", function() {
-                $("#releaseId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
+                $("#filterId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
                 var errorObject,
-                    createReq = JiraTracker.createSnapshot().fail(function(valObject) {
+                    createReq = jiraTracker.createSnapshot().fail(function(valObject) {
                         errorObject = valObject;
                     });
 
                 waitsFor(function() {
                     return (createReq.state() !== "pending");
-                }, "JiraTracker.createBaseline should fail", 200);
+                }, "jiraTracker.createBaseline should fail", 200);
 
                 runs(function() {
                     expect(errorObject).toBeDefined();
-                    doControlValidation(errorObject, "releaseId", "Release is not loaded");
+                    doControlValidation(errorObject, "filterId", "Release is not loaded");
                     doControlValidation(errorObject, "jiraJQL", "Jira JQL is required");
                     doControlValidation(errorObject, "snapshotTitle", "Snapshot title is required");
                     doControlValidation(errorObject, "jiraMaxResults", "Value of max result from is required");
@@ -634,15 +551,15 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             it("does jira authentication validation and does not make jira ajax call", function() {
                 populateValues();
-                JiraTracker.storage.set("Jira-Credentials", null);
+                jiraTracker.storage.set("Jira-Credentials", null);
                 var errorObject,
-                    createReq = JiraTracker.createSnapshot().fail(function(valObject) {
+                    createReq = jiraTracker.createSnapshot().fail(function(valObject) {
                         errorObject = valObject;
                     });
 
                 waitsFor(function() {
                     return (createReq.state() !== "pending");
-                }, "JiraTracker.createBaseline should fail", 200);
+                }, "jiraTracker.createBaseline should fail", 200);
 
                 runs(function() {
                     expect(errorObject).toBeDefined();
@@ -654,15 +571,15 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             it("does not make jira ajax call if jira authentication is available but form validation fails", function() {
                 populateValues();
-                $("#releaseId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
+                $("#filterId,#snapshotTitle,#jiraJQL,#jiraMaxResults").val("");
                 var errorObject,
-                    createReq = JiraTracker.createSnapshot().fail(function(valObject) {
+                    createReq = jiraTracker.createSnapshot().fail(function(valObject) {
                         errorObject = valObject;
                     });
 
                 waitsFor(function() {
                     return (createReq.state() !== "pending");
-                }, "JiraTracker.createBaseline should fail", 200);
+                }, "jiraTracker.createBaseline should fail", 200);
 
                 runs(function() {
                     expect(errorObject).toBeDefined();
@@ -673,12 +590,12 @@ define(["jquery", "js/jira-tracker", "gsloader",
 
             function createBaselineAndCallErrorBack(errorMsg) {
                 populateValues();
-                var errorCallback = jasmine.createSpy("JiraTracker.createSnapshot.errorCallback"),
-                    loadedReq = JiraTracker.createSnapshot({}, "Snapshot title").fail(errorCallback);
+                var errorCallback = jasmine.createSpy("jiraTracker.createSnapshot.errorCallback"),
+                    loadedReq = jiraTracker.createSnapshot({}, "Snapshot title").fail(errorCallback);
 
                 waitsFor(function() {
                     return (loadedReq.state() === "rejected");
-                }, "JiraTracker.createSnapshot should fail", 200);
+                }, "jiraTracker.createSnapshot should fail", 200);
 
                 runs(function() {
                     expect(errorCallback).toHaveBeenCalledWith({
@@ -727,75 +644,75 @@ define(["jquery", "js/jira-tracker", "gsloader",
                     title: "Release Sheet Title",
                     worksheets: [worksheet1]
                 };
-                spyOn(JiraTracker, "getCurrentFilter");
-                spyOn(JiraTracker, "loadReleaseFromStorage");
+                spyOn(jiraTracker, "getCurrentFilter");
+                spyOn(jiraTracker, "loadReleaseFromStorage");
             });
 
             it("load release from user sync data if no active release found", function() {
-                JiraTracker.getCurrentFilter.andReturn(null);
-                spyOn(JiraTracker, "getJiraServerTime").andReturn(moment("08-15-2012"));
+                jiraTracker.getCurrentFilter.andReturn(null);
+                spyOn(jiraTracker, "getJiraServerTime").andReturn(moment("08-15-2012"));
 
-                JiraTracker.canSnapshotBeGenerated();
+                jiraTracker.canSnapshotBeGenerated();
 
-                expect(JiraTracker.loadReleaseFromStorage).toHaveBeenCalled();
+                expect(jiraTracker.loadReleaseFromStorage).toHaveBeenCalled();
 
-                JiraTracker.loadReleaseFromStorage.reset();
-                JiraTracker.getCurrentFilter.andReturn(currentFilter);
-                JiraTracker.canSnapshotBeGenerated();
+                jiraTracker.loadReleaseFromStorage.reset();
+                jiraTracker.getCurrentFilter.andReturn(currentFilter);
+                jiraTracker.canSnapshotBeGenerated();
 
-                expect(JiraTracker.loadReleaseFromStorage).not.toHaveBeenCalled();
+                expect(jiraTracker.loadReleaseFromStorage).not.toHaveBeenCalled();
             });
 
             it("returns false is release is not loaded", function() {
-                JiraTracker.getCurrentFilter.andReturn(null);
+                jiraTracker.getCurrentFilter.andReturn(null);
 
-                expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+                expect(jiraTracker.canSnapshotBeGenerated()).toBeFalsy();
             });
 
             it("returns false if time is between work start time and work end time", function() {
-                JiraTracker.loadReleaseFromStorage();
+                jiraTracker.loadReleaseFromStorage();
                 var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(9);
-                spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+                spyOn(jiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
 
-                expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+                expect(jiraTracker.canSnapshotBeGenerated()).toBeFalsy();
             });
 
             // Yesterday
             it("returns yesterday's date if snapshot is missing for yesterday and time is before work start time", function() {
-                JiraTracker.getCurrentFilter.andReturn(currentFilter);
+                jiraTracker.getCurrentFilter.andReturn(currentFilter);
                 var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(7);
-                spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+                spyOn(jiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
 
-                expect(JiraTracker.canSnapshotBeGenerated()).toBe("08-16-2012");
+                expect(jiraTracker.canSnapshotBeGenerated()).toBe("08-16-2012");
             });
 
             it("returns false if snapshot is available for yesterday and time is before work start time", function() {
-                JiraTracker.getCurrentFilter.andReturn(currentFilter);
+                jiraTracker.getCurrentFilter.andReturn(currentFilter);
                 var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(7);
-                spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+                spyOn(jiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
 
                 worksheet2.title = "Snapshot 08-16-2012";
                 currentFilter.worksheets.push(worksheet2);
-                expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+                expect(jiraTracker.canSnapshotBeGenerated()).toBeFalsy();
             });
 
             // Today
             it("returns today's date if snapshot is missing for today and time is after work end time", function() {
-                JiraTracker.getCurrentFilter.andReturn(currentFilter);
+                jiraTracker.getCurrentFilter.andReturn(currentFilter);
                 var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(18);
-                spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+                spyOn(jiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
 
-                expect(JiraTracker.canSnapshotBeGenerated()).toBe("08-17-2012");
+                expect(jiraTracker.canSnapshotBeGenerated()).toBe("08-17-2012");
             });
 
             it("returns false if snapshot is available for today and time is after work end time", function() {
-                JiraTracker.getCurrentFilter.andReturn(currentFilter);
+                jiraTracker.getCurrentFilter.andReturn(currentFilter);
                 var jiraServerTime = moment().startOf('hour').year(2012).month(7).date(17).hour(18);
-                spyOn(JiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
+                spyOn(jiraTracker, "getJiraServerTime").andReturn(jiraServerTime);
 
                 worksheet2.title = "Snapshot 08-17-2012";
                 currentFilter.worksheets.push(worksheet2);
-                expect(JiraTracker.canSnapshotBeGenerated()).toBeFalsy();
+                expect(jiraTracker.canSnapshotBeGenerated()).toBeFalsy();
             });
         });
 
@@ -811,7 +728,8 @@ define(["jquery", "js/jira-tracker", "gsloader",
                 currentFilter = {
                     id: "mySpreadSheetId",
                     title: "Release Sheet Title",
-                    worksheets: [worksheet1]
+                    worksheets: [worksheet1],
+                    getWorksheet: jasmine.createSpy("Spreadsheet.getWorksheet")
                 };
 
             });
@@ -844,14 +762,14 @@ define(["jquery", "js/jira-tracker", "gsloader",
             });
 
             it("returns null if no sheet from the past 7 days exists", function() {
-                var title = "03-16-2013";
+                var date = moment().year(2013).month(2).date(23);
                 currentFilter.worksheets.push({
                     id: "ws2",
                     title: "03-29-2013"
                 });
                 currentFilter.worksheets.push({
                     id: "ws3",
-                    title: title
+                    title: "03-16-2013"
                 });
                 spyOn(JiraTracker, "getCurrentFilter").andReturn(currentFilter);
                 var sheetDate = moment().year(2013).month(2).date(23);

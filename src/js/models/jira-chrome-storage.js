@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "js/models/jira-storage"], function($, _, Storage) {
+define(['jquery', 'underscore', 'js/models/jira-storage'], function($, _, Storage) {
     /*global chrome:false*/
 
     function ChromeStorage(cacheName) {

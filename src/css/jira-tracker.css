@@ -1,7 +1,14 @@
-.btn-submit-form {
-	position: absolute;
-	left: -2000px;
+body {
+    padding-top: 70px;
 }
-.has-error label.text-danger {
-	font-weight: normal;
+.btn-submit-form {
+    position: absolute;
+    left: -2000px;
+}
+.modal {
+    display: block;
+    width: auto;
+}
+.tab-content {
+    margin-top:20px;
 }

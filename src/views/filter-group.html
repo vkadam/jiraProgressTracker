@@ -1,0 +1,22 @@
+<table class="table">
+    <thead data-ng-show="filters">
+        <tr>
+            <th class="hide">Id</th>
+            <th>Name</th>
+            <th>jql</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-ng-repeat="filter in filters">
+            <td class="hide">{{filter.id}}</td>
+            <td>
+                <a href="#/filter-group/{{id}}/filter/{{filter.id}}">
+                {{filter.name}}
+                </a>
+            </td>
+            <td>{{filter.jql}}</td>
+            <td>{{filter.isActive}}</td>
+        </tr>
+    </tbody>
+</table>

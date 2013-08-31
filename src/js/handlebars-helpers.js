@@ -6,7 +6,7 @@ define(['handlebars'], function(Handlebars) {
         return context[key];
     });
 
-    Handlebars.registerHelper("subtract", function(context1, context2, key) {
+    Handlebars.registerHelper('subtract', function(context1, context2, key) {
         return (Number(context2[key]) - Number(context1[key])).toFixed(2);
     });
 });
