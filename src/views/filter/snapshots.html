@@ -1,0 +1,14 @@
+<table class="table media">
+    <thead data-ng-show="filter.snapshots">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-ng-repeat="snapshot in filter.snapshots">
+            <td>{{snapshot.id}}</td>
+            <td>{{snapshot.title}}</td>
+        </tr>
+    </tbody>
+</table>

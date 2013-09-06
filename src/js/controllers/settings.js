@@ -2,17 +2,13 @@ define(['jquery', 'js-logger', 'js/app', 'js/base64',
     'js/factories/storage'
 ], function($, Logger, App, Base64, StorageFactory) {
 
-    function JiraSettingsForm($scope, $element, $scope$apply) {
+    function JiraSettingsForm($scope, $scope$apply, $modalInstance) {
         var logger = Logger.get('JiraSettingsForm');
 
         $scope.userData = {
             userId: '',
             password: ''
         };
-
-        $element.bind('$destroy', function() {
-            $element.scope().$destroy();
-        });
 
         function fetchData() {
             StorageFactory.get('Jira-UserName').always(function(userName) {
@@ -25,17 +21,32 @@ define(['jquery', 'js-logger', 'js/app', 'js/base64',
 
         fetchData();
 
-        $scope.$on('modalSubmitClick', function() {
-            if ($scope.jiraSettingsForm.$valid) {
-                if ($scope.jiraSettingsForm.$dirty) {
+        $scope.submit = function(jiraSettingsForm) {
+            if (jiraSettingsForm.$valid) {
+                if (jiraSettingsForm.$dirty) {
                     logger.log('Saving setting to storage');
                     var base64Encode = Base64.encode($scope.userData.userId + ':' + $scope.userData.password);
-                    StorageFactory.set('Jira-Credentials', base64Encode);
-                    StorageFactory.set('Jira-UserName', $scope.userData.userId);
+                    StorageFactory.set('Jira-Credentials', base64Encode).done(function() {
+                        StorageFactory.set('Jira-UserName', $scope.userData.userId);
+                    });
                 }
                 $scope.close();
             }
-        });
+        };
+
+        $scope.close = function() {
+            $modalInstance.dismiss();
+        }
     }
-    App.controller('SettingsFormController', JiraSettingsForm);
+
+    function JiraSettingsModal($scope, $modal) {
+        $scope.open = function() {
+            var modalInstance = $modal.open({
+                templateUrl: 'views/settings.html',
+                controller: JiraSettingsForm
+            });
+        };
+    }
+
+    App.controller('SettingsModalController', JiraSettingsModal);
 });

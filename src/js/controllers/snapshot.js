@@ -1,24 +1,37 @@
 define(['jquery', 'js/app'], function($, App) {
 
-    function SnapshotForm($scope, $element) {
-        $scope.maxResults = 999;
-        $scope.snapshotTitle = '';
+    function SnapshotForm($scope, $modalInstance) {
+        $scope.snapshot = {
+            maxResults: 999,
+            snapshotTitle: ''
+        }
 
-        $element.bind('$destroy', function() {
-            $element.scope().$destroy();
-        });
 
-        $scope.$on('modalSubmitClick', function() {
-            if ($scope.snapshotForm.$valid) {
+        $scope.submit = function(snapshotForm) {
+            if (snapshotForm.$valid) {
                 $scope.filter.createSnapshot({
-                    snapshotTitle: $scope.snapshotTitle
+                    snapshotTitle: $scope.snapshot.snapshotTitle
                 });
                 $scope.close();
             } else {
-                $scope.snapshotForm.showErrors = true;
+                snapshotForm.showErrors = true;
             }
-        });
+        };
+
+        $scope.close = function() {
+            $modalInstance.dismiss();
+        };
     }
 
-    App.controller('SnapshotFormController', SnapshotForm);
+    function SnapshotModal($scope, $modal) {
+        $scope.open = function() {
+            var modalInstance = $modal.open({
+                templateUrl: 'views/filter/snapshot.html',
+                controller: SnapshotForm,
+                scope: $scope
+            });
+        };
+    }
+
+    App.controller('SnapshotModalController', SnapshotModal);
 });

@@ -1,4 +1,4 @@
-define(['angular', 'js/app', 'js/controllers/modal',
+define(['angular', 'js/app',
     'js/controllers/settings', 'js/controllers/filter-group',
     'js/controllers/filter', 'js/controllers/snapshot'
 ], function(angular, app) {
@@ -11,7 +11,7 @@ define(['angular', 'js/app', 'js/controllers/modal',
                 controller: 'FilterGroupController'
             });
             $routeProvider.when('/filter-group/:filterGroupId/filter/:filterId', {
-                templateUrl: 'views/filter.html',
+                templateUrl: 'views/filter/tabs.html',
                 controller: 'FilterController'
             });
             $routeProvider.otherwise({

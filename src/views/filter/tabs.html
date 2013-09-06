@@ -1,0 +1,11 @@
+<tabset>
+    <tab data-heading="Details">
+        <ng-include data-src="'views/filter/filter-form.html'"></ng-include>
+    </tab>
+    <tab data-heading="Snapshots" data-disabled="!filter.snapshots || filter.snapshots.length===0">
+        <ng-include data-src="'views/filter/snapshots.html'"></ng-include>
+    </tab>
+    <tab data-heading="Summary">
+        <ng-include data-src="'views/filter/comparator/summary.html'"></ng-include>
+    </tab>
+</tabset>
