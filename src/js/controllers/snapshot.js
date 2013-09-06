@@ -4,8 +4,7 @@ define(['jquery', 'js/app'], function($, App) {
         $scope.snapshot = {
             maxResults: 999,
             snapshotTitle: ''
-        }
-
+        };
 
         $scope.submit = function(snapshotForm) {
             if (snapshotForm.$valid) {
@@ -25,7 +24,7 @@ define(['jquery', 'js/app'], function($, App) {
 
     function SnapshotModal($scope, $modal) {
         $scope.open = function() {
-            var modalInstance = $modal.open({
+            $modal.open({
                 templateUrl: 'views/filter/snapshot.html',
                 controller: SnapshotForm,
                 scope: $scope

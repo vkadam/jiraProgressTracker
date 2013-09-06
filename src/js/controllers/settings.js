@@ -36,12 +36,12 @@ define(['jquery', 'js-logger', 'js/app', 'js/base64',
 
         $scope.close = function() {
             $modalInstance.dismiss();
-        }
+        };
     }
 
     function JiraSettingsModal($scope, $modal) {
         $scope.open = function() {
-            var modalInstance = $modal.open({
+            $modal.open({
                 templateUrl: 'views/settings.html',
                 controller: JiraSettingsForm
             });

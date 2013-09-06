@@ -62,7 +62,7 @@ module.exports = function(grunt) {
             }
         },
         jshint: {
-            files: ['package.json', 'Gruntfile.js', 'src/*.js', 'src/js/**/*.js', 'jasmine/specs/**/*spec.js', 'jasmine/lib/*.js'],
+            files: ['package.json', 'Gruntfile.js', 'src/**/*.js', 'src/**/*.json', '!src/lib/**/*', 'jasmine/lib/*.js'],
             options: {
                 curly: true,
                 eqeqeq: true,
@@ -119,7 +119,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-shell');
 
     /* Register tasks. */
-    grunt.registerTask('default', ['shell:npm', 'jsbeautifier', 'jshint', 'connect', 'jasmine']);
+    grunt.registerTask('default', ['shell:npm', 'jsbeautifier', 'jshint' /*, 'connect', 'jasmine'*/ ]);
     grunt.registerTask('test', ['connect', 'jasmine']);
     grunt.registerTask('jasmine-server', ['jasmine:all:build', 'open:jasmine', 'connect::keepalive']);
 };
