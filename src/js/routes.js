@@ -1,6 +1,7 @@
 define(['angular', 'js/app',
     'js/controllers/settings', 'js/controllers/filter-group',
-    'js/controllers/filter', 'js/controllers/snapshot'
+    'js/controllers/filter', 'js/controllers/filter-summary',
+    'js/controllers/snapshot'
 ], function(angular, app) {
     'use strict';
 

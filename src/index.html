@@ -5,13 +5,14 @@
     <title>Jira Progress Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="lib/font-awesome/css/font-awesome.min.css" rel="stylesheet" media="screen">
     <link href="css/jira-tracker.css" rel="stylesheet" media="screen">
 </head>
 
 <body data-ng-csp="">
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="pull-right" data-ng-controller="SettingsModalController">
-            <button type="button" class="btn btn-link btn-lg glyphicon glyphicon-cog" data-ng-click="open()"></button>
+            <button type="button" class="btn btn-link btn-lg" data-ng-click="open()"><i class="icon-cog icon-large"></i></button>
         </div>
     </nav>
     <div id="jira-container" class="container" data-ng-view=""></div>

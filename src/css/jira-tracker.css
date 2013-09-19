@@ -10,5 +10,11 @@ body {
     width: auto;
 }
 .tab-content {
-    margin-top:20px;
+    margin-top: 20px;
+}
+.strike {
+    text-decoration: line-through;
+}
+.text-align-vertical-middle {
+    vertical-align: middle !important;
 }

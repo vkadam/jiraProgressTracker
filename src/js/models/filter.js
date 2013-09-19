@@ -17,6 +17,7 @@ define(['jquery', 'js-logger', 'gsloader',
             id: options['spreadsheetid'],
             jql: options['jql'],
             isActive: (options['active'] === 'Y'),
+            createdOn: options['createddate'],
             snapshots: [],
             isLoaded: false
         });
@@ -27,8 +28,13 @@ define(['jquery', 'js-logger', 'gsloader',
             id: this.id,
             context: this
         }).then(function(spreadsheet) {
-            this._spreadsheet = spreadsheet;
+            this.spreadsheet = spreadsheet;
             this.snapshots = spreadsheet.worksheets;
+            this.snapshots.sort(function(a, b) {
+                a.createdOn = moment(a.title).endOf('day').toDate();
+                b.createdOn = moment(b.title).endOf('day').toDate();
+                return a.createdOn - b.createdOn;
+            });
             this.isLoaded = true;
             return this;
         });
@@ -67,7 +73,7 @@ define(['jquery', 'js-logger', 'gsloader',
                         jiraIssues.push(jiraIssue.toArray());
                     });
 
-                    _this.logger.debug('Received jira issues, total issue found. Creating snapshot from it', data.issues.length);
+                    _this.logger.debug('Received jira issues, total issue found = ', data.issues.length, 'Creating snapshot from it');
                     defObj.resolve(jiraIssues);
                 } catch (e) {
                     defObj.reject({}, 'Exception while parsing jira issue response');
@@ -79,7 +85,7 @@ define(['jquery', 'js-logger', 'gsloader',
                     headersTitles.push(key);
                 });
 
-                return _this._spreadsheet.createWorksheet({
+                return _this.spreadsheet.createWorksheet({
                     title: options.snapshotTitle,
                     headers: headersTitles,
                     rowData: jiraIssues,

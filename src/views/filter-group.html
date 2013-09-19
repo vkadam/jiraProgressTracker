@@ -1,22 +1,23 @@
-<table class="table">
-    <thead data-ng-show="filters">
-        <tr>
-            <th class="hide">Id</th>
-            <th>Name</th>
-            <th>jql</th>
-            <th>Active</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr data-ng-repeat="filter in filters">
-            <td class="hide">{{filter.id}}</td>
-            <td>
-                <a href="#/filter-group/{{id}}/filter/{{filter.id}}">
+<div data-ng-class="{'text-center':filters.length === 0}" >
+    <i class="icon-spinner icon-spin icon-4x" data-ng-show="filters.length === 0"></i>
+    <table class="table">
+        <thead data-ng-show="filters">
+            <tr>
+                <th>Name</th>
+                <th>jql</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-ng-repeat="filter in filters | objectToArray | orderBy:'-createdOn'" data-ng-class="{'strike active':!filter.isActive}">
+                <td>
+                    <a href="#/filter-group/{{id}}/filter/{{filter.id}}">
                 {{filter.name}}
                 </a>
-            </td>
-            <td>{{filter.jql}}</td>
-            <td>{{filter.isActive}}</td>
-        </tr>
-    </tbody>
-</table>
+                </td>
+                <td>{{filter.jql}}</td>
+                <td>{{filter.isActive}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -3,7 +3,7 @@ requirejs.config({
     paths: {
         'domReady': 'lib/requirejs/require-domReady',
         'jquery': 'lib/jquery-2.0.0',
-        'jquery/validate': 'lib/jquery.validate.min',
+        // 'jquery/validate': 'lib/jquery.validate.min',
         'angular': 'lib/angular/angular',
         'angular-route': 'lib/angular/angular-route',
         'angular-ui': 'lib/angular-ui/ui-bootstrap-tpls-0.6.0-SNAPSHOT',
@@ -15,8 +15,8 @@ requirejs.config({
         'google-api-client': 'https://apis.google.com/js/client.js?onload=googleDriveClientLoaded'
     },
     shim: {
-        'jquery/validate': ['jquery'],
-        'js/jira-validator': ['jquery/validate'],
+        /*'jquery/validate': ['jquery'],
+        'js/jira-validator': ['jquery/validate'],*/
         'gsloader': ['jquery'],
         'bootstrap': ['jquery'],
         'google-api-client': {

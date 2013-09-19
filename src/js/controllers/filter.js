@@ -1,4 +1,4 @@
-define(['jquery', 'js/app', 'js/factories/filter'], function($, App, FilterFactory) {
+define(['jquery', 'js/app', 'js/factories/filter', 'bootstrap'], function($, App, FilterFactory) {
 
     function FilterController($scope, $routeParams, $scope$apply) {
         $scope.filterGroupId = $routeParams.filterGroupId;

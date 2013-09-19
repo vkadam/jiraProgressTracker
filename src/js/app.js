@@ -9,5 +9,18 @@ define(['angular', 'angular-route', 'angular-ui'], function(angular) {
             } else {
                 $scope.$apply(callback);
             }
+        }).filter('objectToArray', function() {
+            return function(input, attribute) {
+                if (!angular.isObject(input)) {
+                    return input
+                };
+
+                var objectArray = [];
+                for (var objectKey in input) {
+                    objectArray.push(input[objectKey]);
+                }
+
+                return objectArray;
+            }
         });
 });
