@@ -10,10 +10,10 @@ define(['angular', 'angular-route', 'angular-ui'], function(angular) {
                 $scope.$apply(callback);
             }
         }).filter('objectToArray', function() {
-            return function(input, attribute) {
+            return function(input) {
                 if (!angular.isObject(input)) {
-                    return input
-                };
+                    return input;
+                }
 
                 var objectArray = [];
                 for (var objectKey in input) {
@@ -21,6 +21,6 @@ define(['angular', 'angular-route', 'angular-ui'], function(angular) {
                 }
 
                 return objectArray;
-            }
+            };
         });
 });

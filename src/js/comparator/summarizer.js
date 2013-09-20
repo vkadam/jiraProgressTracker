@@ -26,6 +26,6 @@ define(['jquery'], function($) {
             }
         }
         return copy;
-    }
+    };
     return Summarizer;
 });
