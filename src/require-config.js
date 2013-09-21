@@ -1,45 +1,38 @@
 requirejs.config({
-    baseUrl: '',
-    paths: {
-        'domReady': 'lib/requirejs/require-domReady',
-        'jquery': 'lib/jquery-2.0.0',
-        // 'jquery/validate': 'lib/jquery.validate.min',
-        'angular': 'lib/angular/angular',
-        'angular-route': 'lib/angular/angular-route',
-        'angular-ui': 'lib/angular-ui/ui-bootstrap-tpls-0.6.0-SNAPSHOT',
-        'underscore': 'lib/underscore-1.4.2.min',
-        'bootstrap': 'lib/bootstrap/js/bootstrap.min',
-        'js-logger': 'lib/js-logger/src/logger.min',
-        'moment': 'lib/moment/min/moment.min',
-        'gsloader': 'lib/gsloader/dist/gsloader',
-        'google-api-client': 'https://apis.google.com/js/client.js?onload=googleDriveClientLoaded'
+    'baseUrl': '',
+    'paths': {
+        'google-api-client': 'https://apis.google.com/js/client.js?onload=googleDriveClientLoaded',
+        'angular': 'lib/angular/angular.min',
+        'angular-route': 'lib/angular-route/angular-route.min',
+        'angular-ui': 'lib/angular-ui/ui-bootstrap-tpls.min',
+        'bootstrap': 'lib/bootstrap/bootstrap.min',
+        'gsloader': 'lib/gsloader/gsloader.min',
+        'jquery': 'lib/jquery/jquery.min',
+        'lodash': 'lib/lodash/lodash.min',
+        'logger': 'lib/logger/logger.min',
+        'moment': 'lib/moment/moment.min'
     },
-    shim: {
-        /*'jquery/validate': ['jquery'],
-        'js/jira-validator': ['jquery/validate'],*/
-        'gsloader': ['jquery'],
+    'map': {
+        '*': {
+            'underscore': 'lodash',
+            'js-logger': 'logger'
+        }
+    },
+    'shim': {
+        'gsloader': ['jquery', 'js-logger'],
         'bootstrap': ['jquery'],
         'google-api-client': {
             'exports': 'gapi'
         },
-        'underscore': {
-            'exports': '_'
-        },
         'angular': {
             'exports': 'angular'
         },
-        'angularMocks': {
-            'deps': ['angular'],
-            'exports': 'angular.mock'
-        },
-        'angular-ui': {
-            'deps': ['angular']
-        },
-        'angular-route': {
-            'deps': ['angular']
-        },
+        'angular-ui': ['angular'],
+        'angular-route': ['angular'],
         'main': {
-            'deps': ['js-logger'],
+            'deps': [
+                'logger'
+            ],
             'init': function(Logger) {
                 Logger.useDefaults();
             }

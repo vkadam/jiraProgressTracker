@@ -1,9 +1,0 @@
-[submodule "src/lib/gsloader"]
-	path = src/lib/gsloader
-	url = https://github.com/vkadam/gsloader.git
-[submodule "src/lib/js-logger"]
-	path = src/lib/js-logger
-	url = https://github.com/jonnyreeves/js-logger.git
-[submodule "src/lib/moment"]
-	path = src/lib/moment
-	url = https://github.com/timrwood/moment.git

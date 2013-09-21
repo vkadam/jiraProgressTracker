@@ -1,0 +1,70 @@
+{
+    "name": "jira-tracker",
+    "version": "v0.0.0-rc.3",
+    "homepage": "https://github.com/vkadam/jiraProgressTracker",
+    "description": "Google Chrome plugin to track jira progress over the period",
+    "keywords": [
+        "jira",
+        "jiraProgress",
+        "jiraTracker"
+    ],
+    "dependencies": {
+        "angular": "v1.2.0-rc.2",
+        "angular-route": "v1.2.0-rc.2",
+        "angular-ui": "angular-ui-bootstrap-bower#0.6.0",
+        "bootstrap": "v3.0.0-rc.2",
+        "font-awesome": "components-font-awesome#3.2.1",
+        "jquery": "2.0.3",
+        "logger": "https://github.com/jonnyreeves/js-logger.git",
+        "lodash": "official-lodash#2.0.0",
+        "moment": "momentjs#2.2.1",
+        "requirejs": "2.1.8",
+        "requirejs-domready": "2.0.1",
+        "gsloader": "https://github.com/vkadam/gsloader.git#master"
+    },
+    "exportsOverride": {
+        "angular": {
+            "./": [
+                "angular.min.js",
+                "angular.min.js.map"
+            ]
+        },
+        "angular-route": {
+            "./": [
+                "angular-route.min.js",
+                "angular-route.min.js.map"
+            ]
+        },
+        "angular-ui": {
+            "./": "ui-bootstrap-tpls.min.js"
+        },
+        "font-awesome": {
+            "css": ["css/font-awesome.min.css"],
+            "font": ["font/*"]
+        },
+        "gsloader": {
+            "./": "dist/gsloader.min.js"
+        },
+        "jquery": {
+            "./": [
+                "jquery.min.js",
+                "jquery.min.map"
+            ]
+        },
+        "logger": {
+            "./": "src/logger.min.js"
+        },
+        "lodash": {
+            "./": "dist/lodash.min.js"
+        },
+        "moment": {
+            "./": "min/moment.min.js"
+        },
+        "requirejs": {
+            "./": "require.js"
+        },
+        "requirejs-domready": {
+            "../requirejs/": "domReady.js"
+        }
+    }
+}

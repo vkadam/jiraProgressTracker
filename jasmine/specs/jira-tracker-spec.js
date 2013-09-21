@@ -1,5 +1,5 @@
 define(["jquery", "js/jira-tracker", "gsloader",
-    "js/moment-zone", "jasmine-helper", "js-logger", "js/models/jira-storage", "js/comparator/Snapshot"
+    "js/moment-zone", "jasmine-helper", "logger", "js/models/jira-storage", "js/comparator/Snapshot"
 ], function($, JiraTracker, GSLoader, moment, Deferred) {
     describe("JiraTracker", function() {
         var spyOnAjax, jiraTracker;

@@ -1,4 +1,4 @@
-define(['jquery', 'js-logger', 'js/factories/filter-group'], function($, Logger, FilterGroupFactory) {
+define(['jquery', 'logger', 'js/factories/filter-group'], function($, Logger, FilterGroupFactory) {
     /*global chrome:false*/
 
     var background = {},

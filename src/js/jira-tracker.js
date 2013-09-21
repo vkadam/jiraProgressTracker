@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'js-logger',
+define(['jquery', 'underscore', 'logger',
     'gsloader', 'js/moment-zone', 'js/models/jira-issue',
     'js/jira-validator', 'js/comparator/snapshot', 'js/models/jira-storage',
     'js/models/filter', 'js/handlebars-helpers'

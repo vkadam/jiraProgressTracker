@@ -1,4 +1,4 @@
-define(['jquery', 'js-logger', 'js/app', 'js/base64',
+define(['jquery', 'logger', 'js/app', 'js/base64',
     'js/factories/storage'
 ], function($, Logger, App, Base64, StorageFactory) {
 

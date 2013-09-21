@@ -1,8 +1,10 @@
 target/
 .DS_Store
-/node_modules
+node_modules
 _SpecRunner.html
 *.crx
 *.log
 .grunt
 .idea/
+bower_components
+src/lib

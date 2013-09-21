@@ -52,7 +52,7 @@ module.exports = function(grunt) {
                                     deps: ['jquery']
                                 }
                             },
-                            deps: ['js-logger', 'jquery', 'jasmine-fixtures', 'jasmine-jquery', 'jquery-fixture'],
+                            deps: ['logger', 'jquery', 'jasmine-fixtures', 'jasmine-jquery', 'jquery-fixture'],
                             callback: function(Logger) {
                                 Logger.setLevel(Logger.OFF);
                             }
@@ -62,40 +62,11 @@ module.exports = function(grunt) {
             }
         },
         jshint: {
-            files: ['package.json', 'Gruntfile.js', 'src/**/*.js', 'src/**/*.json', '!src/lib/**/*', 'jasmine/lib/*.js'],
+            files: ['package.json', 'bower.json', 'Gruntfile.js', 'src/**/*.js',
+                'src/**/*.json', '!src/lib/**/*', 'jasmine/lib/*.js'
+            ],
             options: {
-                curly: true,
-                eqeqeq: true,
-                immed: true,
-                latedef: true,
-                newcap: true,
-                noarg: true,
-                sub: true,
-                undef: true,
-                boss: true,
-                eqnull: true,
-                browser: true,
-                unused: true,
-                debug: true,
-                camelcase: true,
-                globals: {
-                    requirejs: false,
-                    require: false,
-                    define: false,
-                    jasmine: false,
-                    describe: false,
-                    xdescribe: false,
-                    it: false,
-                    xit: false,
-                    spyOn: false,
-                    expect: false,
-                    waitsFor: false,
-                    runs: false,
-                    beforeEach: false,
-                    afterEach: false,
-                    spyOnEvent: false,
-                    affix: false
-                }
+                jshintrc: '.jshintrc'
             }
         },
         shell: {
@@ -105,6 +76,15 @@ module.exports = function(grunt) {
                     failOnError: true,
                     stdout: true,
                     stderr: true
+                }
+            }
+        },
+        bower: {
+            install: {
+                options: {
+                    targetDir: 'src/lib',
+                    cleanTargetDir: true,
+                    layout: 'byComponent'
                 }
             }
         }
@@ -117,9 +97,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-open');
     grunt.loadNpmTasks('grunt-jsbeautifier');
     grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-bower-task');
 
     /* Register tasks. */
-    grunt.registerTask('default', ['shell:npm', 'jsbeautifier', 'jshint' /*, 'connect', 'jasmine'*/ ]);
-    grunt.registerTask('test', ['connect', 'jasmine']);
+    grunt.registerTask('default', ['shell:npm', 'bower:install', 'jsbeautifier', 'jshint' /*, 'connect', 'jasmine'*/ ]);
+    grunt.registerTask('test', ['bower:install', 'connect', 'jasmine']);
     grunt.registerTask('jasmine-server', ['jasmine:all:build', 'open:jasmine', 'connect::keepalive']);
 };

@@ -1,4 +1,4 @@
-define(['jquery', 'js-logger', 'gsloader',
+define(['jquery', 'logger', 'gsloader',
     'js/models/jira-issue', 'js/factories/storage', 'js/moment-zone'
 ], function($, Logger, GSLoader, JiraIssue, StorageFactory, moment) {
     /**

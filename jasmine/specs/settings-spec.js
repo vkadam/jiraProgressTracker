@@ -1,4 +1,4 @@
-define(["jquery", "js-logger", "js/base64",
+define(["jquery", "logger", "js/base64",
     "js/jira-validator", "js/settings", "jasmine-helper"
 ], function($, Logger, Base64, Validator, JiraSetting, Deferred) {
     xdescribe("jira-settings.js", function() {
