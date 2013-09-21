@@ -16,49 +16,47 @@
         "font-awesome": "components-font-awesome#3.2.1",
         "jquery": "2.0.3",
         "logger": "https://github.com/jonnyreeves/js-logger.git",
-        "lodash": "official-lodash#2.0.0",
+        "lodash": "2.0.0",
         "moment": "momentjs#2.2.1",
+        "moment-timezone": "0.0.1",
         "requirejs": "2.1.8",
         "requirejs-domready": "2.0.1",
         "gsloader": "https://github.com/vkadam/gsloader.git#master"
     },
     "exportsOverride": {
         "angular": {
-            "./": [
-                "angular.min.js",
-                "angular.min.js.map"
-            ]
+            "./": ["angular.js", "angular.min.js", "angular.min.js.map"]
         },
         "angular-route": {
-            "./": [
-                "angular-route.min.js",
-                "angular-route.min.js.map"
-            ]
+            "./": ["angular-route.js", "angular-route.min.js", "angular-route.min.js.map"]
         },
         "angular-ui": {
-            "./": "ui-bootstrap-tpls.min.js"
+            "./": ["ui-bootstrap-tpls.js", "ui-bootstrap-tpls.min.js"]
+        },
+        "bootstrap": {
+            "./": "dist"
         },
         "font-awesome": {
-            "css": ["css/font-awesome.min.css"],
+            "css": ["css/font-awesome.css", "css/font-awesome.min.css"],
             "font": ["font/*"]
         },
         "gsloader": {
-            "./": "dist/gsloader.min.js"
+            "./": ["dist/gsloader.js", "dist/gsloader.min.js"]
         },
         "jquery": {
-            "./": [
-                "jquery.min.js",
-                "jquery.min.map"
-            ]
-        },
-        "logger": {
-            "./": "src/logger.min.js"
+            "./": ["jquery.js", "jquery.min.js", "jquery.min.map"]
         },
         "lodash": {
-            "./": "dist/lodash.min.js"
+            "./": ["dist/lodash.js", "dist/lodash.min.js"]
+        },
+        "logger": {
+            "./": ["src/logger.js", "src/logger.min.js"]
         },
         "moment": {
-            "./": "min/moment.min.js"
+            "./": ["moment.js", "min/moment.min.js"]
+        },
+        "moment-timezone": {
+            "./": ["moment-timezone.js", "min/moment-timezone.min.js"]
         },
         "requirejs": {
             "./": "require.js"

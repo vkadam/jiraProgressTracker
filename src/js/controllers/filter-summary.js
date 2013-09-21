@@ -1,4 +1,4 @@
-define(['jquery', 'js/moment-zone', 'js/app', 'js/factories/filter',
+define(['jquery', 'moment', 'js/app', 'js/factories/filter',
     'js/comparator/entity', 'js/comparator/summarizer'
 ], function($, moment, App, FilterFactory, ComparatorEntity, Summarizer) {
 
@@ -51,6 +51,7 @@ define(['jquery', 'js/moment-zone', 'js/app', 'js/factories/filter',
     };
 
     function findSnapshot(filter, comparatorEntity) {
+        // console.log(moment());
         var snapshots = filter.snapshots,
             today = moment().endOf('day'),
             startOfThisWeek = moment().startOf('day').day(0);

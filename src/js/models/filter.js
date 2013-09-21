@@ -1,6 +1,6 @@
-define(['jquery', 'logger', 'gsloader',
-    'js/models/jira-issue', 'js/factories/storage', 'js/moment-zone'
-], function($, Logger, GSLoader, JiraIssue, StorageFactory, moment) {
+define(['jquery', 'logger', 'gsloader', 'moment',
+    'js/models/jira-issue', 'js/factories/storage'
+], function($, Logger, GSLoader, moment, JiraIssue, StorageFactory) {
     /**
      * Creates an instance of Filter
      *
