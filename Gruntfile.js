@@ -84,7 +84,8 @@ module.exports = function(grunt) {
                 options: {
                     targetDir: 'src/lib',
                     cleanTargetDir: true,
-                    layout: 'byComponent'
+                    layout: 'byComponent',
+                    verbose: true
                 }
             }
         }

@@ -15,13 +15,13 @@
         "bootstrap": "v3.0.0-rc.2",
         "font-awesome": "components-font-awesome#3.2.1",
         "jquery": "2.0.3",
-        "logger": "https://github.com/jonnyreeves/js-logger.git",
+        "logger": "https://github.com/jonnyreeves/js-logger.git#master",
         "lodash": "2.0.0",
         "moment": "momentjs#2.2.1",
         "moment-timezone": "0.0.1",
         "requirejs": "2.1.8",
         "requirejs-domready": "2.0.1",
-        "gsloader": "https://github.com/vkadam/gsloader.git#master"
+        "gsloader": "https://github.com/vkadam/gsloader.git#v0.0.1-rc.1"
     },
     "exportsOverride": {
         "angular": {

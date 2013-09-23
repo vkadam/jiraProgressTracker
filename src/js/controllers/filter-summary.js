@@ -51,7 +51,6 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
     };
 
     function findSnapshot(filter, comparatorEntity) {
-        // console.log(moment());
         var snapshots = filter.snapshots,
             today = moment().endOf('day'),
             startOfThisWeek = moment().startOf('day').day(0);
@@ -100,8 +99,8 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
         };
 
         function fetchAndSummarizeEntity(comparatorEntity, snapshot1, snapshot2) {
-            var snapshot1Req = !snapshot1.isLoaded ? snapshot1.fetch() : snapshot1,
-                snapshot2Req = snapshot2 && !snapshot2.isLoaded ? snapshot2.fetch() : snapshot2;
+            var snapshot1Req = (snapshot1 && snapshot1.rows.length === 0) ? snapshot1.fetch() : snapshot1,
+                snapshot2Req = (snapshot2 && snapshot2.rows.length === 0) ? snapshot2.fetch() : snapshot2;
 
             $.when(snapshot1Req, snapshot2Req).then(function() {
                 $scope$apply($scope, function() {
