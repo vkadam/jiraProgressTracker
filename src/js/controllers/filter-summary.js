@@ -67,17 +67,23 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
                     lastWeekSnapshot = findSnapshotForDate(filter, startOfLastWeek, endOfLastWeek),
                     weekBeforeLastWeekSnapshot = findSnapshotForDate(filter, startOfWeekBeforeLastWeek, endOfWeekBeforeLastWeek);
 
-                weekBeforeLastWeekSnapshot.displayDate = moment(weekBeforeLastWeekSnapshot.createdOn).add('seconds', 1).toDate();
-                lastWeekSnapshot.displayDate = lastWeekSnapshot.createdOn;
-
+                if (weekBeforeLastWeekSnapshot) {
+                    weekBeforeLastWeekSnapshot.displayDate = moment(weekBeforeLastWeekSnapshot.createdOn).add('seconds', 1).toDate();
+                }
+                if (lastWeekSnapshot) {
+                    lastWeekSnapshot.displayDate = lastWeekSnapshot.createdOn;
+                }
                 return [weekBeforeLastWeekSnapshot, lastWeekSnapshot];
             case 'THIS_WEEK':
                 var thisWeekLatest = findSnapshotForDate(filter, startOfThisWeek, today),
                     thisWeekStart = findSnapshotForDate(filter, startOfThisWeek, today, true);
 
-                thisWeekStart.displayDate = thisWeekStart.createdOn;
-                thisWeekLatest.displayDate = thisWeekLatest.createdOn;
-
+                if (thisWeekStart) {
+                    thisWeekStart.displayDate = thisWeekStart.createdOn;
+                }
+                if (thisWeekLatest) {
+                    thisWeekLatest.displayDate = thisWeekLatest.createdOn;
+                }
                 return [thisWeekStart, thisWeekLatest];
             case 'TILL_TODAY':
                 var baselineSnapshot = snapshots[0],
@@ -85,7 +91,6 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
 
                 baselineSnapshot.displayDate = baselineSnapshot.createdOn;
                 latestSnapshot.displayDate = latestSnapshot.createdOn;
-
                 return [baselineSnapshot, latestSnapshot];
         }
     }

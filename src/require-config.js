@@ -11,7 +11,8 @@ requirejs.config({
         'lodash': 'lib/lodash/lodash.min',
         'logger': 'lib/logger/logger.min',
         'moment': 'lib/moment/moment.min',
-        'moment-timezone': 'lib/moment-timezone/moment-timezone.min'
+        'moment-timezone': 'lib/moment-timezone/moment-timezone.min',
+        'moment-timezone-data': 'js/moment-timezone-data'
     },
     'map': {
         '*': {
@@ -31,12 +32,11 @@ requirejs.config({
         'bootstrap': ['jquery'],
         'gsloader': ['jquery', 'js-logger'],
         'main': {
-            'deps': ['logger'],
+            'deps': ['logger', 'moment-timezone-data'],
             'init': function(Logger) {
                 Logger.useDefaults();
             }
-        },
-        'moment-timezone': ['moment']
+        }
     }
 });
 require(['main']);

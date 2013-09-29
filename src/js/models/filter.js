@@ -30,9 +30,10 @@ define(['jquery', 'logger', 'gsloader', 'moment',
         }).then(function(spreadsheet) {
             this.spreadsheet = spreadsheet;
             this.snapshots = spreadsheet.worksheets;
+            $.each(this.snapshots, function(idx, snapshot){
+                snapshot.createdOn = moment(snapshot.title).endOf('day').toDate();
+            });
             this.snapshots.sort(function(a, b) {
-                a.createdOn = moment(a.title).endOf('day').toDate();
-                b.createdOn = moment(b.title).endOf('day').toDate();
                 return a.createdOn - b.createdOn;
             });
             this.isLoaded = true;
@@ -123,7 +124,7 @@ define(['jquery', 'logger', 'gsloader', 'moment',
 
     function getJiraServerTime() {
         /* Cengage jira server is in EST */
-        return moment().toZone(-4);
+        return moment().tz('America/Detroit');
     }
 
     /**
