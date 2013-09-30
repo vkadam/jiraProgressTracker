@@ -1,4 +1,4 @@
-define(['moment-timezone'], function (moment) {
+define(['moment-timezone'], function(moment) {
     moment.tz.add({
         'zones': {
             'America/Detroit': [

@@ -1,8 +1,8 @@
 <ul class="nav nav-tabs">
-    <li>
+    <li class="active">
         <a href="#details" data-toggle="tab">Details</a>
     </li>
-    <li class="active">
+    <li>
         <a href="#summary" data-toggle="tab">Summary</a>
     </li>
     <li>
@@ -10,10 +10,10 @@
     </li>
 </ul>
 <div class="tab-content">
-    <div class="tab-pane" id="details">
+    <div class="tab-pane active" id="details">
         <ng-include data-src="'views/filter/filter-form.html'"></ng-include>
     </div>
-    <div class="tab-pane active" id="summary">
+    <div class="tab-pane" id="summary">
         <ng-include data-src="'views/filter/comparator/summary.html'"></ng-include>
     </div>
     <div class="tab-pane" id="snapshots">

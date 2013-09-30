@@ -38,8 +38,7 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
     var findSnapshotForDate = function(filter, from, to, searchReverse) {
         var date = searchReverse ? from.clone() : to.clone(),
             sheet = null;
-        // console.log(from, date);
-        while (!sheet && from <= date) {
+        while (!sheet && from <= date && date <= to) {
             sheet = filter.spreadsheet.getWorksheet(date.format('MM-DD-YYYY'));
             if (searchReverse) {
                 date.add('day', 1);

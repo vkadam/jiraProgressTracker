@@ -30,7 +30,7 @@ define(['jquery', 'logger', 'gsloader', 'moment',
         }).then(function(spreadsheet) {
             this.spreadsheet = spreadsheet;
             this.snapshots = spreadsheet.worksheets;
-            $.each(this.snapshots, function(idx, snapshot){
+            $.each(this.snapshots, function(idx, snapshot) {
                 snapshot.createdOn = moment(snapshot.title).endOf('day').toDate();
             });
             this.snapshots.sort(function(a, b) {
