@@ -21,48 +21,94 @@
         "moment-timezone": "0.0.1",
         "requirejs": "2.1.8",
         "requirejs-domready": "2.0.1",
-        "gsloader": "https://github.com/vkadam/gsloader.git#v0.0.1-rc.1"
+        "gsloader": "https://github.com/vkadam/gsloader.git#v0.0.1-rc.1",
+        "highcharts-ng": "0.0.2",
+        "highcharts": "3.0.5"
     },
     "exportsOverride": {
         "angular": {
-            "./": ["angular.js", "angular.min.js", "angular.min.js.map"]
+            "./": [
+                "angular.js",
+                "angular.min.js",
+                "angular.min.js.map"
+            ]
         },
         "angular-route": {
-            "./": ["angular-route.js", "angular-route.min.js", "angular-route.min.js.map"]
+            "./": [
+                "angular-route.js",
+                "angular-route.min.js",
+                "angular-route.min.js.map"
+            ]
         },
         "angular-ui": {
-            "./": ["ui-bootstrap-tpls.js", "ui-bootstrap-tpls.min.js"]
+            "./": [
+                "ui-bootstrap-tpls.js",
+                "ui-bootstrap-tpls.min.js"
+            ]
         },
         "bootstrap": {
             "./": "dist"
         },
         "font-awesome": {
-            "css": ["css/font-awesome.css", "css/font-awesome.min.css"],
-            "font": ["font/*"]
+            "css": [
+                "css/font-awesome.css",
+                "css/font-awesome.min.css"
+            ],
+            "font": [
+                "font/*"
+            ]
         },
         "gsloader": {
-            "./": ["dist/gsloader.js", "dist/gsloader.min.js"]
+            "./": [
+                "dist/gsloader.js",
+                "dist/gsloader.min.js"
+            ]
         },
         "jquery": {
-            "./": ["jquery.js", "jquery.min.js", "jquery.min.map"]
+            "./": [
+                "jquery.js",
+                "jquery.min.js",
+                "jquery.min.map"
+            ]
         },
         "lodash": {
-            "./": ["dist/lodash.js", "dist/lodash.min.js"]
+            "./": [
+                "dist/lodash.js",
+                "dist/lodash.min.js"
+            ]
         },
         "logger": {
-            "./": ["src/logger.js", "src/logger.min.js"]
+            "./": [
+                "src/logger.js",
+                "src/logger.min.js"
+            ]
         },
         "moment": {
-            "./": ["moment.js", "min/moment.min.js"]
+            "./": [
+                "moment.js",
+                "min/moment.min.js"
+            ]
         },
         "moment-timezone": {
-            "./": ["moment-timezone.js", "min/moment-timezone.min.js"]
+            "./": [
+                "moment-timezone.js",
+                "min/moment-timezone.min.js"
+            ]
         },
         "requirejs": {
             "./": "require.js"
         },
         "requirejs-domready": {
             "../requirejs/": "domReady.js"
+        },
+        "highcharts": {
+            "./": [
+                "highcharts.js",
+                "highcharts.src.js"
+            ]
+        },
+        "highcharts-ng": {
+            "./": "src/directives/highcharts-ng.js"
         }
     }
 }

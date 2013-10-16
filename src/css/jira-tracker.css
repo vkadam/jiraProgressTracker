@@ -9,12 +9,12 @@ body {
     display: block;
     width: auto;
 }
-.tab-content {
-    margin-top: 20px;
-}
 .strike {
     text-decoration: line-through;
 }
 .text-align-vertical-middle {
     vertical-align: middle !important;
+}
+.form-horizontal {
+    overflow: visible;
 }

@@ -1,6 +1,6 @@
-define(['jquery', 'moment', 'js/app', 'js/factories/filter',
+define(['jquery', 'lodash', 'moment', 'js/app',
     'js/comparator/entity', 'js/comparator/summarizer'
-], function($, moment, App, FilterFactory, ComparatorEntity, Summarizer) {
+], function($, _, moment, App, ComparatorEntity, Summarizer) {
 
     function getSummarizers() {
         var summarizers = [];
@@ -8,17 +8,19 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
             title: 'Total'
         }));
 
+        var DoneStatusArray = ['Closed', 'Resolved'];
         summarizers.push(new Summarizer({
             title: 'Done',
             filter: function() {
-                return ['Closed', 'Resolved'].indexOf(this.status) > -1;
+                return _.contains(DoneStatusArray, this.status);
             }
         }));
 
+        var WIPStatusArray = ['In Progress', 'Complete', 'Verified', 'QA Active', 'Ready for QA'];
         summarizers.push(new Summarizer({
             title: 'WIP',
             filter: function() {
-                return ['In Progress', 'Complete', 'Verified', 'QA Active', 'Ready for QA'].indexOf(this.status) !== -1;
+                return _.contains(WIPStatusArray, this.status);
             }
         }));
         return summarizers;
@@ -26,21 +28,21 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
 
     function getComparatorEntity() {
         var comparatorEntities = [],
-            baseline = new ComparatorEntity(1, 'Baseline Totals', 'BASELINE'),
-            current = new ComparatorEntity(2, 'Current Totals', 'CURRENT'),
-            lastWeek = new ComparatorEntity(3, 'Last Week Data', 'LAST_WEEK'),
-            thisWeek = new ComparatorEntity(4, 'This Week Data', 'THIS_WEEK'),
-            tillToday = new ComparatorEntity(5, 'Project To Date', 'TILL_TODAY');
+            baseline = new ComparatorEntity(1, 'Baseline Totals'),
+            current = new ComparatorEntity(2, 'Current Totals'),
+            lastWeek = new ComparatorEntity(3, 'Last Week Data'),
+            thisWeek = new ComparatorEntity(4, 'This Week Data'),
+            tillToday = new ComparatorEntity(5, 'Project To Date');
         comparatorEntities.push(baseline, current, lastWeek, thisWeek, tillToday);
         return comparatorEntities;
     }
 
-    var findSnapshotForDate = function(filter, from, to, searchReverse) {
-        var date = searchReverse ? from.clone() : to.clone(),
+    var findSnapshotForDate = function(filter, from, to, startFromBeginning) {
+        var date = startFromBeginning ? from.clone() : to.clone(),
             sheet = null;
         while (!sheet && from <= date && date <= to) {
             sheet = filter.spreadsheet.getWorksheet(date.format('MM-DD-YYYY'));
-            if (searchReverse) {
+            if (startFromBeginning) {
                 date.add('day', 1);
             } else {
                 date.subtract('day', 1);
@@ -53,12 +55,15 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
         var snapshots = filter.snapshots,
             today = moment().endOf('day'),
             startOfThisWeek = moment().startOf('day').day(0);
-        switch (comparatorEntity.identifier) {
-            case 'BASELINE':
+        switch (comparatorEntity.index) {
+            case 1: //'BASELINE'
+                comparatorEntity.leftDate = snapshots[0].startDate;
                 return [snapshots[0]];
-            case 'CURRENT': // Most recent sheet available from current week
-                return [findSnapshotForDate(filter, startOfThisWeek, today)];
-            case 'LAST_WEEK': // Most recent sheet available from last week and start
+            case 2: //'CURRENT' Most recent sheet available from current week
+                var currentSnapshot = findSnapshotForDate(filter, startOfThisWeek, today);
+                comparatorEntity.leftDate = today.toDate();
+                return [currentSnapshot];
+            case 3: //'LAST_WEEK' Most recent sheet available from last week and start
                 var endOfLastWeek = moment().endOf('day').day(-1),
                     startOfLastWeek = moment().startOf('day').day(-7),
                     endOfWeekBeforeLastWeek = moment().endOf('day').day(-8),
@@ -66,35 +71,27 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
                     lastWeekSnapshot = findSnapshotForDate(filter, startOfLastWeek, endOfLastWeek),
                     weekBeforeLastWeekSnapshot = findSnapshotForDate(filter, startOfWeekBeforeLastWeek, endOfWeekBeforeLastWeek);
 
-                if (weekBeforeLastWeekSnapshot) {
-                    weekBeforeLastWeekSnapshot.displayDate = moment(weekBeforeLastWeekSnapshot.createdOn).add('seconds', 1).toDate();
-                }
-                if (lastWeekSnapshot) {
-                    lastWeekSnapshot.displayDate = lastWeekSnapshot.createdOn;
-                }
+                comparatorEntity.leftDate = startOfLastWeek.toDate();
+                comparatorEntity.rightDate = endOfLastWeek.toDate();
                 return [weekBeforeLastWeekSnapshot, lastWeekSnapshot];
-            case 'THIS_WEEK':
+            case 4: //'THIS_WEEK'
                 var thisWeekLatest = findSnapshotForDate(filter, startOfThisWeek, today),
                     thisWeekStart = findSnapshotForDate(filter, startOfThisWeek, today, true);
 
-                if (thisWeekStart) {
-                    thisWeekStart.displayDate = thisWeekStart.createdOn;
-                }
-                if (thisWeekLatest) {
-                    thisWeekLatest.displayDate = thisWeekLatest.createdOn;
-                }
+                comparatorEntity.leftDate = startOfThisWeek.toDate();
+                comparatorEntity.rightDate = today.toDate();
                 return [thisWeekStart, thisWeekLatest];
-            case 'TILL_TODAY':
+            case 5: //'TILL_TODAY'
                 var baselineSnapshot = snapshots[0],
                     latestSnapshot = snapshots[snapshots.length - 1];
 
-                baselineSnapshot.displayDate = baselineSnapshot.createdOn;
-                latestSnapshot.displayDate = latestSnapshot.createdOn;
+                comparatorEntity.leftDate = baselineSnapshot.startDate;
+                comparatorEntity.rightDate = latestSnapshot.startDate;
                 return [baselineSnapshot, latestSnapshot];
         }
     }
 
-    function SummaryController($scope, $routeParams, $scope$apply) {
+    function SummaryController($scope, $scope$apply) {
         var comparatorEntities = getComparatorEntity(),
             summarizers = getSummarizers();
         $scope.summary = {
@@ -102,20 +99,26 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
             summarizers: summarizers
         };
 
-        function fetchAndSummarizeEntity(comparatorEntity, snapshot1, snapshot2) {
-            var snapshot1Req = (snapshot1 && snapshot1.rows.length === 0) ? snapshot1.fetch() : snapshot1,
-                snapshot2Req = (snapshot2 && snapshot2.rows.length === 0) ? snapshot2.fetch() : snapshot2;
+        $scope.summarized = false;
+        var summarized = -comparatorEntities.length;
 
-            $.when(snapshot1Req, snapshot2Req).then(function() {
+        function fetchAndSummarizeEntity(comparatorEntity, leftSnapshot, rightSnapshot) {
+            var leftSnapshotReq = (leftSnapshot && leftSnapshot.rows.length === 0) ? leftSnapshot.fetch() : leftSnapshot,
+                rightSnapshotReq = (rightSnapshot && rightSnapshot.rows.length === 0) ? rightSnapshot.fetch() : rightSnapshot;
+
+            $.when(leftSnapshotReq, rightSnapshotReq).then(function() {
                 $scope$apply($scope, function() {
-                    comparatorEntity.summarize.call(comparatorEntity, snapshot1, summarizers, snapshot2);
+                    comparatorEntity.summarize.call(comparatorEntity, leftSnapshot, summarizers, rightSnapshot);
+                    summarized++;
+                    $scope.summarized = (summarized === 0);
                 });
             });
         }
 
         $scope.$watch('filter.snapshots', function() {
             if ($scope.filter.snapshots && $scope.filter.snapshots.length > 0) {
-                $.each(comparatorEntities, function(idx, comparatorEntity) {
+                $scope.summarized = false;
+                _.each(comparatorEntities, function(comparatorEntity) {
                     var snapshots = findSnapshot($scope.filter, comparatorEntity);
                     if (snapshots && snapshots.length > 0) {
                         snapshots.unshift(comparatorEntity);
@@ -124,7 +127,6 @@ define(['jquery', 'moment', 'js/app', 'js/factories/filter',
                 });
             }
         });
-
     }
 
     App.controller('FilterSummaryController', SummaryController);

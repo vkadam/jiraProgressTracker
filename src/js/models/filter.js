@@ -17,7 +17,8 @@ define(['jquery', 'logger', 'gsloader', 'moment',
             id: options['spreadsheetid'],
             jql: options['jql'],
             isActive: (options['active'] === 'Y'),
-            createdOn: options['createddate'],
+            startDate: moment.unix(options['startdate']).toDate(),
+            endDate: moment.unix(options['enddate']).toDate(),
             snapshots: [],
             isLoaded: false
         });
@@ -31,10 +32,10 @@ define(['jquery', 'logger', 'gsloader', 'moment',
             this.spreadsheet = spreadsheet;
             this.snapshots = spreadsheet.worksheets;
             $.each(this.snapshots, function(idx, snapshot) {
-                snapshot.createdOn = moment(snapshot.title).endOf('day').toDate();
+                snapshot.startDate = moment(snapshot.title).endOf('day').toDate();
             });
             this.snapshots.sort(function(a, b) {
-                return a.createdOn - b.createdOn;
+                return a.startDate - b.startDate;
             });
             this.isLoaded = true;
             return this;

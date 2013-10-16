@@ -1,18 +1,13 @@
-<div data-ng-class="{'text-center':summary.comparatorEntities.length === 0}" data-ng-controller="FilterSummaryController">
-    <i class="icon-spinner icon-spin icon-4x" data-ng-show="summary.comparatorEntities.length === 0"></i>
-    <table class="table .table-striped" data-ng-show="summary.comparatorEntities.length > 0">
+<div data-ng-class="{'text-center':!summarized}" data-ng-controller="FilterSummaryController">
+    <i class="icon-spinner icon-spin icon-4x" data-ng-show="!summarized"></i>
+    <table class="table .table-striped" data-ng-show="summarized">
         <thead>
             <tr>
                 <th rowspan="2" class="text-align-vertical-middle">Matric</th>
                 <th data-ng-repeat="entity in summary.comparatorEntities | orderBy:'index'" colspan="2" class="text-center">
                     {{entity.title}}
-                    <span data-ng-if="entity.snapshot1 && !entity.snapshot2">
-                        </br>{{entity.snapshot1.createdOn | date:mediumDate}}
-                    </span>
-                    <span data-ng-if="entity.snapshot1 && entity.snapshot2">
-                        </br>{{entity.snapshot1.displayDate | date:mediumDate}} - 
-                        {{entity.snapshot2.displayDate | date:mediumDate}}
-                    </span>
+                    <span data-ng-if="entity.leftDate"></br>{{entity.leftDate | date:mediumDate}}</span>
+                    <span data-ng-if="entity.rightDate"> - {{entity.rightDate | date:mediumDate}}</span>
                 </th>
             </tr>
             <tr>
@@ -25,19 +20,19 @@
             <tr data-ng-repeat="(summarizerIdx, summarizer) in summary.summarizers">
                 <td>{{summarizer.title}}</td>
                 <td data-ng-repeat-start="entity in summary.comparatorEntities | orderBy:'index'" class="text-center">
-                    <span data-ng-if="entity.snapshot1 && !entity.snapshot2">
-                        {{entity.snapshot1.summarizers[summarizerIdx].count}}
+                    <span data-ng-if="entity.leftSnapshot && !entity.rightSnapshot">
+                        {{entity.leftSnapshot.summarizers[summarizerIdx].count}}
                     </span>
-                    <span data-ng-if="entity.snapshot1 && entity.snapshot2">
-                        {{entity.snapshot2.summarizers[summarizerIdx].count - entity.snapshot1.summarizers[summarizerIdx].count}}
+                    <span data-ng-if="entity.leftSnapshot && entity.rightSnapshot">
+                        {{entity.rightSnapshot.summarizers[summarizerIdx].count - entity.leftSnapshot.summarizers[summarizerIdx].count}}
                     </span>
                 </td>
                 <td data-ng-repeat-end="" class="text-center">
-                    <span data-ng-if="entity.snapshot1 && !entity.snapshot2">
-                        {{entity.snapshot1.summarizers[summarizerIdx].points | number:2}}
+                    <span data-ng-if="entity.leftSnapshot && !entity.rightSnapshot">
+                        {{entity.leftSnapshot.summarizers[summarizerIdx].points | number:2}}
                     </span>
-                    <span data-ng-if="entity.snapshot1 && entity.snapshot2">
-                        {{(entity.snapshot2.summarizers[summarizerIdx].points - entity.snapshot1.summarizers[summarizerIdx].points) | number:2}}
+                    <span data-ng-if="entity.leftSnapshot && entity.rightSnapshot">
+                        {{(entity.rightSnapshot.summarizers[summarizerIdx].points - entity.leftSnapshot.summarizers[summarizerIdx].points) | number:2}}
                     </span>
                 </td>
             </tr>

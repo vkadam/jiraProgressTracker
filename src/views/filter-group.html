@@ -6,10 +6,12 @@
                 <th>Name</th>
                 <th>jql</th>
                 <th>Active</th>
+                <th>Start Date</th>
+                <th>End Date</th>
             </tr>
         </thead>
         <tbody>
-            <tr data-ng-repeat="filter in filters | objectToArray | orderBy:'-createdOn'" data-ng-class="{'strike active':!filter.isActive}">
+            <tr data-ng-repeat="filter in filters | objectToArray | orderBy:'-startDate'" data-ng-class="{'strike active':!filter.isActive}">
                 <td>
                     <a href="#/filter-group/{{id}}/filter/{{filter.id}}">
                 {{filter.name}}
@@ -17,6 +19,8 @@
                 </td>
                 <td>{{filter.jql}}</td>
                 <td>{{filter.isActive}}</td>
+                <td>{{filter.startDate | date:'mediumDate'}}</td>
+                <td>{{filter.endDate | date:'mediumDate'}}</td>
             </tr>
         </tbody>
     </table>

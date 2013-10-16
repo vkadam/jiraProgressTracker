@@ -1,7 +1,8 @@
 define(['angular', 'js/app',
     'js/controllers/settings', 'js/controllers/filter-group',
     'js/controllers/filter', 'js/controllers/filter-summary',
-    'js/controllers/snapshot'
+    'js/controllers/weekly-burndown', 'js/controllers/snapshot',
+    'js/controllers/date-picker'
 ], function(angular, app) {
     'use strict';
 
@@ -12,7 +13,7 @@ define(['angular', 'js/app',
                 controller: 'FilterGroupController'
             });
             $routeProvider.when('/filter-group/:filterGroupId/filter/:filterId', {
-                templateUrl: 'views/filter/tabs.html',
+                templateUrl: 'views/filter/filter-form.html',
                 controller: 'FilterController'
             });
             $routeProvider.otherwise({

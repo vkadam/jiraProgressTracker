@@ -23,7 +23,7 @@ define(['jquery', 'js/app'], function($, App) {
     }
 
     function SnapshotModal($scope, $modal) {
-        $scope.open = function() {
+        $scope.createSnapshot = function() {
             $modal.open({
                 templateUrl: 'views/filter/snapshot.html',
                 controller: SnapshotForm,

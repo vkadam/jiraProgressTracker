@@ -1,6 +1,6 @@
-define(['angular', 'angular-route', 'angular-ui'], function(angular) {
+define(['angular', 'angular-route', 'angular-ui', 'highcharts-ng'], function(angular) {
     'use strict';
-    return angular.module('jira-tracker-app', ['ngRoute', 'ui.bootstrap'])
+    return angular.module('jira-tracker-app', ['ngRoute', 'ui.bootstrap', 'highcharts-ng'])
         .config(function($compileProvider) {
             $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|chrome-extension):/);
         }).value('$scope$apply', function($scope, callback) {

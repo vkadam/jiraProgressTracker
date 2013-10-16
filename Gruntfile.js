@@ -83,7 +83,7 @@ module.exports = function(grunt) {
             install: {
                 options: {
                     targetDir: 'src/lib',
-                    cleanTargetDir: true,
+                    cleanup: true,
                     layout: 'byComponent',
                     verbose: true
                 }

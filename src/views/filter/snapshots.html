@@ -5,8 +5,8 @@
         </tr>
     </thead>
     <tbody>
-        <tr data-ng-repeat="snapshot in filter.snapshots | orderBy:'-createdOn'">
-            <td>{{snapshot.createdOn | date:mediumDate}}</td>
+        <tr data-ng-repeat="snapshot in filter.snapshots | orderBy:'-startDate'">
+            <td>{{snapshot.startDate | date:mediumDate}}</td>
         </tr>
     </tbody>
 </table>

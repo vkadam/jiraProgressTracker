@@ -1,6 +1,6 @@
 <form name="filterForm" class="form-horizontal media">
     <div class="form-group">
-        <label class="control-label col-lg-3 col-lg-3" for="filterName">Filter Name</label>
+        <label class="control-label col-lg-3" for="filterName">Filter Name</label>
         <div class="col-lg-7">
             <input class="form-control" type="hidden" id="filterId" name="filterId" data-ng-model="filter.id" />
             <input class="form-control" type="text" id="filterName" name="filterName" placeholder="Filter Title" data-ng-model="filter.name" />
@@ -13,12 +13,31 @@
         </div>
     </div>
     <div class="form-group">
-        <div class="col-lg-9 pull-right">
-            <button type="button" class="btn btn-primary">Save</button>
-            <span data-ng-controller="SnapshotModalController">
-                <button type="button" class="btn" data-ng-click="open()">Create Snapshot</button>
+        <label class="control-label col-lg-3" for="startDate">Start Date</label>
+        <div class="col-lg-3 input-group" data-ng-controller="DatePickerController">
+            <input type="text" class="form-control" id="startDate" name="startDate" data-datepicker-popup="MM-dd-yyyy" data-ng-model="filter.startDate" data-is-open="isVisible" data-datepicker-options="datepickerOptions" />
+            <span class="input-group-btn">
+                <button type="button" class="btn" data-ng-click="show()"><i class="icon-calendar"></i>
+                </button>
             </span>
-            <button type="button" class="btn">Cancel</button>
+        </div>
+        <label class="col-lg-1 control-label" for="endDate">End Date</label>
+        <div class="col-lg-3 input-group" data-ng-controller="DatePickerController">
+            <input type="text" class="form-control" id="endDate" name="endDate" data-datepicker-popup="MM-dd-yyyy" data-ng-model="filter.endDate" data-is-open="isVisible" data-datepicker-options="datepickerOptions" />
+            <span class="input-group-btn">
+                <button type="button" class="btn" data-ng-click="show()"><i class="icon-calendar"></i>
+                </button>
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-lg-9 pull-right">
+            <button type="button" class="btn btn-primary hide">Save</button>
+            <span data-ng-controller="SnapshotModalController">
+                <button type="button" class="btn" data-ng-click="createSnapshot()">Create Snapshot</button>
+            </span>
+            <button type="button" class="btn hide">Cancel</button>
         </div>
     </div>
 </form>
+<ng-include data-src="'views/filter/tabs.html'"></ng-include>
