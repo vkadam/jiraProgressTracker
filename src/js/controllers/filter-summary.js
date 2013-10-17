@@ -61,7 +61,7 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                 return [snapshots[0]];
             case 2: //'CURRENT' Most recent sheet available from current week
                 var currentSnapshot = findSnapshotForDate(filter, startOfThisWeek, today);
-                comparatorEntity.leftDate = today.toDate();
+                comparatorEntity.leftDate = currentSnapshot ? currentSnapshot.startDate : today.toDate();
                 return [currentSnapshot];
             case 3: //'LAST_WEEK' Most recent sheet available from last week and start
                 var endOfLastWeek = moment().endOf('day').day(-1),

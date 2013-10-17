@@ -85,9 +85,9 @@ define(['jquery', 'lodash', 'moment', 'js/app',
         };
         $scope.summarizers = getSummarizers();
 
-        function findSnapshotForWeek(endOfWeek) {
-            var startOfWeek = endOfWeek.clone().startOf('week');
-            return findSnapshotForDate($scope.filter, startOfWeek, endOfWeek);
+        function findSnapshotForWeek(sundayOfWeek) {
+            var mondayOfWeek = sundayOfWeek.clone().startOf('d').day(-6);
+            return findSnapshotForDate($scope.filter, mondayOfWeek, sundayOfWeek);
         }
 
         function createSeriesEntity(index, title, snapshot) {
@@ -164,18 +164,18 @@ define(['jquery', 'lodash', 'moment', 'js/app',
         $scope.$watch('filter.snapshots', function() {
             if ($scope.filter.snapshots && $scope.filter.snapshots.length > 0) {
                 var endDate = moment($scope.filter.endDate).endOf('day'),
-                    endOfWeek = moment($scope.filter.startDate).endOf('week').add('d', 1),
+                    sundayOfWeek = moment($scope.filter.startDate).endOf('week').add('d', 1),
                     snapshot = $scope.filter.snapshots[0],
                     title = snapshot.title;
 
                 $scope.seriesEntities.push(createSeriesEntity($scope.seriesEntities.length, title, snapshot));
 
-                while (endOfWeek < endDate) {
-                    snapshot = findSnapshotForWeek(endOfWeek);
-                    title = snapshot ? snapshot.title : endOfWeek.format('MM-DD-YYYY');
+                while (sundayOfWeek < endDate) {
+                    snapshot = findSnapshotForWeek(sundayOfWeek);
+                    title = snapshot ? snapshot.title : sundayOfWeek.format('MM-DD-YYYY');
 
                     $scope.seriesEntities.push(createSeriesEntity($scope.seriesEntities.length, title, snapshot));
-                    endOfWeek = endOfWeek.clone().add('w', 1);
+                    sundayOfWeek = sundayOfWeek.clone().add('w', 1);
                 }
                 snapshot = findSnapshotForWeek(endDate);
                 $scope.seriesEntities.push(createSeriesEntity($scope.seriesEntities.length, endDate.format('MM-DD-YYYY'), snapshot));
