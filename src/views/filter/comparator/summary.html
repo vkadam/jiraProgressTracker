@@ -20,19 +20,19 @@
             <tr data-ng-repeat="(summarizerIdx, summarizer) in summary.summarizers">
                 <td>{{summarizer.title}}</td>
                 <td data-ng-repeat-start="entity in summary.comparatorEntities | orderBy:'index'" class="text-center">
-                    <span data-ng-if="entity.leftSnapshot && !entity.rightSnapshot">
-                        {{entity.leftSnapshot.summarizers[summarizerIdx].count}}
+                    <span data-ng-if="entity.leftSummary && !entity.rightSummary">
+                        {{entity.leftSummary.summarizers[summarizerIdx].count}}
                     </span>
-                    <span data-ng-if="entity.leftSnapshot && entity.rightSnapshot">
-                        {{entity.rightSnapshot.summarizers[summarizerIdx].count - entity.leftSnapshot.summarizers[summarizerIdx].count}}
+                    <span data-ng-if="entity.leftSummary && entity.rightSummary">
+                        {{entity.rightSummary.summarizers[summarizerIdx].count - entity.leftSummary.summarizers[summarizerIdx].count}}
                     </span>
                 </td>
                 <td data-ng-repeat-end="" class="text-center">
-                    <span data-ng-if="entity.leftSnapshot && !entity.rightSnapshot">
-                        {{entity.leftSnapshot.summarizers[summarizerIdx].points | number:2}}
+                    <span data-ng-if="entity.leftSummary && !entity.rightSummary">
+                        {{entity.leftSummary.summarizers[summarizerIdx].points | number:2}}
                     </span>
-                    <span data-ng-if="entity.leftSnapshot && entity.rightSnapshot">
-                        {{(entity.rightSnapshot.summarizers[summarizerIdx].points - entity.leftSnapshot.summarizers[summarizerIdx].points) | number:2}}
+                    <span data-ng-if="entity.leftSummary && entity.rightSummary">
+                        {{(entity.rightSummary.summarizers[summarizerIdx].points - entity.leftSummary.summarizers[summarizerIdx].points) | number:2}}
                     </span>
                 </td>
             </tr>

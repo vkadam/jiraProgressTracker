@@ -4,9 +4,6 @@ define(['jquery', 'lodash', 'moment', 'js/app',
 
     function getSummarizers() {
         var summarizers = [];
-        summarizers.push(new Summarizer({
-            title: 'Total'
-        }));
 
         var DoneStatusArray = ['Closed', 'Resolved'];
         summarizers.push(new Summarizer({
@@ -21,6 +18,14 @@ define(['jquery', 'lodash', 'moment', 'js/app',
             title: 'WIP',
             filter: function() {
                 return _.contains(WIPStatusArray, this.status);
+            }
+        }));
+
+        var BacklogStatusArray = ['Reopened', 'Ready', 'Open'];
+        summarizers.push(new Summarizer({
+            title: 'Backlog',
+            filter: function() {
+                return _.contains(BacklogStatusArray, this.status);
             }
         }));
         return summarizers;
@@ -51,8 +56,7 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                         stacking: 'normal'
                     },
                     series: {
-                        pointPadding: 0,
-                        borderWidth: 0
+                        pointPadding: 0
                     }
                 },
                 yAxis: {
@@ -109,6 +113,8 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                         if (summarized === 0) {
                             renderChart();
                         }
+                    }).always(function() {
+                        delete seriesEntity.leftSnapshot;
                     });
                 } else {
                     summarized++;
@@ -120,18 +126,21 @@ define(['jquery', 'lodash', 'moment', 'js/app',
             var serieses = {},
                 defaultData = _.map($scope.seriesEntities, function() {
                     return 0;
-                });
+                }),
+                seriesId = 0;
             _.each($scope.summarizers, function(summarize) {
-                _.each(['Points', 'Count'], function(type) {
+                _.each(['Count', 'Points'], function(type) {
                     var seriesName = summarize.title + ' ' + type;
                     serieses[seriesName.toLowerCase()] = {
                         data: _.clone(defaultData),
                         stack: type,
-                        name: seriesName
+                        name: seriesName,
+                        id: seriesId
                     };
-                    // if (type === 'Count') {
-                    //     serieses[seriesName.toLowerCase()].linkedTo = ':previous'
+                    // if (type === 'Points') {
+                    //     serieses[seriesName.toLowerCase()].linkedTo = seriesId - 1
                     // }
+                    seriesId++;
                 });
             });
             var categories = [],
@@ -140,9 +149,9 @@ define(['jquery', 'lodash', 'moment', 'js/app',
 
             _.each($scope.seriesEntities, function(seriesEntity, idx) {
                 categories.push(seriesEntity.title);
-                if (seriesEntity.leftSnapshot) {
-                    _.each(seriesEntity.leftSnapshot.summarizers, function(summarize) {
-                        _.each(['points', 'count'], function(type) {
+                if (seriesEntity.leftSummary) {
+                    _.each(seriesEntity.leftSummary.summarizers, function(summarize) {
+                        _.each(['count', 'points'], function(type) {
                             seriesName = summarize.title + ' ' + type;
                             val = _.parseInt(numberFilter(summarize[type]));
                             serieses[seriesName.toLowerCase()].data[idx] = val;
