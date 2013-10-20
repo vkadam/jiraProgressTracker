@@ -1,3 +1,4 @@
-<div data-ng-controller="FilterBurndownController">
-    <highchart id="burndownChart" config="chartConfig"></highchart>
+<div data-ng-class="{'text-center':!isChartReady}" data-ng-controller="FilterBurndownController">
+    <i class="icon-spinner icon-spin icon-4x" data-ng-if="!isChartReady"></i>
+    <highchart data-ng-if="isChartReady" id="burndownChart" data-config="chartConfig"></highchart>
 </div>

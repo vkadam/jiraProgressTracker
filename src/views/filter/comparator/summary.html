@@ -1,6 +1,6 @@
 <div data-ng-class="{'text-center':!summarized}" data-ng-controller="FilterSummaryController">
-    <i class="icon-spinner icon-spin icon-4x" data-ng-show="!summarized"></i>
-    <table class="table .table-striped" data-ng-show="summarized">
+    <i class="icon-spinner icon-spin icon-4x" data-ng-if="!summarized"></i>
+    <table class="table .table-striped" data-ng-if="summarized">
         <thead>
             <tr>
                 <th rowspan="2" class="text-align-vertical-middle">Matric</th>

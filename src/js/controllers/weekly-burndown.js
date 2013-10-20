@@ -46,7 +46,7 @@ define(['jquery', 'lodash', 'moment', 'js/app',
     };
 
     function BurndownController($scope, $scope$apply, $filter) {
-        $scope.chartConfig = {
+        var chartConfig = {
             options: {
                 chart: {
                     type: 'column'
@@ -56,7 +56,8 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                         stacking: 'normal'
                     },
                     series: {
-                        pointPadding: 0
+                        pointPadding: 0.02,
+                        borderWidth: 0
                     }
                 },
                 yAxis: {
@@ -65,27 +66,18 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                     }
                 },
                 title: {
-                    text: ''
+                    text: 'Weekly Burndown'
                 },
                 xAxis: {
                     categories: []
                 },
-                /*tooltip: {
-                    crosshairs: true,
-                    shared: true
-                },
                 legend: {
-                    layout: 'vertical'
-                },*/
-                loading: {
-                    labelStyle: {
-                        top: '25%',
-                        fontSize: '2em'
+                    labelFormatter: function() {
+                        return this.name.replace(' Count', '');
                     }
                 }
             },
-            series: [],
-            loading: true
+            series: []
         };
         $scope.summarizers = getSummarizers();
 
@@ -100,7 +92,7 @@ define(['jquery', 'lodash', 'moment', 'js/app',
             });
         }
 
-        $scope.summarized = false;
+        $scope.isChartReady = false;
         $scope.seriesEntities = [];
 
         function fetchAndSummarizeEntity(seriesEntities) {
@@ -137,9 +129,9 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                         name: seriesName,
                         id: seriesId
                     };
-                    // if (type === 'Points') {
-                    //     serieses[seriesName.toLowerCase()].linkedTo = seriesId - 1
-                    // }
+                    if (type === 'Points') {
+                        serieses[seriesName.toLowerCase()].linkedTo = ':previous';
+                    }
                     seriesId++;
                 });
             });
@@ -160,13 +152,12 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                 }
             });
             $scope$apply($scope, function() {
-                $scope.chartConfig.options.xAxis.categories = categories;
-                $scope.chartConfig.options.title.text = 'Weekly Burndown';
-                $scope.chartConfig.series = _.map(serieses, function(series) {
+                chartConfig.options.xAxis.categories = categories;
+                chartConfig.series = _.map(serieses, function(series) {
                     return series;
                 });
-                $scope.chartConfig.loading = false;
-
+                $scope.chartConfig = chartConfig;
+                $scope.isChartReady = true;
             });
         }
 
