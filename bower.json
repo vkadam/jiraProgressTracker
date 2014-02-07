@@ -9,21 +9,21 @@
         "jiraTracker"
     ],
     "dependencies": {
-        "angular": "v1.2.0-rc.2",
-        "angular-route": "v1.2.0-rc.2",
-        "angular-ui": "angular-ui-bootstrap-bower#0.6.0",
-        "bootstrap": "v3.0.0-rc.2",
-        "font-awesome": "components-font-awesome#3.2.1",
+        "angular": "1.2.8",
+        "angular-route": "1.2.8",
+        "angular-bootstrap": "0.9.0",
+        "bootstrap": "3.0.3",
+        "font-awesome": "components-font-awesome#4.0.3",
         "jquery": "2.0.3",
         "logger": "https://github.com/jonnyreeves/js-logger.git#master",
-        "lodash": "2.0.0",
-        "moment": "momentjs#2.2.1",
-        "moment-timezone": "0.0.1",
-        "requirejs": "2.1.8",
+        "lodash": "2.4.1",
+        "moment": "momentjs#2.5.0",
+        "moment-timezone": "0.0.3",
+        "requirejs": "2.1.9",
         "requirejs-domready": "2.0.1",
-        "gsloader": "https://github.com/vkadam/gsloader.git#v0.0.1-rc.1",
+        "gsloader": "https://github.com/vkadam/gsloader.git#0.0.1-rc.2",
         "highcharts-ng": "0.0.2",
-        "highcharts": "3.0.5"
+        "highcharts": "3.0.7"
     },
     "exportsOverride": {
         "angular": {
@@ -40,7 +40,7 @@
                 "angular-route.min.js.map"
             ]
         },
-        "angular-ui": {
+        "angular-bootstrap": {
             "./": [
                 "ui-bootstrap-tpls.js",
                 "ui-bootstrap-tpls.min.js"
@@ -54,14 +54,15 @@
                 "css/font-awesome.css",
                 "css/font-awesome.min.css"
             ],
-            "font": [
-                "font/*"
+            "fonts": [
+                "fonts/*"
             ]
         },
         "gsloader": {
             "./": [
                 "dist/gsloader.js",
-                "dist/gsloader.min.js"
+                "dist/gsloader.min.js",
+                "jasmine/lib/google-api-client.js"
             ]
         },
         "jquery": {

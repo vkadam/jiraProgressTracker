@@ -11,7 +11,6 @@ define(['jquery', 'lodash'], function($, _) {
     };
 
     Entity.prototype.summarize = function(leftSnapshot, summarizers, rightSnapshot) {
-        /* Copy Summarizers */
         var summaries = [];
 
         if (leftSnapshot) {

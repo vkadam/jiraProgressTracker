@@ -1,23 +1,19 @@
-<div class="modal-dialog">
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-ng-click="close()" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">Snapshot</h4>
+<div class="modal-header">
+    <button type="button" class="close" data-ng-click="close()" aria-hidden="true">&times;</button>
+    <h4 class="modal-title">Snapshot</h4>
+</div>
+<div class="modal-body">
+    <form name="snapshotForm" class="form-horizontal" data-ng-submit="submit(snapshotForm)">
+        <button class="btn btn-submit-form" tabindex="-1" type="submit">Submit Form</button>
+        <div class="form-group">
+            <label class="control-label col-lg-3" for="snapshotTitle">Snapshot Title</label>
+            <div class="col-lg-7">
+                <input type="text" id="snapshotTitle" class="form-control" name="snapshotTitle" placeholder="Snapshot Title" data-ng-model="snapshot.snapshotTitle" data-required="true" />
+                <label for="snapshotTitle" class="text-danger" data-ng-show="(snapshotForm.snapshotTitle.$dirty || snapshotForm.showErrors) && snapshotForm.snapshotTitle.$invalid">Snapshot title is required</label>
+            </div>
         </div>
-        <div class="modal-body">
-            <form name="snapshotForm" class="form-horizontal" data-ng-submit="submit(snapshotForm)">
-                <button class="btn btn-submit-form" tabindex="-1" type="submit">Submit Form</button>
-                <div class="form-group">
-                    <label class="control-label col-lg-3" for="snapshotTitle">Snapshot Title</label>
-                    <div class="col-lg-7">
-                        <input type="text" id="snapshotTitle" class="form-control" name="snapshotTitle" placeholder="Snapshot Title" data-ng-model="snapshot.snapshotTitle" data-required="true" />
-                        <label for="snapshotTitle" class="text-danger" data-ng-show="(snapshotForm.snapshotTitle.$dirty || snapshotForm.showErrors) && snapshotForm.snapshotTitle.$invalid">Snapshot title is required</label>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary save-settings" data-ng-click="submit(snapshotForm)" data-ng-disabled="snapshotForm.$invalid || snapshotForm.$pristine">Save</button>
-        </div>
-    </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary save-settings" data-ng-click="submit(snapshotForm)" data-ng-disabled="snapshotForm.$invalid || snapshotForm.$pristine">Save</button>
 </div>

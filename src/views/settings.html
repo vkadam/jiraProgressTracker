@@ -1,30 +1,26 @@
-<div class="modal-dialog">
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-ng-click="close()" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">Settings</h4>
+<div class="modal-header">
+    <button type="button" class="close" data-ng-click="close()" aria-hidden="true">&times;</button>
+    <h4 class="modal-title">Settings</h4>
+</div>
+<div class="modal-body">
+    <form name="jiraSettingsForm" class="form-horizontal" data-ng-submit="submit(jiraSettingsForm)">
+        <button class="btn btn-submit-form" tabindex="-1" type="submit">Submit Form</button>
+        <div class="form-group">
+            <label class="control-label col-lg-4" for="jiraUserId">Jira User Id</label>
+            <div class="col-lg-6">
+                <input type="text" id="jiraUserId" class="form-control" name="jiraUserId" placeholder="Jira User Id" autocomplete="off" data-ng-model="userData.userId" data-ng-change="userData.password=''" data-required="true" />
+                <label for="jiraUserId" class="text-danger" data-ng-show="jiraSettingsForm.jiraUserId.$dirty && jiraSettingsForm.jiraUserId.$invalid">Jira user name is required</label>
+            </div>
         </div>
-        <div class="modal-body">
-            <form name="jiraSettingsForm" class="form-horizontal" data-ng-submit="submit(jiraSettingsForm)">
-                <button class="btn btn-submit-form" tabindex="-1" type="submit">Submit Form</button>
-                <div class="form-group">
-                    <label class="control-label col-lg-4" for="jiraUserId">Jira User Id</label>
-                    <div class="col-lg-6">
-                        <input type="text" id="jiraUserId" class="form-control" name="jiraUserId" placeholder="Jira User Id" autocomplete="off" data-ng-model="userData.userId" data-ng-change="userData.password=''" data-required="true" />
-                        <label for="jiraUserId" class="text-danger" data-ng-show="jiraSettingsForm.jiraUserId.$dirty && jiraSettingsForm.jiraUserId.$invalid">Jira user name is required</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-lg-4" for="jiraPassword">Password</label>
-                    <div class="col-lg-6">
-                        <input type="password" id="jiraPassword" class="form-control" name="jiraPassword" placeholder="Password" data-ng-model="userData.password" data-required="true" data-ng-disabled="jiraSettingsForm.jiraUserId.$pristine" />
-                        <label for="jiraPassword" class="text-danger" data-ng-show="(jiraSettingsForm.jiraUserId.$dirty || jiraSettingsForm.jiraPassword.$dirty) && jiraSettingsForm.jiraPassword.$invalid">Jira password is required</label>
-                    </div>
-                </div>
-            </form>
+        <div class="form-group">
+            <label class="control-label col-lg-4" for="jiraPassword">Password</label>
+            <div class="col-lg-6">
+                <input type="password" id="jiraPassword" class="form-control" name="jiraPassword" placeholder="Password" data-ng-model="userData.password" data-required="true" data-ng-disabled="jiraSettingsForm.jiraUserId.$pristine" />
+                <label for="jiraPassword" class="text-danger" data-ng-show="(jiraSettingsForm.jiraUserId.$dirty || jiraSettingsForm.jiraPassword.$dirty) && jiraSettingsForm.jiraPassword.$invalid">Jira password is required</label>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary save-settings" data-ng-click="submit(jiraSettingsForm)" data-ng-disabled="jiraSettingsForm.$invalid || jiraSettingsForm.$pristine">Save</button>
-        </div>
-    </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary save-settings" data-ng-click="submit(jiraSettingsForm)" data-ng-disabled="jiraSettingsForm.$invalid || jiraSettingsForm.$pristine">Save</button>
 </div>

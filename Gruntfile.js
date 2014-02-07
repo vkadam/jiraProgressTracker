@@ -38,7 +38,7 @@ module.exports = function(grunt) {
                                 'jasmine-jquery': '../jasmine/lib/jasmine-jquery/jasmine-jquery',
                                 'jquery-fixture': '../jasmine/lib/jquery-fixture/jquerymx-3.2.custom',
                                 'jasmine-helper': '../jasmine/lib/jasmine-helper',
-                                'google-api-client': 'lib/gsloader/jasmine/lib/google-api-client',
+                                'google-api-client': 'lib/gsloader/google-api-client',
                                 'chrome': '../jasmine/lib/chrome'
                             },
                             shim: {
@@ -83,9 +83,10 @@ module.exports = function(grunt) {
             install: {
                 options: {
                     targetDir: 'src/lib',
-                    cleanup: true,
                     layout: 'byComponent',
-                    verbose: true
+                    verbose: true,
+                    cleanTargetDir: true,
+                    cleanBowerDir: false
                 }
             }
         }
@@ -102,6 +103,6 @@ module.exports = function(grunt) {
 
     /* Register tasks. */
     grunt.registerTask('default', ['shell:npm', 'bower:install', 'jsbeautifier', 'jshint' /*, 'connect', 'jasmine'*/ ]);
-    grunt.registerTask('test', ['bower:install', 'connect', 'jasmine']);
+    grunt.registerTask('test', ['bower:install', 'jshint', 'connect', 'jasmine']);
     grunt.registerTask('jasmine-server', ['jasmine:all:build', 'open:jasmine', 'connect::keepalive']);
 };

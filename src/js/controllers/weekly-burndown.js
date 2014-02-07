@@ -173,12 +173,13 @@ define(['jquery', 'lodash', 'moment', 'js/app',
                 while (sundayOfWeek < endDate) {
                     snapshot = findSnapshotForWeek(sundayOfWeek);
                     title = snapshot ? snapshot.title : sundayOfWeek.format('MM-DD-YYYY');
-
                     $scope.seriesEntities.push(createSeriesEntity($scope.seriesEntities.length, title, snapshot));
                     sundayOfWeek = sundayOfWeek.clone().add('w', 1);
                 }
-                snapshot = findSnapshotForWeek(endDate);
-                $scope.seriesEntities.push(createSeriesEntity($scope.seriesEntities.length, endDate.format('MM-DD-YYYY'), snapshot));
+
+                snapshot = findSnapshotForDate($scope.filter, endDate, endDate);
+                title = snapshot ? snapshot.title : endDate.format('MM-DD-YYYY');
+                $scope.seriesEntities.push(createSeriesEntity($scope.seriesEntities.length, title, snapshot));
                 fetchAndSummarizeEntity($scope.seriesEntities);
             }
         });

@@ -2,10 +2,10 @@ requirejs.config({
     'baseUrl': '',
     'paths': {
         'google-api-client': 'https://apis.google.com/js/client.js?onload=googleDriveClientLoaded',
-        'angular': 'lib/angular/angular',
+        'angular': 'lib/angular/angular.min',
         'angular-route': 'lib/angular-route/angular-route.min',
-        'angular-ui': 'lib/angular-ui/ui-bootstrap-tpls',
-        'bootstrap': 'lib/bootstrap/js/bootstrap.min',
+        'angular-ui': 'lib/angular-bootstrap/ui-bootstrap-tpls',
+        // 'bootstrap': 'lib/bootstrap/js/bootstrap.min',
         'gsloader': 'lib/gsloader/gsloader',
         'jquery': 'lib/jquery/jquery.min',
         'lodash': 'lib/lodash/lodash.min',

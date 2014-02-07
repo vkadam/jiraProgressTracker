@@ -1,7 +1,7 @@
 <div data-ng-class="{'text-center':filters.length === 0}">
-    <i class="icon-spinner icon-spin icon-4x" data-ng-show="filters.length === 0"></i>
-    <table class="table">
-        <thead data-ng-show="filters">
+    <i class="icon-spinner icon-spin icon-4x" data-ng-class="{'hide':filters.length !== 0}"></i>
+    <table class="table" data-ng-class="{'hide':filters.length === 0}">
+        <thead>
             <tr>
                 <th>Name</th>
                 <th>jql</th>

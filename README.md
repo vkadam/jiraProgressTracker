@@ -1,4 +1,4 @@
-jiraProgressTracker
+jiraProgressTracker  [![Build Status](https://travis-ci.org/vkadam/jiraProgressTracker.png)](https://travis-ci.org/vkadam/jiraProgressTracker)
 ===================
 
 Tracks jira progress.
